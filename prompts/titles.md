@@ -16,6 +16,8 @@ Each title gets a thumbnail, and code writes a few big words on it. Write those 
 <!-- user turn -->
 The video: {topic}
 
+{series}
+
 Its outline:
 
 {outline}

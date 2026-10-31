@@ -29,9 +29,10 @@ Plan before you write, but keep the plan short: in your thinking, settle the pla
 - Tell it like a storyteller, not a teacher. Plain spoken English, short sentences, concrete words, and fragments when they hit harder. When someone speaks, give them a short line of their own, said plainly. Hold things back and reveal them later. When tension peaks, get exact: the hour, the minutes left, the distance.
 - It is read aloud, so write for the ear: numbers the way people say them, and no lists, parentheses, abbreviations, headings, stage directions or emoji.
 - The first scene of each beat opens with its day, said naturally, and the time when it matters: "Day 14. Just after midnight." Don't follow it with the supplies; the box shows them.
+- Day by day: the viewer should feel every day pass. In the first week, every day gets at least one scene. After that, when a beat jumps ahead, give the days it skips a quick scene each, labeled with its day and opening with it ("Day 16. The banging never stops."), so no gap between labels is longer than about a tenth of the span: three days in a 30-day story. These can be a single line of waiting, counting or watching; they keep the clock visible.
 - The first two or three scenes are the outline's hook, at speed: the situation, the stakes, the promise. No greetings, no "in this video", no asking people to subscribe.
 - Right after the hook, one to three scenes tell the outline's backstory: what happened and how it reached this person. Quick and concrete, then into Day 1.
-- Something changes every five or six scenes: a problem, a discovery, a decision, a payoff. End each beat on a turn that pulls into the next one.
+- Keep the dread up. Every scene raises the danger, tightens the deadline or reveals something. Show the threat coming before it arrives, let waiting and silence hurt, and never solve a danger in the scene it appears. End each beat on a turn or a cliffhanger that pulls into the next one.
 - Show each beat's practical move in action, with the one or two concrete details that make it real and why it works, in a line or two. Never a lesson, and never several scenes on one technique: the story keeps moving. Be accurate. If you aren't sure a technique is safe and true, use a different one.
 - No gore and no cruelty for its own sake. It's for a general audience.
 - The last scenes deliver the outline's ending, close every thread still open, and end on an image. Don't explain what it meant; let the image and the callbacks say it.
@@ -54,7 +55,7 @@ Every scene has a `visual_prompt` for its still picture:
 
 ## Motion
 
-`motion` is `kenburns` (the still with a slow pan) for almost every scene. Use `clip` (a short animation made from the scene's picture) only in hero beats, on the moment of each hero beat with the strongest visible motion, and never on more than {clips_per_video} scenes in the whole script.
+`motion` is `kenburns` (the still with a slow pan) for almost every scene. Use `clip` (a short animation made from the scene's picture) only in hero beats, on their one or two moments with the strongest visible motion, and never on more than {clips_per_video} scenes in the whole script.
 
 ## Shape of the reply
 
@@ -68,13 +69,17 @@ Every scene has a `visual_prompt` for its still picture:
 - `move`: "" when the scene is in the same place as the scene before it. When it's somewhere else, copy the words from this scene's narration that tell where we are now, exactly as they're written there.
 - `tracker`: [] for most scenes. On the first scene of every beat, the first scene after a cold open, and every scene where an amount changes, list every tracked item with its amount now, like [{"item": "Water", "amount": 9}, {"item": "Food", "amount": 12}].
 - `set_change`: "" for most scenes. When this scene changes its place for good (the windows taped over, a barricade built, a wall burned black), say in one sentence how the place looks from now on; its reference picture is redrawn that way for every later scene there.
-- `shot`: `wide`, `medium` or `close-up`, the picture's framing. Wide and medium shots are drawn from the place's reference picture, from the viewpoint it shows (a medium shot is closer in), so the place is always recognizable; write their visual prompts for that view rather than asking for a reverse angle. A close-up shows a face, hands or one object up close, with the place only hinted behind it. Mix them: mostly medium, a wide shot whenever the character arrives somewhere or the danger needs room, and close-ups for the details that matter.
+- `looks`: [] for most scenes. When someone's lasting look changes in this scene (body armor on or off, a bandaged hand, a borrowed cap), give their whole look from now on: `who` ("the stick figure" or a cast name) and `now`, everything they have on or carry beyond their usual look ("body armor over their clothes, pistol in a holster"), or "as usual" when it all comes off. Every picture from this scene on shows it until it changes again, so the armor put on in one scene is still on in the next. Injuries that show are looks too (a bandaged knee, an arm in a sling). In the first scene, also give the starting look of anyone the outline has begin with something beyond their usual look (a knee brace, a cast, a uniform), or the pictures won't show it. Something they carry nearly all the time, like a cane they can't walk without, is part of their look; things they pick up now and then (a rifle, a flashlight) go in the visual prompts of the scenes that show them. A new look replaces the old one, so list everything that stays: body armor put on over a knee brace is "body armor over their clothes, the knee brace, the cane in hand", not just the armor.
+- `shot`: `wide`, `medium` or `close-up`, the picture's framing. Wide and medium shots are drawn from the place's reference picture, from the viewpoint it shows (a medium shot keeps that view and brings the people nearer the camera), so the place is always recognizable; write their visual prompts for that view rather than asking for a reverse angle. A close-up shows a face, hands or one object up close, with the place only hinted behind it. Mix them: mostly medium, a wide shot whenever the character arrives somewhere or the danger needs room, and close-ups for the details that matter.
 - `visual_prompt` and `motion`.
 
 <!-- user turn: new -->
 Write the script for this outline:
 
 {outline}
+
+Places from earlier parts of this series, as they were last seen (when the story goes back to one, list it in your places with the same id, name and look; it is drawn as it was left):
+{earlier_places}
 
 Notes from the channel's owner on earlier drafts of the script (follow all of them):
 {notes}
@@ -83,6 +88,9 @@ Notes from the channel's owner on earlier drafts of the script (follow all of th
 Here is the approved outline:
 
 {outline}
+
+Places from earlier parts of this series, as they were last seen (keep their ids, names and looks):
+{earlier_places}
 
 Here is the current script: its places, then one scene per line:
 

@@ -7,6 +7,9 @@ import { linkify, Markdown } from './markdown'
 import { AutoText, ErrorText, StateBadge } from './parts'
 import type { Channel, Message, Thread } from './types'
 
+// A next part can start once a video's scenes exist, so where its story ends is known.
+const AFTER_SCRIPT = ['generating', 'assembled', 'render_approved', 'publishing', 'scheduled', 'live']
+
 const EXAMPLES = [
   'Day 1 to Day 365 stranded on an oil rig',
   '100 days hiding in an abandoned shopping mall',
@@ -70,6 +73,7 @@ export function ThreadView({ thread, channel, messages }: {
             {(thread.state === 'new' || thread.state === 'outline_approved') && thread.video_id !== null && (
               <StopWriting videoId={thread.video_id} />
             )}
+            {thread.video_id !== null && AFTER_SCRIPT.includes(thread.state) && <NextPart videoId={thread.video_id} />}
             <StateBadge state={thread.state} />
             <span className="muted">{money(thread.cost_usd)} of {money(channel.budget_usd)}</span>
           </div>
@@ -186,6 +190,27 @@ function StopWriting({ videoId }: { videoId: number }) {
     <span className="stop-writing">
       <button className="btn small" disabled={busy} title="Stop Claude and go back to the card. If it was rewriting with your note, the note comes back to change."
         onClick={() => run(() => api.act(videoId, 'stop_writing'))}>{busy ? 'Stopping…' : 'Stop'}</button>
+      <ErrorText>{error}</ErrorText>
+    </span>
+  )
+}
+
+/** Start the next part of a series: the story, cast, places and looks carry on from this video. */
+function NextPart({ videoId }: { videoId: number }) {
+  const { openThread } = useApp()
+  const { busy, error, run } = useAction()
+  const [open, setOpen] = useState(false)
+  const [idea, setIdea] = useState('')
+  if (!open) return <button className="btn small" onClick={() => setOpen(true)}>Next part</button>
+  return (
+    <span className="next-part">
+      <AutoText value={idea} onChange={setIdea} autoFocus
+        placeholder="What happens in the next part? Your own story for it, or leave empty to carry the story on." />
+      <button className="btn small primary" disabled={busy}
+        onClick={() => run(async () => openThread((await api.nextPart(videoId, idea)).thread_id))}>
+        {busy ? 'Starting…' : 'Start'}
+      </button>
+      <button className="link" onClick={() => setOpen(false)}>Cancel</button>
       <ErrorText>{error}</ErrorText>
     </span>
   )

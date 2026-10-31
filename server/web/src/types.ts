@@ -117,6 +117,8 @@ export interface ScriptScene {
   tracker?: string | null
   /** How this scene changes its place for good. */
   set_change?: string | null
+  /** Lasting look changes from this scene on, like "the stick figure now: body armor". */
+  looks?: string | null
 }
 
 export interface ScriptCard {

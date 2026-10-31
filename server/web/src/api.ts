@@ -26,6 +26,8 @@ export const api = {
   video: (videoId: number) => request<VideoInfo>('GET', `/api/videos/${videoId}`),
   newVideo: (channelId: string, idea: string) =>
     request<{ video_id: number; thread_id: number }>('POST', '/api/videos', { channel_id: channelId, idea }),
+  nextPart: (videoId: number, idea: string) =>
+    request<{ video_id: number; thread_id: number }>('POST', `/api/videos/${videoId}/next_part`, { idea }),
   agent: () => request<AgentInfo>('GET', '/api/agent'),
   /** Opens Google's consent screen on this machine; resolves once you've signed in (or it times out). */
   connect: (channelId: string) =>

@@ -40,7 +40,7 @@ from server.app import create_app
 
 load_dotenv(ROOT / ".env")  # only the live test uses the key; every other test injects a fake client
 
-FLEET_TOOLS = {"new_video", "status", "show", "revise", "regenerate", "edit_outline", "flag_scenes", "edit_scene",
+FLEET_TOOLS = {"new_video", "next_part", "status", "show", "revise", "regenerate", "edit_outline", "flag_scenes", "edit_scene",
                "pick", "set_schedule", "update_publish", "retry", "update_video", "stop_writing"}
 HOME_TOOLS = {"topics", "start_topic", "dismiss_topic", "suggest_topics"}  # only in a channel's home thread
 

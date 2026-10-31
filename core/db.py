@@ -225,12 +225,15 @@ MIGRATIONS = (
     ("scenes", "cast_json", "TEXT"),           # cast members in the still, by name
     ("scenes", "tracker_json", "TEXT"),        # the tracked amounts as this scene leaves them ([] = unchanged)
     ("scenes", "shot", "TEXT"),                # wide, medium or close-up; a close-up gets its place in words only
+    ("scenes", "looks_json", "TEXT"),          # {who: [their looks so far, oldest first]}, carried forward
+    ("videos", "prev_video_id", "INTEGER"),    # the part this video continues (core/series.py)
+    ("videos", "part", "INTEGER NOT NULL DEFAULT 1"),
 )
 
 VIDEO_COLUMNS = {
     "outline_json", "script_json", "thumbs_json", "title", "thumb_idx", "publish_at", "publish_json",
     "video_path", "highlight_path", "srt_path", "chapters_json", "duration_ms", "youtube_id",
-    "attempts", "lease_until", "error", "resume_state", "draft_note", "places_json",
+    "attempts", "lease_until", "error", "resume_state", "draft_note", "places_json", "prev_video_id", "part",
 }
 SCENE_COLUMNS = {
     "narration", "visual_prompt", "motion", "state", "audio_path", "still_path", "clip_path",

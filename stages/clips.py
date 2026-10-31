@@ -3,6 +3,7 @@
 If a clip would push the video over budget, the scene is downgraded to Ken Burns instead of failing.
 Clips run in parallel, so each one holds its price against the budget until it's done (ctx.reserve).
 """
+from core import series
 from core.stage import run_scene_stage
 
 NAME = "clips"
@@ -25,6 +26,8 @@ def _work(ctx, conn, video, scene) -> tuple[dict, str]:
                             text=f"Scene {scene['idx']}: clip downgraded to Ken Burns to stay under budget.")
             return {"motion": "kenburns"}, "ok"
         out = ctx.media(video["id"]) / "clips" / f"s{scene['idx']:03d}_r{scene['regen_count']}.mp4"
-        usd = ctx.video.clip(channel, ctx.abs(scene["still_path"]), scene["visual_prompt"], out, seconds)
+        wearing = "; ".join(f"{who}: {chain[-1]}" for who, chain in series.looks_of(scene).items())
+        usd = ctx.video.clip(channel, ctx.abs(scene["still_path"]), scene["visual_prompt"], out, seconds,
+                             wearing=wearing)
         ctx.log_cost(conn, video["id"], NAME, "video", usd)
     return {"clip_path": ctx.rel(out)}, "ok"

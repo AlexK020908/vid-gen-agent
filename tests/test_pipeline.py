@@ -143,11 +143,44 @@ def test_stills_are_drawn_from_place_and_cast_pictures(ctx):
     assert stills[2]["place"] == ("the shelter", STUB_PLACES[0]["look"], None)  # a close-up: the place in words
     assert stills[3]["place"][0] == "the street outside" and stills[3]["people"][0][:2] == ("Rosa", STUB_LOOK)
     assert stills[6]["people"] == []
+    backpack = stills[1]["hero"]  # put on in scene 1 and still on in scene 6
+    assert backpack[0] == "a red backpack" and backpack[1].name.startswith("look_the-stick-figure_")
+    assert stills[6]["hero"] == backpack
     with ctx.connect() as conn:
         sets = {r["stage"]: r["n"] for r in conn.execute(
             "SELECT stage, COUNT(*) AS n FROM costs WHERE video_id = ? AND stage IN ('sets', 'stills') GROUP BY stage",
             (vid,))}
-    assert sets == {"sets": 4, "stills": 6}
+    assert sets == {"sets": 5, "stills": 6}
+
+
+def test_next_part_carries_the_story_cast_places_and_looks_on(ctx):
+    vid = actions.new_video(ctx, "zombie", "A week in a flooded town")
+    with pytest.raises(ActionError, match="once this video's script is approved"):
+        actions.next_part(ctx, vid)
+    to_render_review(ctx, vid)
+    calls, real = [], {}
+    for name in ("place", "change_place", "person", "change_look"):
+        real[name] = getattr(ctx.images, name)
+        setattr(ctx.images, name, lambda *a, _name=name, **k: calls.append((_name, a)) or real[_name](*a, **k))
+
+    nxt = actions.next_part(ctx, vid, "they reach the boat")
+    with pytest.raises(ActionError, match=f"#{nxt} is already the next part"):
+        actions.next_part(ctx, vid)
+    to_render_review(ctx, nxt)
+
+    v = video(ctx, nxt)
+    outline = json.loads(v["outline_json"])
+    assert v["part"] == 2 and v["prev_video_id"] == vid and outline["part"] == 2
+    assert outline["topic"] == "A week in a flooded town (Part 2)" and outline["hook"].startswith("Part 2. Previously:")
+    assert all(t.endswith("(Part 2)") for t in json.loads(v["thumbs_json"])["titles"])
+    # the places, Rosa and the main character's backpack were drawn for part 1, so part 2 copies them; only the
+    # shelter's second barricade (part 2's own change, on top of part 1's) is new
+    assert [name for name, _ in calls] == ["change_place"]
+    shelter = next(p for p in json.loads(v["places_json"]) if p["id"] == "shelter")
+    assert shelter["changes"] == ["a cot is pushed against the steel door"] * 2
+    first = scenes(ctx, nxt)[1]
+    assert first["place_v"] == 1  # drawn as part 1 left it
+    assert json.loads(first["looks_json"]) == {"the stick figure": ["a red backpack"]}
 
 
 def test_status_box_shows_new_days_and_moved_amounts():

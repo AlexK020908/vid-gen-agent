@@ -5,7 +5,7 @@ clears it, so a fresh outline is written with the current prompts (and every not
 """
 import json
 
-from core import db
+from core import db, series
 from core.stage import run_video_stage
 
 NAME = "outline"
@@ -19,8 +19,17 @@ def _work(ctx, conn, video) -> None:
     channel = ctx.channel(video["channel_id"])
     topic = conn.execute("SELECT title FROM topics WHERE id = ?", (video["topic_id"],)).fetchone()["title"]
     previous = json.loads(video["outline_json"]) if video["outline_json"] else None
+    sequel = None
+    if video["prev_video_id"]:  # a next part: the story so far, and the owner's direction if they gave one
+        sequel = {"part": video["part"], "story": series.story_so_far(conn, video)}
+        if topic == f"Part {video['part']}":
+            topic = "(nothing: carry the story on the way the last part set it up)"
     outline = ctx.llm.outline(channel, topic, db.notes(conn, video["id"], "outline"), previous,
-                              ctx.meter(conn, video, NAME, "the outline"))
+                              ctx.meter(conn, video, NAME, "the outline"), sequel)
+    if sequel:
+        series.keep_looks(conn, video, outline)
+        thread = conn.execute("SELECT title FROM threads WHERE video_id = ?", (video["id"],)).fetchone()
+        outline.update(part=video["part"], topic=thread["title"])
     with db.tx(conn):
         db.transition(conn, video["id"], "new", "outlined", outline_json=json.dumps(outline), script_json=None,
                       places_json=None)

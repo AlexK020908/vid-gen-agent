@@ -291,8 +291,9 @@ def test_places_and_cast_are_drawn_once_then_sent_with_each_still(ctx, tmp_path)
         assert img.size == (1024, 1536)
     assert still["image_urls"] == ["https://v3.fal.media/files/ref1.png", "https://v3.fal.media/files/ref3.png",
                                    "https://v3.fal.media/files/ref4.png"]
-    assert ("Reference image 1 is the main character. Image 2 is the place: the flat. Image 3 is Rosa. Max, who has "
-            "no reference image, is a small brown dog.") in still["prompt"]
+    assert ("Image 1 is the main character. Image 2 is the place: the flat. Image 3 is Rosa, a stick-figure girl "
+            "in a yellow raincoat. Max, who has no reference image, is a small brown dog. Nobody but the main "
+            "character wears the main character's clothes.") in still["prompt"]
     assert "keep its layout, furniture" in still["prompt"] and "{" not in still["prompt"]
 
     images.still(channel, "Close-up: his hands on the tape.", "Day 3", tmp_path / "c.png",
@@ -300,6 +301,22 @@ def test_places_and_cast_are_drawn_once_then_sent_with_each_still(ctx, tmp_path)
     close = fake.calls[-1]  # a close-up gets the place in words, not its picture
     assert close["image_urls"] == ["https://v3.fal.media/files/ref1.png"]
     assert "The scene happens in the flat: A small flat: a sofa on the left." in close["prompt"]
+
+    images.change_look(channel, channel.character_ref, "body armor over their clothes", tmp_path / "armor.png")
+    assert "now with: body armor over their clothes" in fake.calls[-1]["prompt"]
+    images.still(channel, "Medium shot: the stick figure at the door.", "Day 4", tmp_path / "d.png",
+                 hero=("body armor over their clothes", tmp_path / "armor.png"))
+    assert fake.calls[-1]["image_urls"] == ["https://v3.fal.media/files/ref5.png"]  # the armored picture, not the plain one
+    assert "Image 1 is the main character, now with body armor over their clothes." in fake.calls[-1]["prompt"]
+
+    images.still(channel, "Wide shot: the street fills with them.", "Day 5", tmp_path / "e.png",
+                 place=("the flat", "A small flat.", tmp_path / "flat1.png"), hero=None)
+    street = fake.calls[-1]  # the main character isn't in it, so their picture isn't sent
+    assert street["image_urls"] == ["https://v3.fal.media/files/ref3.png"]
+    assert "Image 1 is the place: the flat." in street["prompt"] and "main character is not in this picture" in street["prompt"]
+    images.still(channel, "Close-up: a radio.", "Day 6", tmp_path / "f.png", hero=None)
+    assert fake.calls[-1]["image_urls"] == ["https://v3.fal.media/files/ref1.png"]  # only for the style
+    assert "Image 1 shows only the art style." in fake.calls[-1]["prompt"]
 
 
 def test_picture_errors(ctx, tmp_path, monkeypatch):
@@ -357,9 +374,10 @@ def test_pipeline_with_real_voice_and_pictures(ctx, mp3):
     assert "previous_text" not in by_text[scenes[0]["narration"]]
     # 6 stills, 3 thumbnails, and the stub script's references: 2 places, the shelter once changed, and Rosa.
     # Each reference file is uploaded once (the character too), however many stills use it.
-    assert len(pictures.calls) == 6 + 3 + 4 and len(pictures.uploads) == 1 + 4
+    # and the main character redrawn with the red backpack the stub puts on them in scene 1
+    assert len(pictures.calls) == 6 + 3 + 5 and len(pictures.uploads) == 1 + 5
     assert {(r["provider"], r["simulated"]): r["n"] for r in costs} == {
-        ("tts", 0): 6, ("images", 0): 13, ("llm", 1): 3, ("video", 1): 1}
+        ("tts", 0): 6, ("images", 0): 14, ("llm", 1): 3, ("video", 1): 1}
     assert abs(v["duration_ms"] - sum(s["duration_ms"] for s in scenes)) < 400
 
     thumbs = json.loads(v["thumbs_json"])  # the stub's thumbnail words, drawn on in the upper left

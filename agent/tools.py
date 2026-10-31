@@ -244,6 +244,11 @@ def build_tools(ctx, thread: Thread) -> list[SdkMcpTool]:
         vid = actions.new_video(ctx, thread.channel_id, args["idea"])
         return f"Started video #{vid}. It's writing the outline; the outline card will appear in the video's thread."
 
+    def next_part(args: dict) -> str:
+        vid = actions.next_part(ctx, video_of(args), args.get("idea") or "")
+        return (f"Started video #{vid} as the next part. Its outline picks up where this one ended, with the same "
+                "cast, places and looks; the outline card will appear in its thread.")
+
     def status(args: dict) -> str:
         if home and args.get("video_id") is None:
             return json.dumps(actions.status(ctx, channel_id=thread.channel_id))
@@ -370,6 +375,10 @@ def build_tools(ctx, thread: Thread) -> list[SdkMcpTool]:
     specs = [
         ("new_video", "Start a new video on this channel from an idea (a survival scenario).",
          schema({"idea": {"type": "string"}}, ("idea",), video="none"), new_video),
+        ("next_part", "Start the next part of a series from this video, once its script is approved. The story, "
+         "cast, places, looks and tracker carry on. `idea` is the person's direction for the new part, or their own "
+         "story for it; leave it out to carry the story on.",
+         schema({"idea": {"type": "string"}}), next_part),
         ("status", "Where a video is in the pipeline, its cost, and the full content of the card waiting for review."
          + (" Without video_id, lists this channel's videos." if home else ""),
          schema({}, video="optional"), status),
@@ -454,8 +463,8 @@ def describe_call(name: str, args: dict, root: Path) -> tuple[str, str]:
             parts.append(f"\"{_clip(args['title'], 60)}\"")
     elif short in ("revise", "regenerate", "show"):
         parts.append(args.get("gate") or args.get("card") or "")
-    elif short == "new_video":
-        parts.append(_clip(args.get("idea"), 80))
+    elif short in ("new_video", "next_part"):
+        parts.append(_clip(args.get("idea") or "carry the story on", 80))
     elif short in ("start_topic", "dismiss_topic"):
         parts.append(f"topic {args.get('topic_id')}")
     elif short == "set_schedule":

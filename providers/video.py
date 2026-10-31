@@ -18,7 +18,7 @@ class StubVideo:
     def price(self, seconds: float) -> float:
         return seconds * self.price_per_s
 
-    def clip(self, channel, still: Path, prompt: str, out: Path, seconds: float) -> float:
+    def clip(self, channel, still: Path, prompt: str, out: Path, seconds: float, wearing: str = "") -> float:
         out.parent.mkdir(parents=True, exist_ok=True)
         pan = f"scale=2112:1188,crop=1920:1080:(iw-1920)*t/{seconds}:(ih-1080)*t/{seconds},format=yuv420p"
         tmp = out.with_suffix(".part.mp4")

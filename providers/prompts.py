@@ -170,7 +170,7 @@ def script_text(script: dict) -> str:
     scenes = [json.dumps({"beat": s["beat_idx"] + 1, "label": s["label"], "place": s.get("place", ""),
                           "cast": s.get("cast", []), "narration": s["narration"], "move": s.get("move", ""),
                           "tracker": s.get("tracker", []), "set_change": s.get("set_change", ""),
-                          "shot": s.get("shot", "medium"), "visual_prompt": s["visual_prompt"],
+                          "looks": s.get("looks", []), "shot": s.get("shot", "medium"), "visual_prompt": s["visual_prompt"],
                           "motion": s["motion"]}, ensure_ascii=False)
               for s in script["scenes"]]
     return "\n".join(["Places:", *(places or ["(none yet)"]), "", "Scenes:", *scenes])

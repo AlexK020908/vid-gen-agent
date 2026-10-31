@@ -50,6 +50,10 @@ class NewVideo(BaseModel):
     idea: str
 
 
+class NextPart(BaseModel):
+    idea: str = ""
+
+
 class Gate(BaseModel):
     gate: str
 
@@ -271,6 +275,12 @@ def create_app(ctx: Ctx | None = None, run_engine: bool = True, hosts: frozenset
     def dismiss_topic(topic_id: int) -> dict:
         actions.dismiss_topic(ctx, topic_id)
         return {"ok": True}
+
+    @app.post("/api/videos/{video_id}/next_part")
+    def next_part(video_id: int, body: NextPart) -> dict:
+        new_id = actions.next_part(ctx, video_id, body.idea)
+        with ctx.connect() as conn:
+            return {"video_id": new_id, "thread_id": cards.thread_id(conn, new_id)}
 
     @app.post("/api/videos/{video_id}/stop_writing")
     def stop_writing(video_id: int) -> dict:

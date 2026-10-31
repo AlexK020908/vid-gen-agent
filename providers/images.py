@@ -105,7 +105,7 @@ class StubImages:
     thumb_price = 0.044
 
     def still(self, channel, prompt: str, label: str, out: Path, place: tuple | None = None,
-              people: list | tuple = ()) -> float:
+              people: list | tuple = (), hero: tuple | None = ("", None)) -> float:
         img = Image.new("RGB", (1920, 1080), (236, 236, 232))
         draw = ImageDraw.Draw(img)
         figure = _character(channel.character_ref, 640)
@@ -137,6 +137,9 @@ class StubImages:
 
     def person(self, channel, name: str, look: str, out: Path) -> float:
         return self._card(f"CAST: {name}", look, out, (1024, 1536))
+
+    def change_look(self, channel, base: Path, now: str, out: Path) -> float:
+        return self._card("NOW WITH", now, out, (1024, 1536))
 
     def _card(self, title: str, text: str, out: Path, size: tuple[int, int]) -> float:
         img = Image.new("RGB", size, (222, 228, 236))

@@ -9,7 +9,7 @@ import json
 import sqlite3
 import time
 
-from core import db, metadata
+from core import db, metadata, series
 from core.errors import ActionError
 
 FLAG_KINDS = ("visual", "narration")
@@ -41,6 +41,31 @@ def new_video(ctx, channel_id: str, idea: str) -> int:
         video_id = _create_video(conn, channel_id, topic_id, idea)
     ctx.events.emit("video_created", video_id, channel_id=channel_id, title=idea)
     return video_id
+
+
+def next_part(ctx, video_id: int, idea: str = "") -> int:
+    """Start the next part of a series. `idea` is the owner's direction for it (empty: carry the story on). The
+    video's script must be approved, so where it ends (places, looks, the tracker) is known."""
+    idea = idea.strip()
+    with ctx.connect() as conn, db.tx(conn):
+        video = db.get_video(conn, video_id)
+        if not conn.execute("SELECT 1 FROM scenes WHERE video_id = ? LIMIT 1", (video_id,)).fetchone():
+            raise ActionError("a next part can start once this video's script is approved, so it's known where its "
+                              "story ends")
+        taken = conn.execute("SELECT id FROM videos WHERE prev_video_id = ?", (video_id,)).fetchone()
+        if taken:
+            raise ActionError(f"video #{taken['id']} is already the next part of #{video_id}")
+        part = (video["part"] or 1) + 1
+        first = (series.earlier_parts(conn, video) or [video])[0]
+        base = json.loads(first["outline_json"])["topic"].strip().splitlines()[0][:80]
+        topic_id = conn.execute(
+            "INSERT INTO topics (channel_id, title, source, status, created_at) VALUES (?, ?, 'manual', 'used', ?)",
+            (video["channel_id"], idea or f"Part {part}", time.time()),
+        ).lastrowid
+        new_id = _create_video(conn, video["channel_id"], topic_id, f"{base} (Part {part})")
+        db.update_video(conn, new_id, prev_video_id=video_id, part=part)
+    ctx.events.emit("video_created", new_id, channel_id=video["channel_id"], title=f"{base} (Part {part})")
+    return new_id
 
 
 def _queued_topic(conn: sqlite3.Connection, topic_id: int, channel_id: str | None) -> sqlite3.Row:
@@ -152,18 +177,32 @@ def dismiss_topic(ctx, topic_id: int, channel_id: str | None = None) -> None:
 
 def start_generating(conn: sqlite3.Connection, video_id: int) -> None:
     """Script approved: create scene rows and hand the video to the per-scene stages. Each place collects its set
-    changes in story order, and each scene notes how many came before it: the version of the place it's drawn in."""
+    changes in story order, and each scene notes how many came before it: the version of the place it's drawn in.
+    Looks carry forward the same way: each scene gets everyone's looks so far (looks_json), the newest last, so
+    each look is drawn from the one before it. A next part
+    starts from where the last one ended: its places as they were left (same look, changes so far, so the same
+    reference pictures) and everyone's looks as they were."""
     video = db.get_video(conn, video_id)
-    places = {p["id"]: {**p, "changes": []} for p in json.loads(video["places_json"] or "[]")}
+    places = {p["id"]: {**p, "changes": list(p.get("changes") or [])} for p in series.earlier_places(conn, video)}
+    for p in json.loads(video["places_json"] or "[]"):
+        places.setdefault(p["id"], {**p, "changes": []})
+    looks: dict[str, list[str]] = series.end_state(conn, video["prev_video_id"])[1] if video["prev_video_id"] else {}
     for s in json.loads(video["script_json"]):
         place = places.get(s.get("place"))
+        for change in s.get("looks") or []:
+            if change["now"].strip().lower() in ("as usual", "usual", ""):
+                looks.pop(change["who"], None)
+            else:
+                chain = looks.get(change["who"], [])
+                if not chain or chain[-1] != change["now"]:  # the same look again isn't a change
+                    looks[change["who"]] = [*chain, change["now"]]
         conn.execute(
             """INSERT INTO scenes (video_id, idx, beat_idx, label, narration, visual_prompt, motion, state,
-                                   place, place_v, cast_json, tracker_json, shot)
-               VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)""",
+                                   place, place_v, cast_json, tracker_json, shot, looks_json)
+               VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?)""",
             (video_id, s["idx"], s["beat_idx"], s["label"], s["narration"], s["visual_prompt"], s["motion"],
              s.get("place") if place else None, len(place["changes"]) if place else None,
-             json.dumps(s.get("cast") or []), json.dumps(s.get("tracker") or []), s.get("shot")),
+             json.dumps(s.get("cast") or []), json.dumps(s.get("tracker") or []), s.get("shot"), json.dumps(looks)),
         )
         if place and s.get("set_change"):
             place["changes"].append(s["set_change"])

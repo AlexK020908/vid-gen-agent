@@ -60,11 +60,13 @@ class LLM(Protocol):
     """`previous` is the draft being revised (None writes a fresh one); `notes` are every note so far.
     `progress(n)` is called with the number of scenes written while the script streams."""
 
-    def outline(self, channel, topic: str, notes: list[str], previous: dict | None, meter: Meter) -> dict: ...
+    def outline(self, channel, topic: str, notes: list[str], previous: dict | None, meter: Meter,
+                sequel: dict | None = None) -> dict:
+        """`sequel` is {part, story} for a next part: its number and the story so far (core/series.py)."""
     def script(self, channel, outline: dict, notes: list[str], previous: dict | None, meter: Meter,
-               progress: Callable[[int], None] | None = None) -> dict:
+               progress: Callable[[int], None] | None = None, earlier_places: str = "") -> dict:
         """{"places": [{id, name, look}], "scenes": [{idx, beat_idx, label, place, cast, narration, move, tracker,
-        set_change, shot, visual_prompt, motion}]}; `previous` has the same shape."""
+        set_change, looks, shot, visual_prompt, motion}]}; `previous` has the same shape."""
     def revise_visual(self, channel, scene: dict, note: str, meter: Meter) -> str: ...
     def rewrite_line(self, channel, scene: dict, note: str, meter: Meter) -> str: ...
     def titles(self, channel, outline: dict, meter: Meter) -> dict:
@@ -95,7 +97,8 @@ class StubLLM:
     def __init__(self, n_scenes: int = 12) -> None:
         self.n_scenes = n_scenes
 
-    def outline(self, channel, topic: str, notes: list[str], previous: dict | None, meter: Meter) -> dict:
+    def outline(self, channel, topic: str, notes: list[str], previous: dict | None, meter: Meter,
+                sequel: dict | None = None) -> dict:
         _cost(meter, 0.05)
         n_beats = max(4, round(self.n_scenes / 5))
         labels = _spread(LABELS, n_beats)
@@ -108,6 +111,8 @@ class StubLLM:
         for i, beat in enumerate(beats):
             beat["cast"] = [STUB_CAST["name"]] if i in (1, 2) else []
         hook = f"Placeholder hook: one ordinary guy, {channel.scenario_family}: {topic}."
+        if sequel:
+            hook = f"Part {sequel['part']}. Previously: {sequel['story'][:60]}. {hook}"
         if notes:
             hook += f" (revision {len(notes)}, last note: {notes[-1]})"
         return {"topic": topic, "hook": hook, "backstory": "Placeholder backstory: it started on the news, then it "
@@ -115,7 +120,7 @@ class StubLLM:
                 "beats": beats, "ending": "Placeholder ending: he makes it, changed."}
 
     def script(self, channel, outline: dict, notes: list[str], previous: dict | None, meter: Meter,
-               progress: Callable[[int], None] | None = None) -> dict:
+               progress: Callable[[int], None] | None = None, earlier_places: str = "") -> dict:
         """Beats alternate between the two places (each move told in the line), the tracker drops a little each
         beat, the shelter is barricaded in beat 1, and the outline's cast are in the beats that list them."""
         _cost(meter, round(0.6 * self.n_scenes / 120, 4))
@@ -145,8 +150,9 @@ class StubLLM:
                     "cast": list(beat.get("cast") or []), "narration": narration, "move": move,
                     "tracker": [{"item": t["item"], "amount": max(0, t["start"] - b)} for t in tracker] if k == 0 else [],
                     "set_change": "a cot is pushed against the steel door" if b == 0 and k == 0 else "",
+                    "looks": [{"who": "the stick figure", "now": "a red backpack"}] if b == 0 and k == 0 else [],
                     "shot": "close-up" if k == 1 else "wide",
-                    "visual_prompt": f"stick figure, {beat['title'].lower()}, shot {k + 1}", "motion": motion,
+                    "visual_prompt": f"the stick figure, {beat['title'].lower()}, shot {k + 1}", "motion": motion,
                 })
         if progress:
             progress(len(scenes))
@@ -164,8 +170,9 @@ class StubLLM:
     def titles(self, channel, outline: dict, meter: Meter) -> dict:
         _cost(meter, 0.02)
         topic = outline["topic"]
-        return {"titles": [t[:100] for t in (f"I Survived 365 Days: {topic}", f"{topic} (Day 1 to Day 365)",
-                                             f"What It Really Takes: {topic}")],
+        part = f" (Part {outline['part']})" if outline.get("part", 1) > 1 else ""
+        return {"titles": [t[:90] + part for t in (f"I Survived 365 Days: {topic}", f"{topic} (Day 1 to Day 365)",
+                                                   f"What It Really Takes: {topic}")],
                 "thumb_texts": ["365 DAYS ALONE", "THE WORST NIGHT", "HOW DID I LAST?"]}
 
     def topics(self, channel, hits: list[dict], taken: list[str], count: int, meter: Meter, families=(), held=(),

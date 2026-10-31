@@ -57,6 +57,7 @@ SCRIPT = _obj({
     "scenes": {"type": "array", "items": _obj(
         {"beat": {"type": "integer"}, "label": STR, "place": STR, "cast": NAMES, "narration": STR, "move": STR,
          "tracker": {"type": "array", "items": _obj({"item": STR, "amount": NUM})}, "set_change": STR,
+         "looks": {"type": "array", "items": _obj({"who": STR, "now": STR})},
          "shot": {"type": "string", "enum": list(checks.SHOTS)}, "visual_prompt": STR,
          "motion": {"type": "string", "enum": list(checks.MOTIONS)}})}})
 VISUAL = _obj({"visual_prompt": STR})
@@ -123,11 +124,13 @@ class ClaudeLLM:
 
     # --- the LLM protocol (providers/llm.py) -------------------------------------------------
 
-    def outline(self, channel, topic: str, notes: list[str], previous: dict | None, meter: Meter) -> dict:
+    def outline(self, channel, topic: str, notes: list[str], previous: dict | None, meter: Meter,
+                sequel: dict | None = None) -> dict:
         values = {"idea": topic, "notes": prompts.notes_text(notes),
-                  "previous": prompts.outline_text(previous) if previous else ""}
-        data = self._ask("outline", "outline.md", "revise" if previous else "new", channel, values, OUTLINE,
-                         checks.outline, meter)
+                  "previous": prompts.outline_text(previous) if previous else "",
+                  "part": sequel["part"] if sequel else 1, "story_so_far": sequel["story"] if sequel else ""}
+        turn = "revise" if previous else "next_part" if sequel else "new"
+        data = self._ask("outline", "outline.md", turn, channel, values, OUTLINE, checks.outline, meter)
         cast = [{k: c[k].strip() for k in ("name", "look", "role", "thread")} for c in data["cast"]]
         named = {c["name"].lower(): c["name"] for c in cast}  # beats spell names the way the cast does
         beats = [{"label": b["label"].strip(), "title": b["title"].strip(), "summary": b["summary"].strip(),
@@ -138,9 +141,10 @@ class ClaudeLLM:
                 "tracker": tracker, "beats": beats, "ending": data["ending"].strip()}
 
     def script(self, channel, outline: dict, notes: list[str], previous: dict | None, meter: Meter,
-               progress: Callable[[int], None] | None = None) -> dict:
+               progress: Callable[[int], None] | None = None, earlier_places: str = "") -> dict:
         values = {"outline": prompts.outline_text(outline), "notes": prompts.notes_text(notes),
-                  "previous": prompts.script_text(previous) if previous else ""}
+                  "previous": prompts.script_text(previous) if previous else "",
+                  "earlier_places": earlier_places or "(none: this is the first part)"}
         data = self._ask("script", "script.md", "revise" if previous else "new", channel, values, SCRIPT,
                          lambda d: checks.script(d["scenes"], outline, channel.clips_per_video, d["places"]), meter,
                          _SceneCounter(progress) if progress else None)
@@ -151,7 +155,10 @@ class ClaudeLLM:
                    "cast": [named[c.strip().lower()] for c in s["cast"]], "narration": s["narration"].strip(),
                    "move": s["move"].strip(),
                    "tracker": [{"item": items[t["item"].strip().lower()], "amount": t["amount"]} for t in s["tracker"]],
-                   "set_change": s["set_change"].strip(), "shot": s["shot"],
+                   "set_change": s["set_change"].strip(),
+                   "looks": [{"who": checks.HERO if lk["who"].strip().lower() == checks.HERO
+                              else named[lk["who"].strip().lower()], "now": lk["now"].strip()} for lk in s["looks"]],
+                   "shot": s["shot"],
                    "visual_prompt": s["visual_prompt"].strip(), "motion": s["motion"]}
                   for n, s in enumerate(data["scenes"], 1)]
         return {"places": places, "scenes": scenes}
@@ -167,7 +174,10 @@ class ClaudeLLM:
         return data["narration"].strip()
 
     def titles(self, channel, outline: dict, meter: Meter) -> dict:
-        values = {"topic": outline["topic"], "outline": prompts.outline_text(outline)}
+        part = outline.get("part", 1)
+        values = {"topic": outline["topic"], "outline": prompts.outline_text(outline),
+                  "series": (f"This is Part {part} of a series: end every title with \" (Part {part})\"." if part > 1
+                             else "This is a standalone video or the first part of a series.")}
         data = self._ask("titles", "titles.md", "", channel, values, TITLES,
                          lambda d: checks.titles(d["titles"]) + checks.thumb_texts(d["thumb_texts"]), meter)
         return {"titles": [t.strip() for t in data["titles"]], "thumb_texts": [t.strip() for t in data["thumb_texts"]]}

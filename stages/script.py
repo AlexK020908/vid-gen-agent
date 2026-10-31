@@ -6,7 +6,7 @@ The scenes go in script_json and the places they're drawn in go in places_json.
 """
 import json
 
-from core import actions, db
+from core import actions, db, series
 from core.stage import run_video_stage
 from providers import checks
 
@@ -28,7 +28,8 @@ def _work(ctx, conn, video) -> None:
 
     progress(0)
     script = ctx.llm.script(channel, outline, db.notes(conn, video["id"], "script"), previous,
-                            ctx.meter(conn, video, NAME, "the script"), progress)
+                            ctx.meter(conn, video, NAME, "the script"), progress,
+                            series.places_text(series.earlier_places(conn, video)))
     with db.tx(conn):
         db.transition(conn, video["id"], "outline_approved", "scripted", script_json=json.dumps(script["scenes"]),
                       places_json=json.dumps(script["places"]))

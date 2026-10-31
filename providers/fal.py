@@ -109,21 +109,36 @@ class FalImages(_Fal):
         self._lock = threading.Lock()
 
     def still(self, channel, prompt: str, label: str, out: Path, place: tuple | None = None,
-              people: list | tuple = ()) -> float:
-        """`place` and each of `people` are (name, look, picture or None): drawn from the picture when there is
-        one, and from the look when not."""
-        refs, said = [self._character(channel)], ["Reference image 1 is the main character."]
+              people: list | tuple = (), hero: tuple | None = ("", None)) -> float:
+        """`hero` is (what the main character has on now, their picture; the character reference when None), or
+        None when the scene doesn't show them. `place` and each of `people` are (name, look, picture or None):
+        drawn from the picture when there is one, and from the look when not."""
+        refs, said = [], []
+
+        def ref(path, what: str) -> None:
+            refs.append(Path(path))
+            said.append(f"Image {len(refs)} is {what}.")
+
+        if hero is not None:
+            now, picture = hero
+            ref(picture or self._character(channel), "the main character" + (f", now with {now}" if now else ""))
         if place and place[2]:
-            refs.append(Path(place[2]))
-            said.append(f"Image {len(refs)} is the place: {place[0]}.")
+            ref(place[2], f"the place: {place[0]}")
         elif place:
             said.append(f"The scene happens in {place[0]}: {place[1]}")
         for name, look, picture in people:
             if picture:
-                refs.append(Path(picture))
-                said.append(f"Image {len(refs)} is {name}.")
+                ref(picture, f"{name}, {look}")
             else:
                 said.append(f"{name}, who has no reference image, is {look}.")
+        if hero is None:
+            said.append("The main character is not in this picture: don't draw them, and nobody else wears their "
+                        "clothes.")
+            if not refs:  # the model needs a picture to work from; the character's shows the style
+                refs.append(self._character(channel))
+                said.insert(0, "Image 1 shows only the art style.")
+        elif people:
+            said.append("Nobody but the main character wears the main character's clothes.")
         text = prompts.fill(self.root, "still.md", channel, {"visual_prompt": prompt, "references": " ".join(said)})
         self._draw(text, refs, out, STILL_SIZE)
         return self.still_price
@@ -149,6 +164,12 @@ class FalImages(_Fal):
         """A cast member, full length on a plain background, in the style of the character reference."""
         text = prompts.fill(self.root, "person.md", channel, {"name": name, "look": look})
         self._draw(text, [self._character(channel)], out, PERSON_SIZE, aspect="2:3")
+        return self.still_price
+
+    def change_look(self, channel, base: Path, now: str, out: Path) -> float:
+        """The same character with what they have on now (body armor, a bandage), drawn from their picture."""
+        text = prompts.fill(self.root, "person_change.md", channel, {"now": now})
+        self._draw(text, [Path(base)], out, PERSON_SIZE, aspect="2:3")
         return self.still_price
 
     @staticmethod
@@ -196,11 +217,14 @@ class FalVideo(_Fal):
     def price(self, seconds: float) -> float:
         return seconds * self.price_per_s
 
-    def clip(self, channel, still: Path, prompt: str, out: Path, seconds: float) -> float:
+    def clip(self, channel, still: Path, prompt: str, out: Path, seconds: float, wearing: str = "") -> float:
+        """`wearing` is what the people in it have on beyond their usual look (scenes.looks_json), so a brace
+        stays on its leg while they move."""
         if seconds not in self.lengths:
             raise FinalError(f"{self.model} can't make a {seconds}-second clip; set fal.clips.seconds to one of "
                              f"{', '.join(map(str, self.lengths))}")
-        text = prompts.fill(self.root, "clip.md", channel, {"visual_prompt": prompt})
+        text = prompts.fill(self.root, "clip.md", channel,
+                            {"visual_prompt": prompt, "wearing": wearing or "nothing beyond their usual look"})
         image = self._call(lambda: self.client.upload_file(still))  # the scene's own still is the first frame
         arguments = {"prompt": text, self.image_field: image, "duration": str(int(seconds)), **self.arguments}
         with self._slots:

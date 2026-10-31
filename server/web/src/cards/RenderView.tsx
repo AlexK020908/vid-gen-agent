@@ -7,7 +7,7 @@ import type { RenderCard } from '../types'
 
 export function RenderView({ card, active }: { card: RenderCard; active: boolean }) {
   const { busy, error, run } = useAction()
-  const [tab, setTab] = useState<'highlight' | 'full'>(card.highlight_url ? 'highlight' : 'full')
+  const [tab, setTab] = useState<'highlight' | 'full'>('full')
   const [selected, setSelected] = useState<number[]>([])
   const [customTitle, setCustomTitle] = useState('')
   const highlightRef = useRef<HTMLVideoElement>(null)

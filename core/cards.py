@@ -124,7 +124,8 @@ def script_card(ctx, conn: sqlite3.Connection, video: sqlite3.Row) -> dict:
         beats[s["beat_idx"]]["scenes"].append(
             {"idx": s["idx"], "narration": s["narration"], "visual_prompt": s["visual_prompt"], "motion": s["motion"],
              "place": places[s["place"]]["name"] if s.get("place") in places else None, "cast": s.get("cast") or [],
-             "tracker": tracker or None, "set_change": s.get("set_change") or None}
+             "tracker": tracker or None, "set_change": s.get("set_change") or None,
+             "looks": "; ".join(f"{lk['who']} now: {lk['now']}" for lk in s.get("looks") or []) or None}
         )
     words = sum(len(s["narration"].split()) for s in script)
     return {

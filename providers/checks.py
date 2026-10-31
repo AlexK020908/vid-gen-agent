@@ -8,14 +8,14 @@ from __future__ import annotations
 
 import re
 
-BEATS = (20, 25)
-HERO_BEATS = (5, 7)
-SCENES = (100, 140)
+BEATS = (10, 12)
+HERO_BEATS = (3, 4)
+SCENES = (45, 70)
 SCENE_WORDS = (30, 40)          # what the prompt asks for
 SCENE_WORDS_OK = (25, 45)       # what passes: a line a few words off isn't worth rewriting the whole script
-TOTAL_WORDS = 3800              # asked for: about 26 minutes at 145 words a minute
-TOTAL_WORDS_OK = (3200, 4400)   # passes: about 22 to 30 minutes
-WPM = 145
+TOTAL_WORDS = 1900              # asked for: about 12 minutes at 160 words a minute
+TOTAL_WORDS_OK = (1600, 2200)   # passes: about 10 to 14 minutes
+WPM = 160                       # the narration voices read 145 to 170 a minute
 TITLES = 3
 TITLE_MAX = 100                 # YouTube's limit
 THUMB_WORDS = (2, 4)            # thumbnail text, drawn on in code (providers/images.py caption)
@@ -24,10 +24,12 @@ FAMILY_WORDS = 3                # a topic's setting tag: "ocean", "frozen north"
 THUMB_TEXT = re.compile(r"^[A-Za-z0-9 !?'\-:.,&$%]+$")  # what the caption font has
 MOTIONS = ("kenburns", "clip")
 SHOTS = ("wide", "medium", "close-up")  # a close-up is drawn without the place's picture (stages/stills.py)
+HERO = "the stick figure"       # what visual prompts and looks call the main character; a still shows them only if
+                                # its visual prompt says this
 COLD_OPEN_SCENES = 6            # a script may open on a later day for this many scenes, then start again from Day 1
-CAST = (0, 6)                   # people besides the main character with a thread of their own
+CAST = (0, 4)                   # people besides the main character with a thread of their own
 TRACKER = (2, 4)                # things the viewer counts along with the character (water, food, days left)
-PLACES = (1, 15)                # places the pictures happen in; each is drawn once as a reference picture
+PLACES = (1, 10)                # places the pictures happen in; each is drawn once as a reference picture
 LABEL = re.compile(r"^(Day|Week|Month|Year) (\d+)\b")
 DAYS = {"Day": 1, "Week": 7, "Month": 30, "Year": 365}
 
@@ -248,6 +250,12 @@ def _continuity(scenes: list[dict], outline: dict, places: list[dict]) -> list[s
                 problems.append(f"scene {n} has {name!r} in its cast, but the outline's cast has no one by that name")
             elif beat and n > cold and _key(name) not in in_beat[beat - 1]:
                 problems.append(f"scene {n} shows {cast[_key(name)]}, but the outline doesn't list them in beat {beat}")
+        for look in s.get("looks") or []:
+            if _key(look.get("who")) != HERO and _key(look.get("who")) not in cast:
+                problems.append(f"scene {n}'s looks names {look.get('who')!r}; use \"{HERO}\" or a cast name")
+            if _blank(look.get("now")):
+                problems.append(f"scene {n}'s look for {look.get('who')} has no now; say what they have on, or "
+                                "\"as usual\"")
         snapshot = s.get("tracker") or []
         if snapshot and not items:
             problems.append(f"scene {n} has a tracker, but the outline tracks nothing; leave it empty")

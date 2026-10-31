@@ -54,6 +54,7 @@ export function ScriptView({ card, active }: { card: ScriptCard; active: boolean
                   <p className="narration">{s.narration}</p>
                   <p className="visual"><MotionPill motion={s.motion} /> {s.visual_prompt}</p>
                   {s.set_change && <p className="visual">From here on: {s.set_change}</p>}
+                  {s.looks && <p className="visual">From here on, {s.looks}</p>}
                 </div>
               </div>
             ))}

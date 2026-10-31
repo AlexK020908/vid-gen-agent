@@ -35,8 +35,9 @@ def next_slot(slot: str, now: datetime | None = None) -> float:
     return slot_time.timestamp()
 
 
-def description(outline: dict, chapters: list[dict], ai_disclosure: bool) -> str:
-    lines = [outline.get("hook", ""), "", "Chapters"]
+def description(outline: dict, chapters: list[dict], ai_disclosure: bool, previous: str | None = None) -> str:
+    """`previous` is the line pointing back at the part before, for a next part already on YouTube."""
+    lines = ([previous, ""] if previous else []) + [outline.get("hook", ""), "", "Chapters"]
     lines += [f"{fmt_ts(c['t_ms'])} {c['title']}" for c in chapters]
     if ai_disclosure:
         lines += ["", DISCLOSURE]
@@ -55,7 +56,7 @@ def publish_meta(ctx, conn: sqlite3.Connection, video: sqlite3.Row) -> dict:
     thumb_idx = video["thumb_idx"]
     meta = {
         "title": video["title"] or outline.get("topic", ""),
-        "description": description(outline, chapters, ai),
+        "description": description(outline, chapters, ai, _previous_part(conn, video)),
         "tags": ["stick figure", "day by day", "survival", channel.name.lower()],
         "publish_at": video["publish_at"] or next_slot(yt.get("publish_slot") or "Sat 15:00 UTC"),
         "privacy": "private",  # with publishAt set, YouTube flips it public at that time
@@ -69,6 +70,15 @@ def publish_meta(ctx, conn: sqlite3.Connection, video: sqlite3.Row) -> dict:
     }
     meta.update({k: v for k, v in saved.items() if k in EDITABLE})
     return meta
+
+
+def _previous_part(conn: sqlite3.Connection, video: sqlite3.Row) -> str | None:
+    if not video["prev_video_id"]:
+        return None
+    prev = conn.execute("SELECT part, youtube_id FROM videos WHERE id = ?", (video["prev_video_id"],)).fetchone()
+    if not prev or not prev["youtube_id"] or prev["youtube_id"].startswith("stub-"):
+        return None
+    return f"Part {video['part']}. Missed Part {prev['part'] or 1}? https://youtu.be/{prev['youtube_id']}"
 
 
 def validate(meta: dict) -> None:
