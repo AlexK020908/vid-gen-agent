@@ -1,0 +1,92 @@
+# Global settings. Per-channel settings live in channels/*.yaml.
+mode: live            # stub: every provider below is a placeholder, $0. live: use the providers below
+providers:            # stub, or the real one. Each real one needs its key in .env
+  llm: claude         # outline, script, scene fixes, titles (ANTHROPIC_API_KEY)
+  tts: elevenlabs     # elevenlabs: voice with word timestamps (ELEVENLABS_API_KEY, voice_id in the channel YAML)
+  images: fal         # fal: stills and thumbnails from the channel's character_ref (FAL_KEY)
+  video: fal          # fal: hero clips animated from each clip scene's still (FAL_KEY)
+data_dir: data
+
+models:
+  outline: claude-opus-5-5
+  script: claude-opus-5-5
+  regen: claude-opus-5-5   # one flagged scene's new picture prompt or line
+  titles: claude-opus-5-5
+  topic: claude-opus-5-5   # topic ideas from competitors' recent hits
+  agent: claude-opus-5-5
+  voice: eleven_multilingual_v2            # steadiest over long narration; eleven_v4 is the newer, more expressive one
+  still: google/nano-banana-2.1/edit       # fal image-edit model; takes the character reference as image_urls
+  clip: fal-ai/kling-video/v3/pro/image-to-video   # image-to-video; one of fal.clips.models below
+
+engine:
+  idle_sleep_s: 2
+  lease_s: 600
+  max_attempts: 3
+  retry_backoff_s: 5
+  parallel_calls: 8
+
+claude:               # how providers.llm: claude calls the API
+  effort: {outline: high, script: high, regen: medium, titles: medium, topic: medium}
+  max_tokens: {outline: 48000, script: 128000, regen: 8000, titles: 8000, topic: 8000}   # thinking counts toward these; 128000 is the most Opus 5.5 can write
+  fallbacks: default  # when Anthropic's safety filter declines (it can misfire on survival stories), the same call
+                      # carries on on Anthropic's recommended model. null turns it off
+  prices:             # USD per million tokens, list prices Oct 2026; cache_write is the 5-minute rate
+    claude-opus-5-5: {input: 4.00, output: 20.00, cache_write: 5.00, cache_read: 0.20}
+    claude-sonnet-5-5: {input: 2.00, output: 10.00, cache_write: 2.50, cache_read: 0.20}
+
+elevenlabs:           # how providers.tts: elevenlabs calls the API
+  output_format: mp3_44100_128
+  price_per_char: 0.00017   # Creator plan: $22 for 131,000 characters a month (pay-as-you-go API rate is 0.00008)
+  concurrency: 4            # requests at once; ElevenLabs caps it by plan (Creator 5, Pro 10)
+  voice_settings: null      # e.g. {stability: 0.5, similarity_boost: 0.75, style: 0, speed: 1}; null = the voice's own
+
+fal:                  # how providers.images: fal and providers.video: fal call the API
+  resolution: 1K            # 1K, 2K or 4K from the model, then scaled to 1920x1080; 2K is sharper and costs more
+  prices: {1K: 0.044, 2K: 0.063, 4K: 0.138}   # per picture with one reference image, list price Oct 2026
+  concurrency: 8
+  clips:
+    seconds: 8              # each clip plays once, then its last frame holds for the rest of the narration
+    concurrency: 4          # clips being made at once
+    models:                 # what each model takes, from its fal page (Oct 2026). Prices are per second, silent
+      fal-ai/kling-video/v3/pro/image-to-video:
+        {price_per_s: 0.112, image: start_image_url, seconds: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+         arguments: {generate_audio: false}}
+      fal-ai/kling-video/v3/standard/image-to-video:
+        {price_per_s: 0.084, image: start_image_url, seconds: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+         arguments: {generate_audio: false}}
+      wan/v2.6/image-to-video:
+        {price_per_s: 0.15, image: image_url, seconds: [5, 10, 15],
+         arguments: {resolution: 1080p, enable_prompt_expansion: false, multi_shots: false}}
+      wan/v2.6/image-to-video/flash:
+        {price_per_s: 0.075, image: image_url, seconds: [5, 10, 15],
+         arguments: {resolution: 1080p, generate_audio: false, enable_prompt_expansion: false}}
+
+topics:               # stages/topics.py: competitors' recent hits, Claude's topic ideas, the weekly cadence
+  competitors: youtube  # stub: made-up competitor videos ($0; checked on their own only while providers.llm is a stub).
+                      # youtube: the YouTube Data API (YOUTUBE_API_KEY). off
+  poll_every_h: 24    # how often each channel's competitors are checked
+  recent_days: 90     # their uploads newer than this are ranked, by views per day since publish
+  min_minutes: 8      # shorter uploads (Shorts, clips) are skipped; the genre is long-form
+  shown: 8            # how many of the top ones Claude sees
+  propose: 3          # topic ideas per round; a round runs after a check when fewer than this are queued
+  max_usd: 1          # the most one round may cost (the guard's estimate; a round is usually ~$0.05)
+  cadence: true       # a channel that has published starts its top queued topic when its next slot is near
+  lead_days: 5        # how far ahead of the next slot (last publish + baseline_cadence_days) it starts
+
+render:
+  engine: remotion    # remotion: Ken Burns + word captions (needs render/remotion/node_modules). ffmpeg: plain, the fallback
+  concurrency: null   # Remotion's parallel browser tabs; null = its default. See BUILD.md for the measured best
+  x264_preset: null   # Remotion's encoder speed (veryfast ... medium); null = medium
+
+stub:
+  scenes: 12          # scenes per placeholder script (120 = full length)
+  simulate_costs: true  # stub providers log what the real one would cost (marked simulated)
+
+agent:
+  budget_usd_per_session: 5   # per thread, all turns together; read at startup
+  comment_on_gates: true
+
+youtube:
+  mode: live          # stub: writes what it would send. live: uploads (needs secrets/client_secret.json + Connect)
+  reach: true         # live: fetch impressions and CTR daily from the YouTube Reporting API (enable it in Google Cloud)
+  signin_check: true  # live: check each connected channel's sign-in once a day (1 quota unit) and say if it's refused

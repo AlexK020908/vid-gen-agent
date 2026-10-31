@@ -1,0 +1,19 @@
+id: zombie
+name: Lone Stick Survivor
+scenario_family: "zombie outbreak, first year, one ordinary guy"
+character_ref: channels/zombie/character.png  # sent with every picture; the look to keep
+style_prompt: "hand-drawn 2D cartoon: clean dark outlines, flat muted colors with soft shading, detailed lived-in backgrounds, moody light from one source (a lamp, a lantern, a fire, a window), stick-figure people with round white heads, simple dot eyes and short eyebrow lines; zombies are stick figures with grey-green round heads, dark sunken eyes with a tiny white glint, slack open mouths and ragged clothes, menacing but never gory"
+voice_id: a5buv0aPWw8Gjhq3BKgi               # Ryan Wells (ElevenLabs Voice Library); 168 words a minute
+gates: [outline, script, render]   # drop "script" once you stop editing scripts
+baseline_cadence_days: 7
+budget_usd: 50
+clips_per_video: 8   # scenes animated from their still (fal, ~$0.90 each); 0 for stills only
+narrator: you        # "you": the narration talks to the viewer as the main character; "third": about a named hero
+youtube:
+  channel_id: UC1KBSah1mFZoFeTzdAgs0JA   # filled in by Connect channel
+  playlist_id: PLGamInKEIkFs                # Zombie Apocalypse Survival: Day by Day (new videos are added to it)
+  category_id: 24                        # Entertainment
+  publish_slot: "Sat 15:00 America/New_York"
+  ai_disclosure: true
+competitors:
+  - UCy7Ke_F2ZANZpSwar-9ZGjw
