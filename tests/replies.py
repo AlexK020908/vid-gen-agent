@@ -1,5 +1,5 @@
 """Replies in the shape Claude writes them (providers/claude.py's schemas), built to pass the pipeline's checks:
-what a fake API returns in tests/test_claude.py and what the session answers in tests/test_writing.py."""
+what the session answers in the tests (tests/test_writing.py), and what tests/test_checks.py checks."""
 
 DAYS = list(range(1, 31))  # a beat a day, so every day is told
 

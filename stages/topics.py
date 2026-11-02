@@ -148,8 +148,7 @@ def propose(ctx, channel, count: int | None = None) -> list[int]:
                                   "look again (competitors in the channel YAML, topics.recent_days)")
     with ctx.connect() as conn:
         taken, families, held = _known(conn, channel)
-        meter = ctx.channel_meter(conn, NAME, f"Topic ideas for {channel.name}", float(_setting(ctx, "max_usd", 1)),
-                                  channel.id)
+        meter = ctx.channel_meter(conn, NAME, f"Topic ideas for {channel.name}", channel.id)
         try:
             ideas = ctx.llm.topics(channel, hits, taken, count, meter, families, held)
         except jobs.NeedsClaude as e:
@@ -177,8 +176,7 @@ def follow_ups(ctx, channel, video, reading, med: dict) -> list[int]:
         winner = {"title": title, "family": topic["family"], "views": reading["views"] or 0,
                   "avd_pct": reading["avd_pct"], "median_avd_pct": med["avd_pct"], "ctr": reading["ctr"],
                   "median_ctr": med["ctr"]}
-        meter = ctx.channel_meter(conn, NAME, f"Follow-ups to #{video['id']}", float(_setting(ctx, "max_usd", 1)),
-                                  channel.id, video["id"])
+        meter = ctx.channel_meter(conn, NAME, f"Follow-ups to #{video['id']}", channel.id, video["id"])
         try:
             ideas = ctx.llm.topics(channel, [hit], taken, performance.FOLLOW_UPS, meter, families, held, winner)
         except jobs.NeedsClaude as e:

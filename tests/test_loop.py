@@ -2,7 +2,7 @@
 topic ranking, and the daily sign-in check.
 
 Readings are written straight into `metrics` so the medians are exact; the engine runs where the flow matters.
-Google's APIs and Claude are fakes. No network, $0.
+Google's APIs are fakes, and Claude's part is answered as the session would answer its jobs. No network, $0.
 """
 import json
 import shutil
@@ -11,13 +11,12 @@ import time
 import pytest
 from PIL import Image
 
-from core import actions, cards, db, performance
+from core import actions, cards, db, jobs, performance
 from core.config import ROOT
 from core.context import make_ctx
 from core.engine import Engine
-from providers.claude import ClaudeLLM
+from providers.session import SessionLLM
 from stages import topics
-from test_claude import FakeAnthropic, user_text
 from test_tools import call
 from test_topics import Req, Resource, home_messages, http_error, topic_cards
 from youtube import auth, quota
@@ -127,9 +126,8 @@ def test_a_48_hour_winner_gets_follow_ups_at_the_top(ctx):
     assert not swap_cards(ctx, vid)  # its click-through is above the median
 
 
-def test_claude_follow_ups_and_held_families(ctx):
-    ctx.config.mode = "live"
-    ctx.config.providers.update(llm="claude", tts="stub", images="stub", video="stub")
+def test_follow_ups_from_the_session_and_held_families(ctx):
+    ctx.llm = SessionLLM(ctx.config)
     others(ctx, 48)
     vid = live_video(ctx, "Day 1 to Day 365 in a flooded subway", family="underground")
     with ctx.connect() as conn:
@@ -137,18 +135,23 @@ def test_claude_follow_ups_and_held_families(ctx):
                      (time.time() + DAY, time.time()))
     idea = {"title": "Day 366 to Day 730 in the flooded subway", "why": "The sequel.", "family": "underground",
             "based_on": [1]}
-    fake = FakeAnthropic({"topics": [idea, {**idea, "title": "Day 1 to Day 365 on an oil rig", "family": "ocean"}]},
-                         {"topics": [idea, {**idea, "title": "Day 1 to Day 365 in the sewers"}]})
-    ctx.llm = ClaudeLLM(ctx.config, client=fake)
     reading(ctx, vid, 48, avd_pct=50.0, ctr=6.0, views=4000)
     assert performance.judge(ctx, vid, 48) == "winner"
 
-    first = user_text(fake.requests[0])
-    assert "This channel's own video is beating its medians 48 hours after going public" in first
-    assert "click-through 6.0% against 5.0%" in first and "Families on hold (don't propose them): ocean" in first
-    assert '1. "Day 1 to Day 365 in a flooded subway" by Lone Stick Survivor (this channel)' in first
-    assert "Propose 2 follow-ups" in first and "Family tags in use here: underground" in first
-    assert "is in the 'ocean' family, which is on hold" in user_text(fake.requests[1], 2)
+    with ctx.connect() as conn:
+        [job] = jobs.pending(conn)
+    asked, _ = call(ctx, "take_job", {"job_id": job["id"]})
+    assert "This channel's own video is beating its medians 48 hours after going public" in asked
+    assert "click-through 6.0% against 5.0%" in asked and "Families on hold (don't propose them): ocean" in asked
+    assert '1. "Day 1 to Day 365 in a flooded subway" by Lone Stick Survivor (this channel)' in asked
+    assert "Propose 2 follow-ups" in asked and "Family tags in use here: underground" in asked
+    held, err = call(ctx, "answer_job", {"job_id": job["id"], "answer": {"topics": [
+        idea, {**idea, "title": "Day 1 to Day 365 on an oil rig", "family": "ocean"}]}})
+    assert err and "is in the 'ocean' family, which is on hold" in held
+    said, err = call(ctx, "answer_job", {"job_id": job["id"], "answer": {"topics": [
+        idea, {**idea, "title": "Day 1 to Day 365 in the sewers"}]}})
+    assert not err, said
+    topics.run_once(ctx)  # the answered round is queued
     with ctx.connect() as conn:
         rows = conn.execute("SELECT title, family, source FROM topics WHERE source = 'own_analytics'").fetchall()
     assert [(r["title"], r["family"]) for r in rows] == [(idea["title"], "underground"),

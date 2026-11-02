@@ -2,7 +2,7 @@
 
   python run.py demo                 headless run through every gate with placeholder providers ($0)
   python run.py status               list videos
-  python run.py costs <video>        every logged cost for one video (Claude calls with tokens and the guard's estimate)
+  python run.py costs <video>        every logged cost for one video
   python run.py stage <name>         run one stage once (debugging, prompt iteration)
   python run.py bench-render         time a full-length (120-scene) render; --engine remotion|ffmpeg
   python run.py serve                engine + the MCP endpoint Claude Code connects to (http://localhost:8000/mcp)
@@ -13,9 +13,9 @@
   python run.py connect <channel>    sign in to YouTube for one channel (opens Google's consent screen)
   python run.py youtube-test <ch>    day-1 check: upload a 20-second unlisted clip, see if it stays unlisted
 
-Secrets come from .env (gitignored): ANTHROPIC_API_KEY is only for providers.llm: claude (the API, until
-phase 20 removes it); with providers.llm: session the Claude Code chat does Claude's work.
-ELEVENLABS_API_KEY and FAL_KEY are for providers.tts: elevenlabs and providers.images / providers.video: fal.
+Claude's work is done by the Claude Code chat on the owner's plan (providers.llm: session); there's no Claude key.
+Secrets come from .env (gitignored): ELEVENLABS_API_KEY and FAL_KEY are for providers.tts: elevenlabs and
+providers.images / providers.video: fal.
 YOUTUBE_API_KEY reads competitors' videos for topic ideas (topics.competitors: youtube).
 YouTube needs secrets/client_secret.json (gitignored); tokens go to the OS keychain.
 """

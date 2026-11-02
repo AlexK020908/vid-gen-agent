@@ -1,7 +1,7 @@
 """Provider factory. `providers:` in stickfleet.yaml picks one per kind; `mode: stub` makes them all stubs.
 
-Stub providers cost $0 and need no keys. Real ones: llm `session` (the Claude Code session, providers/session.py) or
-`claude` (the API), tts `elevenlabs`, images and video `fal`.
+Stub providers cost $0 and need no keys. Real ones: llm `session` (the Claude Code session, providers/session.py;
+there's no Claude API path), tts `elevenlabs`, images and video `fal`.
 """
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from providers.tts import StubTTS
 from providers.video import StubVideo
 
 KINDS = ("llm", "tts", "images", "video")
-REAL = {"llm": "claude", "tts": "elevenlabs", "images": "fal", "video": "fal"}
+REAL = {"llm": "session", "tts": "elevenlabs", "images": "fal", "video": "fal"}
 
 
 def _stub_video(config) -> StubVideo:
@@ -28,9 +28,6 @@ def _make(config, kind: str):
     if name == "stub":
         return {"llm": lambda: StubLLM(int(config.stub.get("scenes", 12))), "tts": StubTTS,
                 "images": StubImages, "video": lambda: _stub_video(config)}[kind]()
-    if kind == "llm" and name == "claude":
-        from providers.claude import ClaudeLLM
-        return ClaudeLLM(config)
     if kind == "llm" and name == "session":
         from providers.session import SessionLLM
         return SessionLLM(config)

@@ -13,6 +13,7 @@ import json
 import logging
 import time
 from contextlib import suppress
+from pathlib import Path
 
 import mcp_types as types
 from mcp.server.lowlevel import Server
@@ -23,6 +24,7 @@ from PIL import Image, ImageDraw
 from core import jobs
 from core.errors import ActionError
 from providers.images import preview_path
+from providers.session import LOOKING
 from server.tools import STATE_TEXT, make_tools, waiting_card
 
 log = logging.getLogger("stickfleet.claude_code")
@@ -39,18 +41,23 @@ the owner says: `approve`, `revise` with their note, `edit_outline`, `flag_scene
 spend money or change YouTube, and Claude Code asks the owner to confirm each one.
 
 Claude's work waits as jobs: the outline, the script, the reviewer's read of each, rewrites of flagged scenes, \
-titles and topic ideas. `jobs` lists them; `take_job` gives one's instructions (the prompt, any pictures, and the \
-JSON shape to reply with; a long one comes as a file to read whole); `answer_job` sends your JSON reply. It's \
-checked at once by the same code checks the pipeline uses: fix what they say and answer again. Once it passes, \
-the video carries on. A script goes in parts, whole beats at a time in order (`part` 1, 2, ..., and `last` on the \
-final one), each checked as it arrives. A review job (kind `critic`) goes to the `critic` agent with just its job \
-id, so a fresh reader judges the draft rather than the one who wrote it. `wait` holds until a job arrives, a card \
-waits on the owner, or something needs them. The `stickfleet` skill has the rest."""
+titles and topic ideas, and the looking (picture checks, place maps, part names, the props list, a staging sheet \
+per scene). `jobs` lists them; `take_job` gives one's instructions (the prompt, any pictures, and the JSON shape \
+to reply with; a long one comes as a file to read whole); `answer_job` sends your JSON reply. It's checked at once \
+by the same code checks the pipeline uses: fix what they say and answer again. Once it passes, the video carries \
+on. A script goes in parts, whole beats at a time in order (`part` 1, 2, ..., and `last` on the final one), each \
+checked as it arrives. A review job (kind `critic`) goes to the `critic` agent with just its job id, so a fresh \
+reader judges the draft rather than the one who wrote it. The looking jobs (kinds picture, map, parts, inventory, \
+sheet) go to the `worker` agent, so their pictures and one-per-scene briefs stay out of the main chat. `wait` \
+holds (up to 50 seconds; call it again to keep waiting) until a job arrives, a card waits on the owner, or \
+something needs them. The `stickfleet` skill has the rest."""
 
 WAKE = {"claude_job", "gate_reached", "stage_failed", "blocked", "topics_proposed", "swap_suggested", "metrics",
         "published", "went_live"}
 SHEET_COLS, SHEET_TILE, SHEET_MAX = 4, 320, 24  # contact sheet: 4 across, 320 px each, 24 scenes a sheet
 BRIEF_MAX = 30_000  # characters; a longer brief (a script's review or rewrite) goes to a file, under MCP's output cap
+PICTURE_WIDTH = 1280  # a job's pictures are sent this wide as JPEGs: enough to see a towel beside a knee
+WAIT_MAX = 50  # seconds; Claude Code gives up on a tool call after about a minute (a 65 s wait timed out, Nov 2, 2026)
 PARTS = {"script": "This reply is long, so send it in parts: answer_job with part=1, 2, ... in order, each part one "
                    "or more whole beats (their `scenes`), the final one with last=true. Part 1 carries `places`; a "
                    "place first used later can come in that part's own `places`. Each part is checked as it arrives "
@@ -64,6 +71,20 @@ def _text(text: str, error: bool = False) -> types.CallToolResult:
 
 def _obj(props: dict, required: tuple = ()) -> dict:
     return {"type": "object", "properties": props, "required": list(required), "additionalProperties": False}
+
+
+def _picture(block: dict) -> types.ImageContent | None:
+    """A request's picture (providers/claude.py `_image`: its path) as a JPEG PICTURE_WIDTH across; None if the file
+    is gone."""
+    path = Path(block["path"])
+    if not path.exists():
+        return None
+    with Image.open(path) as img:
+        img = img.convert("RGB")
+        img.thumbnail((PICTURE_WIDTH, PICTURE_WIDTH))
+        buf = io.BytesIO()
+        img.save(buf, "JPEG", quality=85)
+    return types.ImageContent(type="image", data=base64.b64encode(buf.getvalue()).decode(), mime_type="image/jpeg")
 
 
 JOB_TOOLS = [
@@ -90,9 +111,10 @@ JOB_TOOLS = [
                                                           "parts together as the whole reply."}},
                                  ("job_id", "answer"))),
     types.Tool(name="wait", description="Wait until a job arrives, a card is waiting for the person, or a video "
-               "fails (or the time is up), then say what's waiting. Returns at once if a job is already waiting.",
-               input_schema=_obj({"seconds": {"type": "integer", "minimum": 1, "maximum": 600,
-                                              "description": "How long to wait at most; 120 if left out."}})),
+               "fails (or the time is up), then say what's waiting. Returns at once if a job is already waiting, or "
+               "if one of those happened since the last wait returned. Call it again to keep waiting.",
+               input_schema=_obj({"seconds": {"type": "integer", "minimum": 1, "maximum": WAIT_MAX,
+                                              "description": f"How long to wait at most; {WAIT_MAX} if left out."}})),
     types.Tool(name="contact_sheet", description="A video's pictures as one image, numbered by scene, 24 at a "
                "time, so you can look at them.",
                input_schema=_obj({"video_id": {"type": "integer"},
@@ -133,6 +155,9 @@ def make_server(ctx) -> Server:
             head.append(f"So far: {jobs.parts_so_far(row)}. Carry on with the next part.")
         if row["kind"] == "critic":
             head.append("This is a review: if you wrote the draft, hand the job to the critic agent instead.")
+        if row["kind"] in LOOKING:
+            head.append("This is a looking job: the worker agent does these, so if you're the main chat, hand the "
+                        "waiting looking jobs to it instead.")
         parts = ["## Instructions\n" + row["system"]]
         images: list[types.ImageContent] = []
         heading = {"user": "## The request", "assistant": "## Your earlier reply"}
@@ -145,8 +170,11 @@ def make_server(ctx) -> Server:
             texts = []
             for b in content:
                 if b.get("type") == "image":
-                    images.append(types.ImageContent(type="image", data=b["source"]["data"],
-                                                     mime_type=b["source"]["media_type"]))
+                    picture = _picture(b)
+                    if picture is None:
+                        texts.append(f"(a picture that's gone: {b['path']})")
+                        continue
+                    images.append(picture)
                     texts.append(f"(picture {len(images)}, attached)")
                 else:
                     texts.append(b.get("text") or "")
@@ -198,9 +226,22 @@ def make_server(ctx) -> Server:
                                      AND role IN ('system', 'card')""").fetchone()[0]
         return json.dumps({"jobs_waiting": list_jobs(), "videos": videos, "news_unseen": unseen})
 
+    # A card that arrives between two waits (the session answers a job, the stage runs on and reaches a gate before
+    # the next wait starts) would otherwise go unseen until the wait times out: a wait returns at once for anything
+    # that woke since the last one returned. Counted, not timed: the clock can't tell two moments in one tick apart.
+    marks = {"woke": 0, "told": 0}
+
+    def note(ev) -> None:
+        if ev.kind in WAKE:
+            marks["woke"] += 1
+
+    ctx.events.subscribe(note)
+
     async def wait(args: dict) -> types.CallToolResult:
-        seconds = min(max(int(args.get("seconds") or 120), 1), 600)
-        if any(j["taken_min_ago"] is None for j in await asyncio.to_thread(list_jobs)):
+        seconds = min(max(int(args.get("seconds") or WAIT_MAX), 1), WAIT_MAX)
+        missed = marks["woke"] > marks["told"]
+        if missed or any(j["taken_min_ago"] is None for j in await asyncio.to_thread(list_jobs)):
+            marks["told"] = marks["woke"]
             return _text(await asyncio.to_thread(summary))
         loop, woke = asyncio.get_running_loop(), asyncio.Event()
 
@@ -214,6 +255,7 @@ def make_server(ctx) -> Server:
                 await asyncio.wait_for(woke.wait(), seconds)
         finally:
             ctx.events.unsubscribe(on)
+        marks["told"] = marks["woke"]
         return _text(await asyncio.to_thread(summary))
 
     def contact_sheet(args: dict) -> types.CallToolResult:

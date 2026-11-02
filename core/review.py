@@ -1,11 +1,11 @@
 """The reviewer's pass over a draft outline or script before the owner sees it.
 
-A second Claude call (prompts/critic.md, models.critic) reads the draft as the channel's toughest viewer: would a
-sensible person do this, could it be done that way, does it take the time it takes, do the rules bind everyone,
-is every day told and every thread closed. What it finds goes back to the writer once, as notes alongside the
-owner's, through the same revise turn a sent-back draft uses; the thread is told what was fixed. One pass only:
-a draft that still has problems after it goes to the owner, who can send it back with a note as always.
-Nothing runs when models.critic is unset (or stickfleet.yaml says `critic: off`).
+A second Claude call (prompts/critic.md; a `critic` job, which the session hands to its critic agent) reads the
+draft as the channel's toughest viewer: would a sensible person do this, could it be done that way, does it take
+the time it takes, do the rules bind everyone, is every day told and every thread closed. What it finds goes back
+to the writer once, as notes alongside the owner's, through the same revise turn a sent-back draft uses; the
+thread is told what was fixed. One pass only: a draft that still has problems after it goes to the owner, who can
+send it back with a note as always. Nothing runs when models.critic is unset or `off` in stickfleet.yaml.
 """
 from __future__ import annotations
 

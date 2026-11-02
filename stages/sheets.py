@@ -1,4 +1,6 @@
-"""Stage 5b (puppet pictures): one scene sheet per scene, written by Claude in scene order.
+"""Stage 5b (puppet pictures): one scene sheet per scene, written by Claude in scene order. Each is a job for the
+Claude Code session (its worker agent); the scene waits for it, holding its place, and the next scene's job comes
+once it's answered.
 
 Each sheet (puppet/sheet.py) says who stands where doing what from when to when, what stands in the place,
 the camera and the light, from the scene's line (with each word's time), its visual prompt, the stage's spots,
@@ -64,6 +66,6 @@ def _work(ctx, conn, video, scene) -> tuple[dict, str]:
                "narration": scene["narration"]}
     written_sheet = ctx.llm.scene_sheet(
         channel, values, context, lambda d: sheets.check(d, stage, people, sorted(library.parts), scene["duration_ms"]),
-        ctx.meter(conn, video, NAME, f"the sheet for scene {scene['idx']}"))
+        ctx.meter(conn, video, NAME, f"the sheet for scene {scene['idx']}", scene["id"]))
     after = sheets.after(written_sheet, state, place_id)
     return {"sheet_json": json.dumps(written_sheet), "set_json": json.dumps(after)}, "staged"

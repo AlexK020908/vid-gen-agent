@@ -40,7 +40,6 @@ class Config:
     mode: str
     providers: dict
     models: dict
-    claude: dict
     elevenlabs: dict
     fal: dict
     topics: dict
@@ -122,7 +121,6 @@ def load(root: Path = ROOT, data_dir: Path | None = None, overrides: dict | None
         mode=raw.get("mode", "stub"),
         providers=raw.get("providers") or {},
         models=raw.get("models") or {},
-        claude=raw.get("claude") or {},
         elevenlabs=raw.get("elevenlabs") or {},
         fal=raw.get("fal") or {},
         topics=raw.get("topics") or {},

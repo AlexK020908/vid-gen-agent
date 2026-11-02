@@ -1,9 +1,9 @@
 """Topics and metrics: the competitor check, topic ideas (stub and Claude), Start and Dismiss, the cadence,
 metrics at 48 h and 7 days, and the reach report import.
 
-Google's APIs are small fakes (the Data API as an API key sees it, Analytics, Reporting) and Claude is
-tests/test_claude.py's FakeAnthropic. No network, $0. The live test reads real competitor videos with
-YOUTUBE_API_KEY (free, a few quota units) and is skipped without it.
+Google's APIs are small fakes (the Data API as an API key sees it, Analytics, Reporting), and Claude's ideas
+are answered as the session would answer its job. No network, $0. The live test reads real competitor videos
+with YOUTUBE_API_KEY (free, a few quota units) and is skipped without it.
 """
 import json
 import os
@@ -16,15 +16,13 @@ from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 from httplib2 import Response
 
-from core import actions, cards, db
+from core import actions, cards, db, jobs
 from core.config import ROOT
 from core.context import make_ctx
 from core.engine import Engine
-from core.costs import BudgetExceeded
 from core.errors import ActionError
-from providers.claude import ClaudeLLM
+from providers.session import SessionLLM
 from stages import analytics, topics
-from test_claude import FakeAnthropic, user_text
 from youtube import auth, client, competitors, quota, reporting
 
 load_dotenv(ROOT / ".env")  # only the live test uses the key
@@ -258,9 +256,10 @@ def test_ideas_card_start_and_dismiss(ctx):
     assert len(second) == 3 and not {t["title"] for t in second} & {t["title"] for t in card["topics"]}
 
 
-def test_claude_writes_ideas_from_the_ranked_hits(ctx):
+def test_the_session_writes_ideas_from_the_ranked_hits(ctx):
     ctx.config.mode = "live"
-    ctx.config.providers.update(llm="claude", tts="stub", images="stub", video="stub")
+    ctx.config.providers.update(llm="session", tts="stub", images="stub", video="stub")
+    ctx.llm = SessionLLM(ctx.config)
     actions.new_video(ctx, "zombie", "Day 1 to Day 365 stranded on an oil rig")
     idea = {"title": "Day 1 to Day 365 in a sinking submarine", "why": "Builds on hit 1.", "family": "ocean",
             "based_on": [1, 3]}
@@ -268,33 +267,35 @@ def test_claude_writes_ideas_from_the_ranked_hits(ctx):
                       {**idea, "title": "Somewhere else", "based_on": [9]}]}
     good = {"topics": [idea, {**idea, "title": "Day 1 to Day 100 on a frozen ferry", "based_on": [2]},
                        {**idea, "title": "Day 1 to Day 1000 in a lighthouse", "based_on": [4]}]}
-    fake = FakeAnthropic(bad, good)
-    ctx.llm = ClaudeLLM(ctx.config, client=fake)
     with ctx.connect() as conn:  # the video above is beside the point here
         conn.execute("UPDATE videos SET state = 'outlined'")
-    assert topics.run_once(ctx) is False and not fake.requests  # made-up hits never go to Claude on their own
+    assert topics.run_once(ctx) is False  # made-up hits never go to Claude on their own
+    with ctx.connect() as conn:
+        assert jobs.pending(conn) == []
     topics.poll(ctx, ctx.channel("zombie"))
-    topics.propose(ctx, ctx.channel("zombie"))  # asked for (run.py topics --propose, the chat's suggest_topics)
+    with pytest.raises(jobs.NeedsClaude):  # asked for (run.py topics --propose, the chat's suggest_topics)
+        topics.propose(ctx, ctx.channel("zombie"))
 
-    first = user_text(fake.requests[0])
+    with ctx.connect() as conn:
+        [job] = jobs.pending(conn)
+    first = json.loads(job["messages_json"])[0]["content"]
     hits = topics.ranked(ctx, ctx.channel("zombie"))
     assert f'1. "{hits[0]["title"]}" by Made-up competitor' in first and "a day)" in first
     assert "- Day 1 to Day 365 stranded on an oil rig" in first and "Propose 3 topics." in first
-    retry = user_text(fake.requests[1], 2)
-    assert "there are 2 topics; it needs 3" in retry and "is one this channel already has" in retry
-    assert "topic 2 cites hit 9; the hits are numbered 1 to 8" in retry
+    with ctx.connect() as conn:
+        problems = jobs.answer(conn, job["id"], json.dumps(bad))
+        assert "there are 2 topics; it needs 3" in problems and any("is one this channel already has" in p
+                                                                     for p in problems)
+        assert "topic 2 cites hit 9; the hits are numbered 1 to 8" in problems
+        assert jobs.answer(conn, job["id"], json.dumps(good)) == []
+    topics.run_once(ctx)  # the answered round is queued and posted
     with ctx.connect() as conn:
         rows = conn.execute("SELECT * FROM topics WHERE source = 'competitor' ORDER BY id").fetchall()
-        llm = conn.execute("SELECT simulated, video_id FROM costs WHERE stage = 'topics'").fetchall()
+        llm = conn.execute("SELECT COUNT(*) FROM costs WHERE stage = 'topics'").fetchone()[0]
     assert [r["title"] for r in rows] == [t["title"] for t in good["topics"]]
     assert json.loads(rows[0]["based_on"]) == [hits[0]["youtube_id"], hits[2]["youtube_id"]]
     assert rows[0]["score"] == pytest.approx(hits[0]["per_day"]) and rows[1]["score"] == pytest.approx(hits[1]["per_day"])
-    assert [(r["simulated"], r["video_id"]) for r in llm] == [(0, None), (0, None)]
-
-    # Each round is capped instead of counted against a video's budget
-    ctx.config.topics["max_usd"] = 0.01
-    with pytest.raises(BudgetExceeded, match=r"over the \$0.01 allowed \(topics.max_usd"):
-        topics.propose(ctx, ctx.channel("zombie"))
+    assert llm == 0  # the session's ideas cost nothing
 
 
 # --- the cadence ----------------------------------------------------------------------------------------

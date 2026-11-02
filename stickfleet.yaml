@@ -1,22 +1,16 @@
 # Global settings. Per-channel settings live in channels/*.yaml.
 mode: live            # stub: every provider below is a placeholder, $0. live: use the providers below
 providers:            # stub, or the real one. Each real one needs its key in .env
-  llm: session        # session: the Claude Code session does Claude's work over MCP, no API key (providers/session.py;
-                      # titles so far, the rest in phases 18-19). claude: the API (ANTHROPIC_API_KEY)
+  llm: session        # session: the Claude Code session does all of Claude's work over MCP, on the owner's plan
+                      # (providers/session.py). There's no Claude API path and no ANTHROPIC_API_KEY
   tts: elevenlabs     # elevenlabs: voice with word timestamps (ELEVENLABS_API_KEY, voice_id in the channel YAML)
   images: fal         # fal: stills and thumbnails from the channel's character_ref (FAL_KEY)
   video: fal          # fal: hero clips animated from each clip scene's still (FAL_KEY)
 data_dir: data
 
 models:
-  outline: claude-opus-5-5
-  script: claude-opus-5-5
-  regen: claude-opus-5-5   # one flagged scene's new picture prompt or line
-  titles: claude-opus-5-5
-  topic: claude-opus-5-5   # topic ideas from competitors' recent hits
-  check: claude-sonnet-5-5 # looks at each drawn picture against its scene and says what's wrong (stages/stills.py)
-  critic: claude-opus-5-5  # reads each outline and script as the toughest viewer and sends it back once with fixes
-                           # (prompts/critic.md, core/review.py); off to skip
+  critic: on               # the reviewer reads each outline and script as the toughest viewer and sends it back once
+                           # with fixes (prompts/critic.md, core/review.py, the critic agent); off to skip
   voice: eleven_multilingual_v2            # steadiest over long narration; eleven_v4 is the newer, more expressive one
   still: google/nano-banana-2.1/edit       # fal image-edit model; takes the character reference as image_urls
   clip: fal-ai/kling-video/v3/pro/image-to-video   # image-to-video; one of fal.clips.models below
@@ -27,15 +21,6 @@ engine:
   max_attempts: 3
   retry_backoff_s: 5
   parallel_calls: 8
-
-claude:               # how providers.llm: claude calls the API
-  effort: {outline: high, script: high, regen: medium, titles: medium, topic: medium, check: medium, critic: high}
-  max_tokens: {outline: 48000, script: 128000, regen: 8000, titles: 8000, topic: 8000, check: 4000, critic: 16000}   # thinking counts toward these; 128000 is the most Opus 5.5 can write
-  fallbacks: default  # when Anthropic's safety filter declines (it can misfire on survival stories), the same call
-                      # carries on on Anthropic's recommended model. null turns it off
-  prices:             # USD per million tokens, list prices Oct 2026; cache_write is the 5-minute rate
-    claude-opus-5-5: {input: 4.00, output: 20.00, cache_write: 5.00, cache_read: 0.20}
-    claude-sonnet-5-5: {input: 2.00, output: 10.00, cache_write: 2.50, cache_read: 0.20}
 
 elevenlabs:           # how providers.tts: elevenlabs calls the API
   output_format: mp3_44100_128
@@ -75,7 +60,6 @@ topics:               # stages/topics.py: competitors' recent hits, Claude's top
   min_minutes: 8      # shorter uploads (Shorts, clips) are skipped; the genre is long-form
   shown: 8            # how many of the top ones Claude sees
   propose: 3          # topic ideas per round; a round runs after a check when fewer than this are queued
-  max_usd: 1          # the most one round may cost (the guard's estimate; a round is usually ~$0.05)
   cadence: true       # a channel that has published starts its top queued topic when its next slot is near
   lead_days: 5        # how far ahead of the next slot (last publish + baseline_cadence_days) it starts
 
@@ -83,7 +67,8 @@ render:
   engine: remotion    # remotion: Ken Burns + word captions (needs render/remotion/node_modules). ffmpeg: plain, the fallback
   pictures: puppet      # generative: fal stills, set changes and hero clips (stages/stills.py, clips.py).
                         # puppet: places painted once and mapped, characters and props painted once as parts, every
-                        # scene staged by Claude and animated by code (stages/assets.py, sheets.py, animate.py)
+                        # scene staged by Claude Code's worker agent and animated by code (stages/assets.py,
+                        # sheets.py, animate.py)
   puppet_fps: 30        # frames a second the puppet scenes are drawn at
   concurrency: null   # Remotion's parallel browser tabs; null = its default. See BUILD.md for the measured best
   x264_preset: null   # Remotion's encoder speed (veryfast ... medium); null = medium

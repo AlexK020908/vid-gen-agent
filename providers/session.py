@@ -1,49 +1,32 @@
-"""`providers.llm: session`: the Claude Code session does Claude's work, never the API key.
+"""`providers.llm: session`: the Claude Code session does all of Claude's work, on the owner's plan; nothing calls the
+Claude API (BUILD.md, phases 17–20).
 
-Every call builds the same prompt, schema and checks as providers/claude.py; only the API request is swapped for a
-job the session answers over MCP (core/jobs.py). The first time a stage asks, the request is stored and the stage
-parks; once the session's answer has passed the checks, the stage runs again and gets it back as Claude's reply.
+Every call builds its prompt, schema and checks in providers/claude.py; the request becomes a job the session
+answers over MCP (core/jobs.py). The first time a stage asks, the request is stored and the stage parks; once the
+session's answer has passed the checks, the stage runs again and gets it back as Claude's reply.
 
-The calls move over phase by phase (BUILD.md, phases 17–20). READY lists the ones the session does so far; the rest
-fail with a clear error rather than reach the API. Tests pass a stub `fallback` for them instead.
+The looking jobs (LOOKING: picture checks, stage maps, part names, the props list, scene sheets) carry pictures or
+come one per scene, so the session hands them to its `worker` agent (.claude/agents/worker.md) and keeps them out of
+the main chat. The writing and the reviews stay in the main chat and the `critic` agent.
 """
 from __future__ import annotations
 
 from contextlib import closing
-from types import SimpleNamespace
 from typing import Callable
 
 from core import cards, db, jobs
-from core.errors import FinalError, Stopped
+from core.errors import Stopped
 from providers.claude import WHAT, ClaudeLLM
 
-# LLM method → claude.py's kind
-METHODS = {"outline": "outline", "script": "script", "revise_visual": "regen", "rewrite_line": "regen",
-           "titles": "titles", "topics": "topic", "check_picture": "check", "map_stage": "check",
-           "name_parts": "check", "critique": "critic", "scene_sheet": "check", "inventory": "check"}
-READY = {"titles", "outline", "script", "critique", "rewrite_line", "revise_visual", "topics"}  # phase 20: the looking
-
-
-class _NoAPI:
-    def __getattr__(self, name):
-        raise FinalError("the session provider never calls the Claude API")
+LOOKING = ("picture", "map", "parts", "inventory", "sheet")  # job kinds the worker agent does
 
 
 class SessionLLM(ClaudeLLM):
-    def __init__(self, config, fallback=None) -> None:
-        super().__init__(config, client=_NoAPI())
-        self.fallback = fallback
-        for name in METHODS:
-            if name not in READY:
-                setattr(self, name, self._not_yet(name))
-
-    def _not_yet(self, name: str):
-        def call(*args, **kwargs):
-            if self.fallback is None:
-                raise FinalError(f"Claude Code doesn't do the {WHAT[METHODS[name]]} yet (it moves over in phase 20, "
-                                 "see BUILD.md), and the API key isn't used for it")
-            return getattr(self.fallback, name)(*args, **kwargs)
-        return call
+    def __init__(self, config, stub=None, stubbed: tuple[str, ...] = ()) -> None:
+        """Tests: the LLM methods named in `stubbed` are answered by `stub` (a StubLLM) instead of becoming jobs."""
+        super().__init__(config)
+        for name in stubbed:
+            setattr(self, name, getattr(stub, name))
 
     def _call(self, kind: str, system: str, messages: list[dict], schema: dict, meter, on_text,
               verify: Callable[[str], list[str]] | None = None, verify_part: Callable[[str], list[str]] | None = None):
@@ -77,4 +60,4 @@ class SessionLLM(ClaudeLLM):
         _, text = found
         if on_text:
             on_text(text)
-        return SimpleNamespace(content=[SimpleNamespace(type="text", text=text)], stop_reason="end_turn")
+        return text

@@ -1,12 +1,12 @@
-"""Claude's work done by the Claude Code session instead of the API (providers/session.py, server/claude_code.py).
+"""Claude's work, done by the Claude Code session (providers/session.py, server/claude_code.py).
 
-A stage that needs Claude builds the request it would send the API. If that exact request has an answer here, the
-answer comes back as Claude's reply. If not, the request is stored as a pending job and the stage parks
-(NeedsClaude): the video is leased for PARK_S, nothing counts as a failed attempt, and the thread says what's
-waiting. The session lists the jobs, takes one and answers it over MCP. The answer is checked at once with the
-checks the API's reply goes through (the stage's own check, registered here while the server runs); once it
-passes, the lease is cleared, so the engine runs the stage again straight away and this time the request finds
-its answer. A stage that runs again builds the same request, so it finds the same job: re-running is free.
+A stage that needs Claude builds its request: the prompt, any pictures, and the JSON shape of the reply. If that
+exact request has an answer here, the answer comes back as Claude's reply. If not, the request is stored as a
+pending job and the stage parks (NeedsClaude): the video (or scene) is leased for PARK_S, nothing counts as a
+failed attempt, and the thread says what's waiting. The session lists the jobs, takes one and answers it over MCP.
+The answer is checked at once with the stage's own check (registered here while the server runs); once it passes,
+the lease is cleared, so the engine runs the stage again straight away and this time the request finds its
+answer. A stage that runs again builds the same request, so it finds the same job: re-running is free.
 
 A long answer (a script) can come in parts, each a JSON object of whole pieces (a script's beats, in order): the
 parts merge into one reply (lists joined), each part is checked with the stage's part check as it arrives, and the

@@ -1,13 +1,13 @@
-"""Text generation: outline, script, regen tweaks, titles, topic ideas.
+"""Claude's work: the writing (outline, script, regen tweaks, titles, topic ideas, reviews) and the looking (picture
+checks, stage maps, part names, the props list, scene sheets).
 
-Each method returns its value and reports spend through `meter` (core.context.Meter): `check(usd)`
-before a call, `spend(usd)` after it. One Claude method can make two API calls, and a failed call
-still costs money, so a single returned number wouldn't do. The Claude provider is providers/claude.py.
+Each method returns its value. `meter` (core.context.Meter) names the call and carries Stop; the stub reports what
+the call would have cost through it (`check(usd)` before, `spend(usd)` after), as simulated costs. Claude's own
+provider is providers/claude.py, done by the Claude Code session (providers/session.py).
 """
 from __future__ import annotations
 
-from contextlib import contextmanager
-from typing import Callable, Iterator, Protocol
+from typing import Callable, Protocol
 
 LABELS = ["Day 1", "Day 2", "Day 3", "Day 5", "Day 7", "Day 10", "Day 14", "Day 21", "Day 30", "Day 45",
           "Day 60", "Day 75", "Day 90", "Day 120", "Day 150", "Day 180", "Day 210", "Day 240", "Day 270",
@@ -33,11 +33,10 @@ STUB_PLACES = [
 
 
 class Meter(Protocol):
-    """`stopped` and `writing(close)` let stop_writing cut a streaming call off (core.context.Meter)."""
+    """`stopped` says the person pressed Stop (stop_writing) on this video's writing (core.context.Meter)."""
     stopped: bool
     def check(self, usd: float) -> None: ...
     def spend(self, usd: float, detail: dict | None = None) -> None: ...
-    def writing(self, close: Callable[[], None]): ...
 
 
 class NoMeter:
@@ -50,10 +49,6 @@ class NoMeter:
 
     def spend(self, usd: float, detail: dict | None = None) -> None:
         pass
-
-    @contextmanager
-    def writing(self, close: Callable[[], None]) -> Iterator[None]:
-        yield
 
 
 class LLM(Protocol):

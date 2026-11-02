@@ -1,49 +1,36 @@
-"""Claude (Anthropic API) writes the outline, the script, scene fixes, titles with their thumbnail text, and
-topic ideas from competitors' recent hits, and looks at each drawn picture to say what's wrong with it.
+"""What Claude is asked to do and how its reply is read: the outline, the script, scene fixes, titles with their
+thumbnail text, topic ideas from competitors' recent hits, the reviewer's reads, and the looking: each drawn
+picture checked against its scene, a place mapped into a stage, a parts sheet's parts named, a script's props
+listed, and each scene staged.
 
-Every call sends the prompt file's system part (channel facts filled in) as a cached system block and
-the idea, outline and notes in the user turn (providers/prompts.py). Replies come back as JSON
-(structured outputs) and are checked in code (providers/checks.py). A reply that fails its checks
-gets one more try with the problems listed; after that the stage fails with them on the error card
-(FinalError) instead of paying for three more attempts. Each API call is guarded and logged through
-the stage's meter, the failed ones too.
+Every call fills a prompt file (providers/prompts.py: the system part with the channel's facts, then the turn with
+the idea, outline, notes and the rest) and asks for JSON in a schema, which is checked in code
+(providers/checks.py). The request goes to the Claude Code session as a job (providers/session.py, core/jobs.py),
+where the answer is checked as it comes in. A reply that still fails its checks when the stage reads it (after a
+restart, when no check was registered) gets one more try with the problems listed; after that the stage fails
+with them on the error card (FinalError).
 
-A picture check (check_picture) sends the pictures as image blocks in the user turn, each scaled to
-CHECK_WIDTH across as a JPEG (a 1920×1080 PNG is a few MB and the API scales big pictures down anyway).
+Pictures go with a request as image blocks naming the file and its contents' hash, so a picture drawn again is a
+new request; take_job sends them to the session as JPEGs (server/claude_code.py).
 """
 from __future__ import annotations
 
-import base64
-import io
+import hashlib
 import json
 import logging
-import os
 from pathlib import Path
 from typing import Callable
 
-import anthropic
-from PIL import Image
-
-from core.errors import FinalError, Stopped
+from core.errors import FinalError
 from providers import checks, prompts
 from providers.llm import Meter
 
 log = logging.getLogger("stickfleet.claude")
 
-DEFAULTS = {
-    "effort": {"outline": "high", "script": "high", "regen": "medium", "titles": "medium", "topic": "medium",
-               "check": "medium", "critic": "high"},
-    "max_tokens": {"outline": 32000, "script": 64000, "regen": 8000, "titles": 8000, "topic": 8000, "check": 4000,
-                   "critic": 16000},
-}
 WHAT = {"outline": "outline", "script": "script", "regen": "scene fix", "titles": "titles", "topic": "topic ideas",
-        "check": "picture check", "critic": "review"}
-CHARS_PER_TOKEN = 3  # for the estimate before a call; generous, since JSON packs more tokens per character
-CHECK_WIDTH = 1280   # pictures are sent this wide for a check: enough to see a towel beside a knee, 1/3 the tokens of full size
-IMAGE_TOKENS = 1600  # what a CHECK_WIDTH picture costs in input tokens, for the estimate
+        "critic": "review", "picture": "picture check", "map": "stage map", "parts": "part names",
+        "inventory": "props list", "sheet": "scene sheet"}
 PICTURE_VALUES = ("idx", "label", "shot", "before", "narration", "visual_prompt", "people", "what", "images")  # picture.md
-FALLBACK_BETA = "server-side-fallback-2026-07-01"
-DROP_BEFORE_FALLBACK = {"thinking", "redacted_thinking", "connector_text", "tool_use"}
 SHOWN = 25           # problems listed in a retry turn
 FIX = ("That reply has problems the pipeline checks for:\n{problems}\n\n"
        "Fix them and send the whole reply again. Keep everything these problems don't touch as it was.")
@@ -109,7 +96,7 @@ CRITIQUE = _obj({"verdict": {"type": "string", "enum": ["fine", "revise"]},  # p
 
 
 class _SceneCounter:
-    """Counts scenes in the streamed JSON so the thread can show the script being written."""
+    """Counts scenes in the script's JSON so the thread can show how many were written."""
     KEY = '"narration"'
 
     def __init__(self, progress: Callable[[int], None]) -> None:
@@ -126,35 +113,6 @@ class _SceneCounter:
         if found:
             self.n += found
             self.progress(self.n)
-
-
-def _text(content) -> str:
-    """The reply's text. After a fallback mid-reply, the text blocks either side of the `fallback` block join up:
-    the fallback model carries on from where the declined one stopped."""
-    return "".join(getattr(b, "text", "") or "" for b in content if getattr(b, "type", "") == "text")
-
-
-def _echo(content) -> list:
-    """The assistant turn to send back for a retry. After a fallback the API rejects thinking and tool blocks from
-    before the last `fallback` block, so those go; everything else stays where it was."""
-    last = max((i for i, b in enumerate(content) if getattr(b, "type", "") == "fallback"), default=-1)
-    return [b for i, b in enumerate(content) if not (i < last and getattr(b, "type", "") in DROP_BEFORE_FALLBACK)]
-
-
-def _chars(messages: list[dict]) -> int:
-    """Characters in the messages, for the cost estimate; a picture counts as IMAGE_TOKENS' worth."""
-    total = 0
-    for m in messages:
-        c = m["content"]
-        if isinstance(c, str):
-            total += len(c)
-            continue
-        for b in c:
-            if isinstance(b, dict):
-                total += IMAGE_TOKENS * CHARS_PER_TOKEN if b.get("type") == "image" else len(b.get("text") or "")
-            else:
-                total += len(getattr(b, "text", "") or "")
-    return total
 
 
 def _tidy_sheet(data: dict) -> dict:
@@ -183,29 +141,18 @@ def _checked(text: str, check: Callable[[dict], list[str]]) -> tuple[dict | None
         return None, [f"the reply isn't the JSON that was asked for ({type(e).__name__}: {e})"]
 
 
-def _image_block(path: Path) -> dict:
-    with Image.open(path) as img:
-        img = img.convert("RGB")
-        img.thumbnail((CHECK_WIDTH, CHECK_WIDTH))
-        buf = io.BytesIO()
-        img.save(buf, "JPEG", quality=85)
-    return {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg",
-                                        "data": base64.b64encode(buf.getvalue()).decode()}}
+def _image(path: Path) -> dict:
+    """A picture sent with a request: the file, and a hash of what's in it, so a picture drawn again is a new
+    request rather than the old one's answer."""
+    return {"type": "image", "path": str(path), "sha256": hashlib.sha256(Path(path).read_bytes()).hexdigest()}
 
 
 class ClaudeLLM:
-    def __init__(self, config, client=None) -> None:
-        self.config = config
-        self._client = client  # tests pass a fake
+    """The LLM protocol (providers/llm.py) as prompts, schemas and checks. `_call` sends one request and returns
+    the reply's text; providers/session.py's SessionLLM sends it to the Claude Code session."""
 
-    @property
-    def client(self):
-        if self._client is None:
-            if not (os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN")):
-                raise FinalError("Claude needs ANTHROPIC_API_KEY in .env (see .env.example). Add it, restart "
-                                 "run.py serve, then Retry")
-            self._client = anthropic.Anthropic()
-        return self._client
+    def __init__(self, config) -> None:
+        self.config = config
 
     # --- the LLM protocol (providers/llm.py) -------------------------------------------------
 
@@ -283,7 +230,7 @@ class ClaudeLLM:
 
     def check_picture(self, channel, turn: str, values: dict, pictures: list, meter: Meter) -> list[str]:
         filled = {**{name: "" for name in PICTURE_VALUES}, **values}  # every turn's placeholders, so render() passes
-        data = self._ask("check", "picture.md", turn, channel, filled, PICTURE,
+        data = self._ask("picture", "picture.md", turn, channel, filled, PICTURE,
                          lambda d: [] if isinstance(d["problems"], list) else ["problems isn't a list"], meter,
                          images=[Path(p) for p in pictures])
         log.info("picture check, %s: seen %r, noticed %r, problems %r", values.get("idx") or values.get("what", "")[:60],
@@ -292,14 +239,14 @@ class ClaudeLLM:
 
     def map_stage(self, channel, name: str, picture, meter: Meter) -> dict:
         values = {**{k: "" for k in PUPPET_VALUES}, "name": name}
-        data = self._ask("check", "puppet.md", "stage", channel, values, STAGE, checks.stage_map, meter,
+        data = self._ask("map", "puppet.md", "stage", channel, values, STAGE, checks.stage_map, meter,
                          images=[Path(picture)])
         log.info("stage map of %s: %s; spots %s", name, data["seen"], [s["name"] for s in data["spots"]])
         return data
 
     def name_parts(self, channel, picture, names: list[str], meter: Meter) -> dict[str, dict]:
         values = {**{k: "" for k in PUPPET_VALUES}, "names": ", ".join(names)}
-        data = self._ask("check", "puppet.md", "parts", channel, values, PARTS,
+        data = self._ask("parts", "puppet.md", "parts", channel, values, PARTS,
                          lambda d: checks.parts_map(d, names), meter, images=[Path(picture)])
         log.info("parts named: %s", data["seen"])
         return {p["name"].strip().lower(): {"box": int(p["box"]), "faces": p["faces"]} for p in data["parts"]}
@@ -312,11 +259,11 @@ class ClaudeLLM:
 
     def scene_sheet(self, channel, values: dict, context: dict, check: Callable[[dict], list[str]], meter: Meter) -> dict:
         filled = {**{k: "" for k in SHEET_VALUES}, **values}
-        data = self._ask("check", "sheet.md", "scene", channel, filled, SHEET, lambda d: check(_tidy_sheet(d)), meter)
+        data = self._ask("sheet", "sheet.md", "scene", channel, filled, SHEET, lambda d: check(_tidy_sheet(d)), meter)
         return _tidy_sheet(data)
 
     def inventory(self, channel, cast: str, script: str, have: list[str], meter: Meter) -> dict:
-        data = self._ask("check", "inventory.md", "script", channel,
+        data = self._ask("inventory", "inventory.md", "script", channel,
                          {"cast": cast, "script": script, "have": ", ".join(have) or "none"}, INVENTORY,
                          checks.inventory, meter)
         return {"props": [{**p, "name": p["name"].strip().lower()} for p in data["props"]],
@@ -335,18 +282,18 @@ class ClaudeLLM:
     def _ask(self, kind: str, file: str, turn: str, channel, values: dict, schema: dict,
              check: Callable[[dict], list[str]], meter: Meter, on_text: _SceneCounter | None = None,
              images: list[Path] = (), part_check: Callable[[dict], list[str]] | None = None) -> dict:
-        """`part_check` is for a reply long enough to come in parts from the Claude Code session (the script):
-        what's wrong with the reply so far (providers/session.py, core/jobs.py)."""
+        """`part_check` is for a reply long enough to come in parts (the script): what's wrong with the reply so far
+        (providers/session.py, core/jobs.py)."""
         system, user = prompts.render(self.config.root, file, turn, channel, values)
-        content = [*(_image_block(p) for p in images), {"type": "text", "text": user}] if images else user
+        content = [*(_image(p) for p in images), {"type": "text", "text": user}] if images else user
         messages: list[dict] = [{"role": "user", "content": content}]
         for attempt in (1, 2):
             if on_text:
                 on_text.reset()
-            message = self._call(kind, system, messages, schema, meter, on_text,
-                                 lambda text: _checked(text, check)[1],
-                                 (lambda text: _checked(text, part_check)[1]) if part_check else None)
-            data, problems = _checked(_text(message.content), check)
+            text = self._call(kind, system, messages, schema, meter, on_text,
+                              lambda reply: _checked(reply, check)[1],
+                              (lambda reply: _checked(reply, part_check)[1]) if part_check else None)
+            data, problems = _checked(text, check)
             if not problems:
                 return data
             log.warning("claude %s attempt %d failed its checks: %s", kind, attempt, problems)
@@ -356,112 +303,13 @@ class ClaudeLLM:
                                  f"or ask the assistant to adjust prompts/{file}")
             shown = problems[:SHOWN] + ([f"...and {len(problems) - SHOWN} more like these"]
                                         if len(problems) > SHOWN else [])
-            messages += [{"role": "assistant", "content": _echo(message.content)},
+            messages += [{"role": "assistant", "content": text},
                          {"role": "user", "content": FIX.format(problems="\n".join(f"- {p}" for p in shown))}]
         raise AssertionError("unreachable")
 
-    def _setting(self, name: str, kind: str):
-        return (self.config.claude.get(name) or {}).get(kind, DEFAULTS[name][kind])
-
-    def _price(self, model: str) -> dict:
-        price = (self.config.claude.get("prices") or {}).get(model)
-        if not price:
-            raise FinalError(f"there's no price for {model}: add it under claude.prices in stickfleet.yaml, "
-                             "so its spend can count toward the budget")
-        return price
-
     def _call(self, kind: str, system: str, messages: list[dict], schema: dict, meter: Meter,
-              on_text: _SceneCounter | None, verify: Callable[[str], list[str]] | None = None,
-              verify_part: Callable[[str], list[str]] | None = None):
-        """One request. `verify` says what's wrong with a reply's text, and `verify_part` with the parts of one so
-        far; the API path checks after the call returns (in _ask), so they're for providers/session.py, which
-        checks the session's answer as it arrives."""
-        model = self.config.models.get(kind) or self.config.models["script"]
-        price = self._price(model)
-        max_tokens = int(self._setting("max_tokens", kind))
-        prompt_tokens = (len(system) + _chars(messages)) / CHARS_PER_TOKEN
-        estimate = (prompt_tokens * price["input"] + max_tokens * price["output"]) / 1e6  # the most it can cost
-        fallbacks = self.config.claude.get("fallbacks", "default")
-        if fallbacks:
-            estimate *= 2  # a declined attempt and the fallback that finishes it are both billed
-        meter.check(estimate)
-        request = {
-            "model": model, "max_tokens": max_tokens, "messages": messages,
-            "system": [{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
-            "output_config": {"effort": self._setting("effort", kind),
-                              "format": {"type": "json_schema", "schema": schema}},
-        }
-        stream_call = self.client.messages.stream
-        if fallbacks:  # a safety-classifier refusal is retried on Anthropic's recommended model, on the same stream
-            request.update(fallbacks=fallbacks, betas=[FALLBACK_BETA])
-            stream_call = self.client.beta.messages.stream
-        streamed = 0
-        try:
-            try:
-                with stream_call(**request) as stream, meter.writing(stream.close):
-                    for text in stream.text_stream:
-                        streamed += len(text)
-                        if on_text:
-                            on_text(text)
-                    if meter.stopped:  # cut off between chunks: what came back is a fragment
-                        raise Stopped(f"stopped writing the {WHAT[kind]}")
-                    message = stream.get_final_message()
-            except Exception:
-                if meter.stopped:  # Stop closed the stream; whatever that raised, this is what happened
-                    self._log_stopped(model, price, prompt_tokens, streamed, estimate, meter)
-                    raise Stopped(f"stopped writing the {WHAT[kind]}") from None
-                raise
-        except anthropic.AuthenticationError:
-            raise FinalError("Claude turned down the API key: check ANTHROPIC_API_KEY in .env, restart, then "
-                             "Retry") from None
-        except anthropic.PermissionDeniedError as e:
-            raise FinalError(f"this API key can't use {model}: {e.message}") from None
-        except anthropic.NotFoundError:
-            raise FinalError(f"Claude has no model {model!r}: check models in stickfleet.yaml") from None
-        except anthropic.BadRequestError as e:
-            raise FinalError(f"Claude refused the request: {e.message}") from None
-
-        usd, detail = self._cost(message, model, price)
-        detail["estimate_usd"] = round(estimate, 4)
-        meter.spend(usd, detail)
-        log.info("claude %s: %s, $%.4f", kind, detail, usd)
-        if message.stop_reason == "max_tokens":
-            raise FinalError(f"Claude ran out of room writing the {WHAT[kind]} ({max_tokens:,} tokens). Raise "
-                             f"claude.max_tokens.{kind} in stickfleet.yaml, then Retry")
-        if message.stop_reason == "refusal":
-            details = getattr(message, "stop_details", None)
-            why = getattr(details, "explanation", None)
-            tried = " (the fallback model declined too)" if detail.get("attempts") else ""
-            raise FinalError(f"Claude declined to write the {WHAT[kind]}{tried}{f': {why}' if why else ''}. Anthropic's "
-                             "safety filter sometimes misfires on survival stories; Retry, or rephrase the idea or note")
-        return message
-
-    @staticmethod
-    def _log_stopped(model: str, price: dict, prompt_tokens: float, streamed: int, estimate: float, meter) -> None:
-        """A stopped call is billed for what it produced, but there's no usage to read: log an estimate from the
-        prompt and the text that had arrived (thinking that never reached the text isn't counted)."""
-        usd = (prompt_tokens * price["input"] + streamed / CHARS_PER_TOKEN * price["output"]) / 1e6
-        meter.spend(usd, {"model": model, "stop": "stopped", "approx": True, "input": round(prompt_tokens),
-                          "cache_write": 0, "cache_read": 0, "output": round(streamed / CHARS_PER_TOKEN),
-                          "estimate_usd": round(estimate, 4)})
-
-    def _cost(self, message, model: str, price: dict) -> tuple[float, dict]:
-        """What the call cost, from usage. With a fallback, usage.iterations has one entry per attempt (the declined
-        one and the one that finished), each billed at its own model's rates."""
-        u = message.usage
-        attempts = getattr(u, "iterations", None) or [u]
-        prices = self.config.claude.get("prices") or {}
-        usd, parts = 0.0, []
-        for a in attempts:
-            used = getattr(a, "model", None) or model
-            rate = prices.get(used) or price  # a fallback model with no listed price is costed at the requested model's
-            tokens = {"input": a.input_tokens or 0, "cache_write": getattr(a, "cache_creation_input_tokens", 0) or 0,
-                      "cache_read": getattr(a, "cache_read_input_tokens", 0) or 0, "output": a.output_tokens or 0}
-            usd += sum(tokens[k] * rate[k] for k in tokens) / 1e6
-            parts.append({"model": used, "type": getattr(a, "type", "message"), **tokens,
-                          **({} if used in prices else {"priced_as": model})})
-        detail = {"model": getattr(message, "model", None) or model, "stop": message.stop_reason,
-                  **{k: sum(p[k] for p in parts) for k in ("input", "cache_write", "cache_read", "output")}}
-        if len(parts) > 1:
-            detail["attempts"] = parts
-        return usd, detail
+              on_text: _SceneCounter | None, verify: Callable[[str], list[str]],
+              verify_part: Callable[[str], list[str]] | None = None) -> str:
+        """One request; returns the reply's text. `verify` says what's wrong with a reply's text, and `verify_part`
+        with the parts of one so far, so the answer can be checked as it comes in."""
+        raise NotImplementedError

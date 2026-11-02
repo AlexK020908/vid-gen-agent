@@ -1,14 +1,20 @@
 """Stage 5a (puppet pictures): everything the scene sheets and the animator need, made once per video.
 
 Runs only when render.pictures is `puppet` (stickfleet.yaml), after the voice. For each place of the script it
-draws the place's picture (the same picture the stills pipeline draws, stages/stills.py _place) and has the
-check model map it into a stage (puppet/stage.py: the floor, the spots, the light, what's in the foreground).
+draws the place's picture (the same picture the stills pipeline draws, stages/stills.py _place) and has
+Claude map it into a stage (puppet/stage.py: the floor, the spots, the light, what's in the foreground).
 It builds the main character's puppet once per channel (channels/<id>/puppet/hero/) and each cast member's
 once per video (media/<video>/puppets/<slug>/) from their cast picture, and asks Claude which props the script
 uses (prompts/inventory.md); props already in the channel's library (channels/<id>/props/) are reused, the
 rest are painted on one sheet and cut into it. What was made is written to videos.assets_json, and the sheets
 stage then takes the video's scenes.
+
+The maps, the part names and the props list are jobs for the Claude Code session (its worker agent), one at a
+time: the stage parks at each and runs again from the top once it's answered. Everything made before the job is
+kept on disk under a name that says what it was made from, so running again draws nothing twice and asks the
+same question, which finds its answer.
 """
+import hashlib
 import json
 import logging
 import shutil
@@ -125,12 +131,14 @@ def _props(ctx, conn, video, channel, wanted: list[dict]) -> None:
         return
     specs = {p["name"]: {"draw": p["draw"], "height": float(p["height"]),
                          "pivot": props.PIVOT_OF.get(p.get("stands"), (0.5, 0.5))} for p in new}
-    sheet = ctx.media(video["id"]) / "props" / "sheet.png"
+    items = props.items_text(list(specs), specs)
+    # named by what's on it, and painted once: naming its parts is a job, and the stage runs again after it's answered
+    sheet = ctx.media(video["id"]) / "props" / f"sheet_{hashlib.sha1(items.encode()).hexdigest()[:8]}.png"
     sheet.parent.mkdir(parents=True, exist_ok=True)
-    with ctx.reserve(conn, video, ctx.images.still_price, "the props sheet", "images"):
-        usd = ctx.images.sheet(channel, Path(channel.character_ref), props.items_text(list(specs), specs), sheet,
-                               file="props.md")
-        ctx.log_cost(conn, video["id"], NAME, "images", usd)
+    if not sheet.exists():
+        with ctx.reserve(conn, video, ctx.images.still_price, "the props sheet", "images"):
+            usd = ctx.images.sheet(channel, Path(channel.character_ref), items, sheet, file="props.md")
+            ctx.log_cost(conn, video["id"], NAME, "images", usd)
     meter = ctx.meter(conn, video, NAME, "naming the props")
     made = props.build(sheet, sheet.parent / "cut", list(specs),
                        lambda pic, names: ctx.llm.name_parts(channel, pic, names, meter), specs)

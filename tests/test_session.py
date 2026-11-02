@@ -1,5 +1,6 @@
 """The Claude Code session doing Claude's work (BUILD.md phase 17): jobs, the MCP endpoint, titles end to end. $0.
-The rest of the writing moved over in phase 19 (tests/test_writing.py); here it stays with the stub."""
+The rest of the writing is in tests/test_writing.py (phase 19) and the looking in tests/test_looking.py (phase 20);
+here they stay with the stub."""
 import asyncio
 import json
 import socket
@@ -13,26 +14,24 @@ from mcp import Client
 from core import actions, db, jobs
 from core.context import make_ctx
 from core.engine import Engine
-from core.errors import FinalError
-from providers import session
+from providers.llm import LLM
 from providers.session import SessionLLM
 from server import claude_code
 from server.app import create_app
 
-READY = set(session.READY)
-TITLES = {"titles": ["I Survived 100 Days on a Raft", "The Raft That Wouldn't Sink", "100 Days Adrift"],
+TITLES ={"titles": ["I Survived 100 Days on a Raft", "The Raft That Wouldn't Sink", "100 Days Adrift"],
           "thumb_texts": ["100 DAYS ADRIFT", "IT WON'T SINK", "NO LAND"],
           "description": "A stick figure wakes on a raft with no land in sight and twenty litres of water. Over a "
                          "hundred days he learns the sea's rules, loses most of what he has, and finds a way home."}
 
 
 @pytest.fixture
-def ctx(tmp_path, monkeypatch):
-    monkeypatch.setattr(session, "READY", {"titles"})
+def ctx(tmp_path):
     ctx = make_ctx(data_dir=tmp_path, overrides={"mode": "stub", "stub": {"scenes": 6}, "engine": {"retry_backoff_s": 0},
                                                  "render": {"engine": "ffmpeg", "pictures": "puppet", "puppet_fps": 4},
                                                  "topics": {"competitors": "off"}})
-    ctx.llm = SessionLLM(ctx.config, fallback=ctx.llm)  # titles from the session, the rest from the stub
+    others = tuple(name for name in vars(LLM) if not name.startswith("_") and name != "titles")
+    ctx.llm = SessionLLM(ctx.config, ctx.llm, stubbed=others)  # titles from the session, the rest from the stub
     return ctx
 
 
@@ -144,11 +143,28 @@ def test_jobs_take_and_supersede(ctx):
         assert jobs.answer(conn, b, "{}") == [] and jobs.answer_for(conn, "k2") == (b, "{}")
 
 
-def test_calls_not_moved_yet_never_reach_the_api(ctx, monkeypatch):
-    monkeypatch.setattr(session, "READY", READY)  # as shipped, not the fixture's titles-only set
-    llm = SessionLLM(ctx.config)
-    with pytest.raises(FinalError, match="doesn't do the picture check yet"):
-        llm.check_picture(ctx.channel("zombie"), "still", {}, [], None)
+def test_every_call_is_a_job(ctx, tmp_path):
+    """Nothing is left on another path: each of the LLM protocol's calls parks as a job of its own kind."""
+    llm, zombie = SessionLLM(ctx.config), ctx.channel("zombie")
+    picture = tmp_path / "picture.png"
+    picture.write_bytes(zombie.character_ref.read_bytes())
+    sheet = lambda d: []  # noqa: E731
+    calls = {"check_picture": lambda m: llm.check_picture(zombie, "still", {"idx": 1}, [picture], m),
+             "map_stage": lambda m: llm.map_stage(zombie, "the flat", picture, m),
+             "name_parts": lambda m: llm.name_parts(zombie, picture, ["head"], m),
+             "inventory": lambda m: llm.inventory(zombie, "- Rosa: a girl", "1. a line", [], m),
+             "scene_sheet": lambda m: llm.scene_sheet(zombie, {"idx": 1}, {}, sheet, m)}
+    for name, ask in calls.items():
+        meter = type("M", (), {"stopped": False, "channel_id": "zombie", "what": f"the {name}"})()
+        with pytest.raises(jobs.NeedsClaude):
+            ask(meter)
+    with ctx.connect() as conn:
+        kinds = {r["what"]: r["kind"] for r in conn.execute("SELECT what, kind FROM claude_jobs")}
+    assert kinds == {"the check_picture": "picture", "the map_stage": "map", "the name_parts": "parts",
+                     "the inventory": "inventory", "the scene_sheet": "sheet"}
+    assert {name for name in vars(LLM) if not name.startswith("_")} == {
+        "outline", "script", "revise_visual", "rewrite_line", "titles", "topics", "check_picture", "map_stage",
+        "name_parts", "critique", "scene_sheet", "inventory"}  # the writing's jobs are in test_writing.py
 
 
 def test_endpoint_over_http(ctx):

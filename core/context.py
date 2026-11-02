@@ -6,7 +6,7 @@ import threading
 from contextlib import closing, contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Iterator
+from typing import Any, Iterator
 
 from core import costs, db
 from core.errors import Stopped
@@ -28,8 +28,7 @@ class Ctx:
     google: dict = field(default_factory=dict)  # tests set fakes: API name -> (channel_id -> service); youtube/client.py
     _held: dict[int, float] = field(default_factory=dict, repr=False)  # video id → money promised to running calls
     _held_lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
-    _writing: dict[int, Callable] = field(default_factory=dict, repr=False)  # video id → cuts its Claude stream
-    _stops: set[int] = field(default_factory=set, repr=False)                # videos whose writing was stopped
+    _stops: set[int] = field(default_factory=set, repr=False)  # videos whose writing was stopped
 
     @contextmanager
     def connect(self) -> Iterator[sqlite3.Connection]:
@@ -99,15 +98,11 @@ class Ctx:
                 with self._held_lock:
                     self._held[video["id"]] -= usd
 
-    def stop_writing(self, video_id: int) -> bool:
-        """Stop the Claude call writing this video's outline or script. True if one was streaming; otherwise the
-        next call for it stops before it starts."""
+    def stop_writing(self, video_id: int) -> None:
+        """Stop the writing of this video's outline or script: its next Claude call stops instead of waiting for
+        the session (providers/session.py)."""
         with self._held_lock:
             self._stops.add(video_id)
-            close = self._writing.get(video_id)
-        if close:
-            close()
-        return close is not None
 
     def writing_done(self, video_id: int) -> None:
         with self._held_lock:
@@ -117,9 +112,9 @@ class Ctx:
               scene_id: int | None = None) -> "Meter":
         return Meter(self, conn, video, stage, what, scene_id)
 
-    def channel_meter(self, conn: sqlite3.Connection, stage: str, what: str, cap_usd: float, channel_id: str,
+    def channel_meter(self, conn: sqlite3.Connection, stage: str, what: str, channel_id: str,
                       video_id: int | None = None) -> "ChannelMeter":
-        return ChannelMeter(self, conn, stage, what, cap_usd, channel_id, video_id)
+        return ChannelMeter(self, conn, stage, what, channel_id, video_id)
 
     # --- engine settings -------------------------------------------------------
 
@@ -142,12 +137,10 @@ class Ctx:
 
 @dataclass
 class Meter:
-    """Budget guard and cost log for one stage's LLM calls on one video.
-
-    A Claude stage can make more than one API call (a retry after failed checks), and a call
-    that fails still costs money, so the provider reports each call here as it happens. `scene_id` is the scene a
-    scene stage's call is for, so a Claude Code job waiting on it wakes that scene (core/jobs.py).
-    """
+    """One stage's LLM calls on one video: what they're for (`what`, the job's name in the thread), whether the
+    person pressed Stop, and the scene a scene stage's call is for (`scene_id`), so a Claude Code job waiting on it
+    wakes that scene (core/jobs.py). The session's work costs nothing; the stub LLM logs what Claude used to cost
+    on the API through `check` and `spend`, as simulated costs."""
     ctx: Ctx
     conn: sqlite3.Connection
     video: sqlite3.Row
@@ -169,45 +162,27 @@ class Meter:
     def stopped(self) -> bool:
         return self.video["id"] in self.ctx._stops
 
-    @contextmanager
-    def writing(self, close: Callable[[], None]) -> Iterator[None]:
-        """While a Claude stream runs, Stop calls `close` to cut it off."""
-        with self.ctx._held_lock:
-            self.ctx._writing[self.video["id"]] = close
-        try:
-            yield
-        finally:
-            with self.ctx._held_lock:
-                self.ctx._writing.pop(self.video["id"], None)
-
 
 @dataclass
 class ChannelMeter:
-    """Like Meter, for an LLM call that belongs to a channel rather than a video (topic ideas). There's no
-    video budget to count against, so each call is capped instead; costs are logged with no video. `video_id` is a
-    video the call is about (a winner's follow-ups), so its Claude Code job is told apart from the channel's other
-    topic ideas."""
+    """Like Meter, for an LLM call that belongs to a channel rather than a video (topic ideas): there's no video
+    budget to count against, and the stub's simulated costs are logged with no video. `video_id` is a video the
+    call is about (a winner's follow-ups), so its Claude Code job is told apart from the channel's other topic
+    ideas."""
     ctx: Ctx
     conn: sqlite3.Connection
     stage: str
     what: str
-    cap_usd: float
     channel_id: str
     video_id: int | None = None
 
     def check(self, usd: float) -> None:
-        if self.ctx._counts("llm") and usd > self.cap_usd + 1e-9:
-            raise costs.BudgetExceeded(f"{self.what} could cost up to ${usd:.2f}, over the ${self.cap_usd:.2f} "
-                                       "allowed (topics.max_usd in stickfleet.yaml)")
+        pass
 
     def spend(self, usd: float, detail: dict | None = None) -> None:
         self.ctx.log_cost(self.conn, None, self.stage, "llm", usd, detail)
 
-    stopped = False
-
-    @contextmanager
-    def writing(self, close: Callable[[], None]) -> Iterator[None]:
-        yield  # topic ideas can't be stopped
+    stopped = False  # topic ideas can't be stopped
 
 
 def make_ctx(root: Path | None = None, data_dir: Path | None = None, overrides: dict | None = None) -> Ctx:

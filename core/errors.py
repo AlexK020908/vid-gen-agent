@@ -17,4 +17,4 @@ class FinalError(Exception):
 
 
 class Stopped(Exception):
-    """The person stopped a Claude call partway (stop_writing): go back to the card, not to an error."""
+    """The person stopped Claude's writing (stop_writing): go back to the card, not to an error."""

@@ -17,14 +17,15 @@ happens in the same room as the wide shot before it. Drawn separately and in par
 continuous moment came out as unrelated compositions (video 3's break-in), and consecutive close-ups as
 different rooms.
 
-Every still, set change and look picture is then checked (ctx.llm.check_picture, prompts/picture.md): a
-vision model looks at it against the scene's line and description, who's in it and what they have on, and
-the picture before it, and lists what a viewer would see is wrong. A picture with problems is drawn once more
-with them named (the {fix} paragraph of still.md, place_change.md and person_change.md); if the second try
+Every still, set change and look picture is then checked (ctx.llm.check_picture, prompts/picture.md): Claude
+Code's worker agent looks at it against the scene's line and description, who's in it and what they have on,
+and the picture before it, and lists what a viewer would see is wrong. A picture with problems is drawn once
+more with them named (the {fix} paragraph of still.md, place_change.md and person_change.md); if the second try
 still has problems it's kept and they're posted in the thread, so the person can flag the scene from the
 render card. The image model gets about one picture in ten wrong (a towel beside the knee it should press on,
-a midnight scene by day, a pickup drawn as a sedan), and nothing caught it before. A check costs about a
-cent, logged as stage `check`.
+a midnight scene by day, a pickup drawn as a sedan), and nothing caught it before. A check is a job for the
+session, so the stage parks until it's answered; each drawing waits on disk meanwhile (`_checked`), so the
+stage running again checks the same drawing instead of paying for a new one.
 
 A place the story changes for good (a scene's set_change) gets a new version drawn from the version before
 it, so the barricade built on Day 2 is still in the picture on Day 30. Each scene is drawn in the version
@@ -51,7 +52,7 @@ log = logging.getLogger("stickfleet.stills")
 
 NAME = "stills"
 SETS = "sets"         # the stage name the reference pictures' cost is logged under
-CHECK = "check"       # the stage name the picture checks' cost is logged under
+CHECK = "check"       # the stage name the picture checks are made under (the stub logs a simulated cost there)
 REFS_PER_STILL = 2    # cast reference pictures sent with one still, besides the character and the place
 
 _locks: dict[tuple, threading.Lock] = {}
@@ -73,9 +74,9 @@ def _work(ctx, conn, video, scene) -> tuple[dict, str]:
     previous = _previous(ctx, conn, scene)
     out = ctx.media(video["id"]) / "stills" / f"s{scene['idx']:03d}_r{scene['regen_count']}.png"
 
-    def draw(fix: str) -> None:
+    def draw(fix: str, dest: Path) -> None:
         with ctx.reserve(conn, video, ctx.images.still_price, f"still for scene {scene['idx']}", "images"):
-            usd = ctx.images.still(channel, scene["visual_prompt"], f"{scene['label']} · scene {scene['idx']}", out,
+            usd = ctx.images.still(channel, scene["visual_prompt"], f"{scene['label']} · scene {scene['idx']}", dest,
                                    place=place, people=people, hero=hero, previous=previous, fix=fix)
             ctx.log_cost(conn, video["id"], NAME, "images", usd)
 
@@ -90,37 +91,50 @@ def _work(ctx, conn, video, scene) -> tuple[dict, str]:
               "before": before["narration"] if before else "(this is the first scene)",
               "visual_prompt": scene["visual_prompt"], "people": _who(hero, people), "images": " ".join(images)}
     _checked(ctx, conn, video, channel, f"scene {scene['idx']}", draw, "still", values, pictures,
-             "Flag it on the render card to draw it again with a note.")
+             "Flag it on the render card to draw it again with a note.", scene["id"])
     make_preview(out)
     return {"still_path": ctx.rel(out)}, "still_done"
 
 
 def _checked(ctx, conn, video, channel, what: str, draw, turn: str, values: dict, pictures: list[Path],
-             advice: str = "") -> list[str]:
-    """Draw, look, and draw once more naming what was wrong when the first try had problems; of the two drawings,
-    the one that checked better is kept (a redraw can lose what was right). What's still wrong is posted in the
-    thread. A check the budget can't cover is skipped."""
+             advice: str = "", scene_id: int | None = None) -> list[str]:
+    """Draw (`draw(fix, dest)`), look, and draw once more naming what was wrong when the first try had problems; of
+    the two drawings, the one that checked better becomes `pictures[-1]` (a redraw can lose what was right). What's
+    still wrong is posted in the thread.
+
+    The check is a job for the Claude Code session, so the stage may park at either look (jobs.NeedsClaude) and
+    run again once it's answered. Each drawing waits on disk as a numbered try until the picture is settled, so
+    the stage running again looks at the same drawing and finds the answer, instead of paying for another drawing
+    and asking about that. A check or redraw the budget can't cover is skipped."""
     out = pictures[-1]
-    draw("")
-    meter = ctx.meter(conn, video, CHECK, f"the check of {what}")
-    first = out.with_name(f"{out.stem}.first{out.suffix}")
+    if out.exists():  # settled on an earlier run
+        return []
+    tries = [out.with_name(f"{out.stem}.try{n}{out.suffix}") for n in (1, 2)]
+    meter = ctx.meter(conn, video, CHECK, f"the check of {what}", scene_id)
+
+    def look(drawn: Path) -> list[str]:
+        return ctx.llm.check_picture(channel, turn, values, [*pictures[:-1], drawn], meter)
+
+    if not tries[0].exists():
+        draw("", tries[0])
+    keep, problems = tries[0], []
     try:
-        problems = ctx.llm.check_picture(channel, turn, values, pictures, meter)
+        problems = look(tries[0])
         if problems:
             log.info("%s: drawing again; the check found: %s", what, problems)
-            shutil.copyfile(out, first)
-            draw("; ".join(problems))
-            again = ctx.llm.check_picture(channel, turn, values, pictures, meter)
+            if not tries[1].exists():
+                draw("; ".join(problems), tries[1])
+            again = look(tries[1])
             if len(again) > len(problems):
                 log.info("%s: the redraw checked worse (%s); keeping the first drawing", what, again)
-                shutil.copyfile(first, out)
             else:
-                problems = again
+                keep, problems = tries[1], again
     except BudgetExceeded as e:
         ctx.events.emit("notice", video["id"], text=f"The picture for {what} wasn't checked: {e}")
-        return []
-    finally:
-        first.unlink(missing_ok=True)
+        problems = []
+    shutil.copyfile(keep, out)
+    for t in tries:
+        t.unlink(missing_ok=True)
     if problems:
         said = " ".join(p if p.endswith((".", "!", "?")) else p + "." for p in problems)
         ctx.events.emit("notice", video["id"], text=f"The picture for {what} still looks wrong after a second "
@@ -154,13 +168,14 @@ def _references(ctx, conn, video, channel, scene) -> tuple[tuple | None, tuple |
     hero = None
     if checks.HERO in scene["visual_prompt"].lower():
         chain = looks.get(checks.HERO)
-        hero = (chain[-1], _dressed(ctx, conn, video, channel, checks.HERO, Path(channel.character_ref), chain)) \
-            if chain else (None, None)
+        hero = (chain[-1], _dressed(ctx, conn, video, channel, checks.HERO, Path(channel.character_ref), chain,
+                                    scene["id"])) if chain else (None, None)
     places = {p["id"]: p for p in json.loads(video["places_json"] or "[]")}
     spot = places.get(scene["place"])
     place = None
     if spot:
-        drawn = _place(ctx, conn, video, channel, spot, scene["place_v"] or 0) if scene["shot"] != "close-up" else None
+        drawn = (_place(ctx, conn, video, channel, spot, scene["place_v"] or 0, scene["id"])
+                 if scene["shot"] != "close-up" else None)
         place = (spot["name"], spot["look"], drawn)
     cast = {c["name"]: c for c in json.loads(video["outline_json"]).get("cast") or []}
     people = []
@@ -172,15 +187,16 @@ def _references(ctx, conn, video, channel, scene) -> tuple[tuple | None, tuple |
             if len(people) < REFS_PER_STILL:
                 drawn = _person(ctx, conn, video, channel, member)
                 if chain:
-                    drawn = _dressed(ctx, conn, video, channel, member["name"], drawn, chain)
+                    drawn = _dressed(ctx, conn, video, channel, member["name"], drawn, chain, scene["id"])
             people.append((member["name"], f"{member['look']}, now with {chain[-1]}" if chain else member["look"],
                            drawn))
     return hero, place, people
 
 
-def _place(ctx, conn, video, channel, spot: dict, version: int):
+def _place(ctx, conn, video, channel, spot: dict, version: int, scene_id: int | None = None):
     """The place's picture after `version` of its set changes. Versions not drawn yet are drawn in order, each
-    from the one before, and each change is checked against its words."""
+    from the one before, and each change is checked against its words (a job that wakes `scene_id`, the scene
+    that needs it)."""
     changes = spot.get("changes") or []
     with _lock(video["id"], "place", spot["id"]):
         made, recipe = None, [channel.style_prompt, spot["look"]]
@@ -192,16 +208,16 @@ def _place(ctx, conn, video, channel, spot: dict, version: int):
                 if v:
                     before, change, what = made, changes[v - 1], f"{spot['name']} after change {v}"
 
-                    def draw(fix: str) -> None:
+                    def draw(fix: str, dest: Path) -> None:
                         with ctx.reserve(conn, video, ctx.images.still_price, f"the picture of {what}", "images"):
-                            usd = ctx.images.change_place(channel, before, change, out, fix=fix)
+                            usd = ctx.images.change_place(channel, before, change, dest, fix=fix)
                             ctx.log_cost(conn, video["id"], SETS, "images", usd)
 
                     _checked(ctx, conn, video, channel, what, draw, "change",
                              {"what": f"This should be {spot['name']} after a change that lasts: {change} The place "
                                       f"before the change: {spot['look']}",
                               "images": "Image 1 is the place before the change; image 2 is the new picture to "
-                                        "check."}, [before, out])
+                                        "check."}, [before, out], scene_id=scene_id)
                 else:
                     with ctx.reserve(conn, video, ctx.images.still_price, f"the picture of {spot['name']}", "images"):
                         usd = ctx.images.place(channel, spot["name"], spot["look"], out)
@@ -221,10 +237,10 @@ def _person(ctx, conn, video, channel, member: dict):
     return out
 
 
-def _dressed(ctx, conn, video, channel, who: str, base: Path, chain: list[str]) -> Path:
+def _dressed(ctx, conn, video, channel, who: str, base: Path, chain: list[str], scene_id: int | None = None) -> Path:
     """`who`'s reference as of the newest of `chain` (their looks so far, oldest first). Each look is drawn from
     the one before it, so the brace taped on Day 2 is the same brace wrapped on Day 9; each is drawn once,
-    checked against its words, and reused whenever they look that way again."""
+    checked against its words (a job that wakes `scene_id`), and reused whenever they look that way again."""
     made, recipe = base, [base.name, str(base.stat().st_mtime_ns)]  # mtime: a replaced reference draws again
     with _lock(video["id"], "look", who):
         for now in chain:
@@ -233,14 +249,15 @@ def _dressed(ctx, conn, video, channel, who: str, base: Path, chain: list[str]) 
             if not _from_earlier(ctx, conn, video, out):
                 before, what = made, f"{who} with {now}"
 
-                def draw(fix: str) -> None:
+                def draw(fix: str, dest: Path) -> None:
                     with ctx.reserve(conn, video, ctx.images.still_price, f"the picture of {what}", "images"):
-                        usd = ctx.images.change_look(channel, before, now, out, fix=fix)
+                        usd = ctx.images.change_look(channel, before, now, dest, fix=fix)
                         ctx.log_cost(conn, video["id"], SETS, "images", usd)
 
                 _checked(ctx, conn, video, channel, what, draw, "change",
                          {"what": f"This should be {who} as drawn in image 1, redrawn with: {now}",
-                          "images": "Image 1 is them before; image 2 is the new picture to check."}, [before, out])
+                          "images": "Image 1 is them before; image 2 is the new picture to check."}, [before, out],
+                         scene_id=scene_id)
             made = out
     return made
 

@@ -2,6 +2,7 @@
 scenes' rewrites and topic ideas, each a job answered over MCP and checked as it comes in. Pictures and voices are
 stubs. $0."""
 import json
+import shutil
 import time
 
 import pytest
@@ -30,7 +31,7 @@ def ctx(tmp_path, monkeypatch):
                                                  "render": {"engine": "ffmpeg"},
                                                  "topics": {"competitors": "off", "cadence": False},
                                                  "youtube": {"reach": False, "signin_check": False}})
-    ctx.llm = SessionLLM(ctx.config, fallback=ctx.llm)  # the writing from the session; the picture checks from the stub
+    ctx.llm = SessionLLM(ctx.config, ctx.llm, stubbed=("check_picture",))  # the writing from the session
     return ctx
 
 
@@ -176,6 +177,95 @@ def test_a_video_written_by_the_session(ctx):
                                 AND stage IN ('outline', 'script', 'critic', 'thumbs', 'regen')""", (vid,)).fetchone()[0]
     assert lines[1] == lines[4] == LINE and lines[0] != LINE
     assert spent == 0 and waiting(ctx) == []
+
+
+def test_revise_sends_the_draft_and_regenerate_starts_fresh(ctx):
+    vid = outlined(ctx)
+    actions.revise(ctx, vid, "outline", "open on the storm")
+    run(ctx)
+    job = the_job(ctx, "outline")
+    asked = brief(ctx, job)
+    assert "Here is the current outline" in asked and outline_data()["hook"] in asked
+    assert "1. open on the storm" in asked
+    accepted(ctx, job, outline_data(n=3, heroes=1, hook="Revised hook."))
+    run(ctx)
+    accepted(ctx, the_job(ctx, "critic"), {"verdict": "fine", "problems": []})
+    run(ctx)
+
+    actions.regenerate(ctx, vid, "outline")
+    run(ctx)
+    with pytest.raises(actions.ActionError):
+        actions.regenerate(ctx, vid, "script")  # no script is waiting
+    fresh = brief(ctx, the_job(ctx, "outline"))
+    assert "current outline" not in fresh and "Revised hook" not in fresh
+    assert "1. open on the storm" in fresh  # the note is kept
+
+
+def test_a_next_part_starts_from_the_story_so_far(ctx):
+    vid = outlined(ctx)
+    outline = json.loads(video(ctx, vid)["outline_json"])
+    actions.approve(ctx, vid, "outline")
+    run(ctx)
+    accepted(ctx, the_job(ctx, "script"), script_data(outline, n=6))
+    run(ctx)
+    accepted(ctx, the_job(ctx, "critic"), {"verdict": "fine", "problems": []})
+    run(ctx)
+    actions.approve(ctx, vid, "script")  # the scenes exist now, so where part 1 ends is known
+
+    nxt = actions.next_part(ctx, vid, "they reach the boat")
+    run(ctx)
+    [job] = [j for j in waiting(ctx) if j["kind"] == "outline"]
+    asked = brief(ctx, job["id"])
+    assert "This video is Part 2 of a series" in asked and "Part 1:" in asked and "they reach the boat" in asked
+    assert "How it ended on screen: Scene 4 of beat 2." in asked  # its last three lines
+    assert "Where the tracker stood at the end: Water" in asked
+    redrawn = outline_data(n=3, heroes=1)
+    redrawn["cast"][0]["look"] = "a girl in a green coat"  # a returning character keeps her look
+    accepted(ctx, job["id"], redrawn)
+    run(ctx)
+    [review] = [j for j in waiting(ctx) if j["kind"] == "critic"]
+    accepted(ctx, review["id"], {"verdict": "fine", "problems": []})
+    run(ctx)
+    second = json.loads(video(ctx, nxt)["outline_json"])
+    assert second["part"] == 2 and second["cast"][0]["look"] == "a stick-figure girl in a yellow raincoat"
+
+
+def test_prompt_edits_apply_to_the_next_job_and_bad_placeholders_stop(tmp_path, monkeypatch):
+    from core.config import ROOT
+    for name, value in SMALL:
+        monkeypatch.setattr(checks, name, value)
+    root = tmp_path / "project"  # a copy, so prompt edits never touch the real prompts/
+    root.mkdir()
+    shutil.copy(ROOT / "stickfleet.yaml", root)
+    for name in ("channels", "prompts"):
+        shutil.copytree(ROOT / name, root / name)
+    ctx = make_ctx(root=root, data_dir=tmp_path / "data", overrides={
+        "mode": "stub", "engine": {"retry_backoff_s": 0}, "topics": {"competitors": "off", "cadence": False}})
+    ctx.llm = SessionLLM(ctx.config, ctx.llm, stubbed=("check_picture",))
+    path = root / "prompts" / "outline.md"
+    text = path.read_text(encoding="utf-8")
+    path.write_text(text.replace("## What to write", "Always include a dog.\n\n## What to write"), encoding="utf-8")
+    vid = outlined(ctx)
+    with ctx.connect() as conn:
+        first = conn.execute("SELECT system FROM claude_jobs WHERE kind = 'outline'").fetchone()["system"]
+    assert "Always include a dog." in first
+
+    path.write_text(text.replace("## What to write", "Mood: {mood}\n\n## What to write"), encoding="utf-8")
+    actions.regenerate(ctx, vid, "outline")
+    run(ctx)
+    v = video(ctx, vid)
+    assert v["state"] == "failed" and "{mood}" in v["error"] and "isn't a placeholder" in v["error"]
+    assert waiting(ctx) == []  # nothing was asked
+
+    path.write_text(text.replace("## What to write", "The idea is {idea}.\n\n## What to write"), encoding="utf-8")
+    actions.retry(ctx, vid)
+    run(ctx)
+    assert "above the user-turn line" in video(ctx, vid)["error"]
+
+    path.write_text(text, encoding="utf-8")
+    actions.retry(ctx, vid)
+    run(ctx)
+    assert "Always include a dog." not in brief(ctx, the_job(ctx, "outline"))
 
 
 def test_a_long_brief_goes_to_a_file(ctx, monkeypatch):
