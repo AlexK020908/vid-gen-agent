@@ -105,7 +105,8 @@ class StubImages:
     thumb_price = 0.044
 
     def still(self, channel, prompt: str, label: str, out: Path, place: tuple | None = None,
-              people: list | tuple = (), hero: tuple | None = ("", None)) -> float:
+              people: list | tuple = (), hero: tuple | None = ("", None), previous: Path | None = None,
+              fix: str = "") -> float:
         img = Image.new("RGB", (1920, 1080), (236, 236, 232))
         draw = ImageDraw.Draw(img)
         figure = _character(channel.character_ref, 640)
@@ -118,8 +119,9 @@ class StubImages:
             y += 56
         with_whom = ", ".join(name for name, _, _ in people)
         where = " · ".join(part for part in (place and f"in {place[0]}" + ("" if place[2] else " (in words)"),
-                                             with_whom and f"with {with_whom}") if part)
-        draw.text((120, 990), f"PLACEHOLDER STILL {where}".strip(), font=_font(30), fill=(160, 160, 160))
+                                             with_whom and f"with {with_whom}",
+                                             previous and f"after {previous.stem}", fix and f"fixing: {fix}") if part)
+        draw.text((120, 990), f"PLACEHOLDER STILL {where}"[:120].strip(), font=_font(30), fill=(160, 160, 160))
         out.parent.mkdir(parents=True, exist_ok=True)
         img.save(out)
         return self.still_price
@@ -127,10 +129,29 @@ class StubImages:
     def place(self, channel, name: str, look: str, out: Path) -> float:
         return self._card(f"PLACE: {name}", look, out, (1920, 1080))
 
-    def change_place(self, channel, base: Path, change: str, out: Path) -> float:
+    def sheet(self, channel, reference: Path, items: str, out: Path, file: str = "parts.md") -> float:
+        """A parts sheet on flat green (puppet/parts.py cuts it): one simple blob per numbered item, left to
+        right, biggest first so the cut finds them in the order asked."""
+        img = Image.new("RGB", (1920, 1080), (0, 255, 0))
+        draw = ImageDraw.Draw(img)
+        count = max(1, len([ln for ln in items.splitlines() if ln.strip()]))
+        colors = [(250, 250, 250), (200, 50, 50), (30, 30, 30), (140, 100, 60), (150, 150, 155)]
+        step = 1920 // (count + 1)
+        for i in range(count):
+            size = max(60, min(240, step - 60) - i * 12)   # apart from each other, however many there are
+            x, y = step * (i + 1), 540
+            draw.ellipse((x - size // 2, y - size // 2, x + size // 2, y + size // 2),
+                         fill=colors[i % len(colors)], outline=(20, 20, 20), width=6)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        img.save(out)
+        return self.still_price
+
+    def change_place(self, channel, base: Path, change: str, out: Path, fix: str = "") -> float:
         with Image.open(base) as img:
             img = img.convert("RGB")
         ImageDraw.Draw(img).text((120, 900), f"CHANGED: {change}"[:90], font=_font(36), fill=(150, 40, 40))
+        if fix:
+            ImageDraw.Draw(img).text((120, 950), f"FIXING: {fix}"[:90], font=_font(36), fill=(150, 40, 40))
         out.parent.mkdir(parents=True, exist_ok=True)
         img.save(out)
         return self.still_price
@@ -138,8 +159,8 @@ class StubImages:
     def person(self, channel, name: str, look: str, out: Path) -> float:
         return self._card(f"CAST: {name}", look, out, (1024, 1536))
 
-    def change_look(self, channel, base: Path, now: str, out: Path) -> float:
-        return self._card("NOW WITH", now, out, (1024, 1536))
+    def change_look(self, channel, base: Path, now: str, out: Path, fix: str = "") -> float:
+        return self._card("NOW WITH", now + (f" (fixing: {fix})" if fix else ""), out, (1024, 1536))
 
     def _card(self, title: str, text: str, out: Path, size: tuple[int, int]) -> float:
         img = Image.new("RGB", size, (222, 228, 236))

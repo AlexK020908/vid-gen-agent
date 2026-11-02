@@ -38,6 +38,12 @@ WAIT_S = 300        # the longest one picture may take, queue included
 CLIP_WAIT_S = 1200  # clips take minutes, more when fal is busy
 
 
+def _fix(problems: str) -> str:
+    """The paragraph a redraw gets: what the picture check found wrong with the last try (stages/stills.py)."""
+    return (f"A previous drawing of this picture got these things wrong; get them right this time: {problems}"
+            if problems else "")
+
+
 def clip_settings(config) -> tuple[str, dict, int]:
     """models.clip, its entry in fal.clips.models, and the clip length, checked against what it offers."""
     clips = config.fal.get("clips") or {}
@@ -109,10 +115,13 @@ class FalImages(_Fal):
         self._lock = threading.Lock()
 
     def still(self, channel, prompt: str, label: str, out: Path, place: tuple | None = None,
-              people: list | tuple = (), hero: tuple | None = ("", None)) -> float:
+              people: list | tuple = (), hero: tuple | None = ("", None), previous: Path | None = None,
+              fix: str = "") -> float:
         """`hero` is (what the main character has on now, their picture; the character reference when None), or
         None when the scene doesn't show them. `place` and each of `people` are (name, look, picture or None):
-        drawn from the picture when there is one, and from the look when not."""
+        drawn from the picture when there is one, and from the look when not. `previous` is the picture of the
+        moment before this one, when the scene follows straight on from it, and `fix` is what the last drawing
+        of this scene got wrong."""
         refs, said = [], []
 
         def ref(path, what: str) -> None:
@@ -134,12 +143,19 @@ class FalImages(_Fal):
         if hero is None:
             said.append("The main character is not in this picture: don't draw them, and nobody else wears their "
                         "clothes.")
-            if not refs:  # the model needs a picture to work from; the character's shows the style
+            if not refs and not previous:  # the model needs a picture to work from; the character's shows the style
                 refs.append(self._character(channel))
                 said.insert(0, "Image 1 shows only the art style.")
         elif people:
             said.append("Nobody but the main character wears the main character's clothes.")
-        text = prompts.fill(self.root, "still.md", channel, {"visual_prompt": prompt, "references": " ".join(said)})
+        if previous:
+            ref(previous, "the moment just before this one, in this same place, as it was drawn: this scene follows "
+                          "straight on from it. Keep its viewpoint and light, and everything in it where it is; the "
+                          "people in it stay as drawn there, holding what they held, and move only as this scene "
+                          "says. Change only what this scene's words change, in this scene's own framing (a close-up "
+                          "looks closely at one part of that moment). Anyone not in this scene has left the frame")
+        text = prompts.fill(self.root, "still.md", channel,
+                            {"visual_prompt": prompt, "references": " ".join(said), "fix": _fix(fix)})
         self._draw(text, refs, out, STILL_SIZE)
         return self.still_price
 
@@ -154,9 +170,16 @@ class FalImages(_Fal):
         self._draw(text, [self._character(channel)], out, STILL_SIZE)
         return self.still_price
 
-    def change_place(self, channel, base: Path, change: str, out: Path) -> float:
+    def sheet(self, channel, reference: Path, items: str, out: Path, file: str = "parts.md") -> float:
+        """A character's parts (parts.md, drawn from their picture) or the story's props (props.md, drawn in the
+        style of the picture), laid out on flat green for puppet/parts.py to cut up."""
+        text = prompts.fill(self.root, file, channel, {"items": items})
+        self._draw(text, [Path(reference)], out, STILL_SIZE)
+        return self.still_price
+
+    def change_place(self, channel, base: Path, change: str, out: Path, fix: str = "") -> float:
         """The same place after a change that lasts, drawn from its previous picture."""
-        text = prompts.fill(self.root, "place_change.md", channel, {"change": change})
+        text = prompts.fill(self.root, "place_change.md", channel, {"change": change, "fix": _fix(fix)})
         self._draw(text, [Path(base)], out, STILL_SIZE)
         return self.still_price
 
@@ -166,9 +189,9 @@ class FalImages(_Fal):
         self._draw(text, [self._character(channel)], out, PERSON_SIZE, aspect="2:3")
         return self.still_price
 
-    def change_look(self, channel, base: Path, now: str, out: Path) -> float:
+    def change_look(self, channel, base: Path, now: str, out: Path, fix: str = "") -> float:
         """The same character with what they have on now (body armor, a bandage), drawn from their picture."""
-        text = prompts.fill(self.root, "person_change.md", channel, {"now": now})
+        text = prompts.fill(self.root, "person_change.md", channel, {"now": now, "fix": _fix(fix)})
         self._draw(text, [Path(base)], out, PERSON_SIZE, aspect="2:3")
         return self.still_price
 

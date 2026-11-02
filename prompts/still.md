@@ -4,6 +4,8 @@ Draw this scene as one frame of a narrated cartoon:
 
 {references}
 
+{fix}
+
 When the main character is in the scene, keep them exactly as their reference image draws them: the same round white head and face, proportions, line weight and clothes, and whatever the references say they now have (body armor, a bandage). Show how they feel with their eyes, eyebrows and pose. They're doing one clear thing a viewer gets in a second, with their whole body in view unless the scene asks for a close-up. Everyone else is a stick figure too: a round head and thin black stick limbs, with clothes sketched simply over the sticks (a headscarf, a cardigan), never a full cartoon body. A cast member with a reference image looks exactly as drawn there. Props are exactly what the scene names.
 
 When a reference image shows the place, the scene happens in exactly that place: keep its layout, furniture, landmarks, colors and materials as drawn there, seen from the same viewpoint and framing as that picture, in the scene's own time of day and light. In a medium shot the people stand nearer the camera; the camera doesn't move, and the room behind them stays exactly where the picture has it. Never move a door, window or piece of furniture to fit it into the frame, and don't add, remove or move anything the scene doesn't mention.

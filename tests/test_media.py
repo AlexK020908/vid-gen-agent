@@ -32,6 +32,8 @@ from providers.images import CAPTION_FILL, StubImages
 from providers.tts import StubTTS
 from render import ffmpeg
 from render.render import render_video
+from stages import assemble
+from stages.clips import wearing_of
 
 load_dotenv(ROOT / ".env")  # only the live tests use the keys
 
@@ -45,14 +47,21 @@ def mp3(tmp_path_factory) -> bytes:
     return path.read_bytes()
 
 
+VOICE_OWN = {"stability": 0.4, "use_speaker_boost": True, "similarity_boost": 0.8, "style": 0.1, "speed": 1.0}
+
+
 class FakeElevenLabs:
     """Answers with-timestamps requests: the MP3 above and evenly spaced character timings over 2 s.
-    `errors` is a list of (status, body, headers) answered first, in order."""
+    `errors` is a list of (status, body, headers) answered first, in order. Reads of the voice's own settings
+    answer VOICE_OWN and are counted in `settings_reads`, not `requests`."""
 
     def __init__(self, mp3: bytes, *errors) -> None:
-        self.mp3, self.errors, self.requests = mp3, list(errors), []
+        self.mp3, self.errors, self.requests, self.settings_reads = mp3, list(errors), [], 0
 
     def __call__(self, request: httpx2.Request) -> httpx2.Response:
+        if request.method == "GET" and request.url.path == "/v1/voices/voice123/settings":
+            self.settings_reads += 1
+            return httpx2.Response(200, json=VOICE_OWN)
         body = json.loads(request.content)
         self.requests.append({"path": request.url.path, "params": dict(request.url.params), "body": body,
                               "key": request.headers.get("xi-api-key")})
@@ -202,11 +211,23 @@ def test_voice_request_and_result(ctx, mp3, tmp_path):
     assert req["path"] == "/v1/text-to-speech/voice123/with-timestamps" and req["key"] == "test-key"
     assert req["params"] == {"output_format": "mp3_44100_128"}
     assert req["body"] == {"text": text, "model_id": "eleven_multilingual_v2", "previous_text": "Line two.",
-                           "next_text": "Line four."}
+                           "next_text": "Line four.",
+                           "voice_settings": {**VOICE_OWN, "speed": ctx.config.elevenlabs["speed"]}}  # its own, slower
     assert (tmp_path / "s003.mp3").read_bytes() == mp3
     assert 1900 <= result["duration_ms"] <= 2200  # read from the MP3, not the timings
     assert [w["word"] for w in result["words"]] == text.split()
     assert usd == pytest.approx(len(text) * ctx.config.elevenlabs["price_per_char"])
+    tts.speak(ctx.channel("zombie"), text, tmp_path / "s004.mp3")
+    assert fake.settings_reads == 1  # read once per voice
+
+    ctx.config.elevenlabs["speed"] = 1  # its own pace: nothing sent, nothing read
+    tts = use_voice(ctx, fake)
+    tts.speak(ctx.channel("zombie"), text, tmp_path / "s005.mp3")
+    assert "voice_settings" not in fake.requests[-1]["body"] and fake.settings_reads == 1
+    ctx.config.elevenlabs["voice_settings"] = {"stability": 0.7}  # written out: sent as is
+    tts = use_voice(ctx, fake)
+    tts.speak(ctx.channel("zombie"), text, tmp_path / "s006.mp3")
+    assert fake.requests[-1]["body"]["voice_settings"] == {"stability": 0.7} and fake.settings_reads == 1
 
 
 def test_voice_retries_when_busy_and_stops_on_what_needs_you(ctx, mp3, tmp_path, monkeypatch):
@@ -318,6 +339,26 @@ def test_places_and_cast_are_drawn_once_then_sent_with_each_still(ctx, tmp_path)
     assert fake.calls[-1]["image_urls"] == ["https://v3.fal.media/files/ref1.png"]  # only for the style
     assert "Image 1 shows only the art style." in fake.calls[-1]["prompt"]
 
+    images.still(channel, "Close-up: his hand on the taped hinge.", "Day 6", tmp_path / "g.png",
+                 place=("the flat", "A small flat.", None), previous=tmp_path / "d.png",
+                 fix="the tape is on the brace hinge, not in his hand")
+    chained = fake.calls[-1]  # the moment before it goes along too, and what the last drawing got wrong
+    assert fake.uploads[-1] == tmp_path / "d.png" and chained["image_urls"][-1] == "https://v3.fal.media/files/ref6.png"
+    assert "Image 2 is the moment just before this one, in this same place" in chained["prompt"]
+    assert "got these things wrong; get them right this time: the tape is on the brace hinge" in chained["prompt"]
+    assert "get them right" not in fake.calls[-2]["prompt"]  # a first drawing has no fix paragraph
+    images.change_place(channel, tmp_path / "flat.png", "The window is boarded up.", tmp_path / "flat2.png",
+                        fix="the boards cover the whole window")
+    assert "get them right this time: the boards cover the whole window" in fake.calls[-1]["prompt"]
+
+
+def test_clip_sends_only_the_looks_of_people_in_the_picture():
+    scene = {"cast_json": '["Rosa"]', "visual_prompt": "Wide shot: Rosa runs down the stairs into the crowd.",
+             "looks_json": '{"the stick figure": ["a knee brace; a cane"], "Rosa": ["a torn sleeve"]}'}
+    assert wearing_of(scene) == "Rosa: a torn sleeve"  # not the main character's brace: he isn't in it
+    scene["visual_prompt"] = "Wide shot: the stick figure fires as Rosa runs."
+    assert wearing_of(scene) == "the stick figure: a knee brace; a cane; Rosa: a torn sleeve"
+
 
 def test_picture_errors(ctx, tmp_path, monkeypatch):
     channel, out = ctx.channel("zombie"), tmp_path / "x.png"
@@ -374,11 +415,15 @@ def test_pipeline_with_real_voice_and_pictures(ctx, mp3):
     assert "previous_text" not in by_text[scenes[0]["narration"]]
     # 6 stills, 3 thumbnails, and the stub script's references: 2 places, the shelter once changed, and Rosa.
     # Each reference file is uploaded once (the character too), however many stills use it.
-    # and the main character redrawn with the red backpack the stub puts on them in scene 1
-    assert len(pictures.calls) == 6 + 3 + 5 and len(pictures.uploads) == 1 + 5
+    # and the main character redrawn with the red backpack the stub puts on them in scene 1. Scenes 2 and 4 carry
+    # on from the scene before them, so those two stills are uploaded as references too. The stub LLM's rows: the
+    # outline, the script, the titles, and a check of each of the 6 stills, the backpack look and the cot change.
+    assert len(pictures.calls) == 6 + 3 + 5 and len(pictures.uploads) == 1 + 5 + 2
     assert {(r["provider"], r["simulated"]): r["n"] for r in costs} == {
-        ("tts", 0): 6, ("images", 0): 14, ("llm", 1): 3, ("video", 1): 1}
-    assert abs(v["duration_ms"] - sum(s["duration_ms"] for s in scenes)) < 400
+        ("tts", 0): 6, ("images", 0): 14, ("llm", 1): 3 + 8 + 2, ("video", 1): 1}
+    pauses = assemble.pauses(scenes, ctx.config.render)  # a breath after each line, longer before a new day
+    assert pauses[-1] == 1000 and 400 in pauses
+    assert abs(v["duration_ms"] - sum(s["duration_ms"] for s in scenes) - sum(pauses)) < 400
 
     thumbs = json.loads(v["thumbs_json"])  # the stub's thumbnail words, drawn on in the upper left
     assert thumbs["texts"] == ["365 DAYS ALONE", "THE WORST NIGHT", "HOW DID I LAST?"]

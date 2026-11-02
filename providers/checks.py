@@ -8,16 +8,19 @@ from __future__ import annotations
 
 import re
 
-BEATS = (10, 12)
+BEATS = (8, 10)
 HERO_BEATS = (3, 4)
-SCENES = (45, 70)
+HERO_SCENES = (7, 9)            # what the prompt asks for each hero beat: the build-up, the moment, the aftermath
+HERO_SCENES_OK = 6              # fewer and the set piece is rushed
+SCENES = (40, 65)
 SCENE_WORDS = (30, 40)          # what the prompt asks for
 SCENE_WORDS_OK = (25, 45)       # what passes: a line a few words off isn't worth rewriting the whole script
-TOTAL_WORDS = 1900              # asked for: about 12 minutes at 160 words a minute
-TOTAL_WORDS_OK = (1600, 2200)   # passes: about 10 to 14 minutes
-WPM = 160                       # the narration voices read 145 to 170 a minute
+TOTAL_WORDS = 1750              # asked for: about 12 minutes at 150 words a minute, with the pauses between scenes
+TOTAL_WORDS_OK = (1500, 2000)   # passes: about 10 to 14 minutes
+WPM = 150                       # elevenlabs.speed slows the voices to about this; their own pace is 160 to 170
 TITLES = 3
 TITLE_MAX = 100                 # YouTube's limit
+DESCRIPTION_CHARS = (150, 900)  # the viewer-facing blurb above the chapters: a short paragraph, not a note or an essay
 THUMB_WORDS = (2, 4)            # thumbnail text, drawn on in code (providers/images.py caption)
 THUMB_CHARS = 24                # longer won't fit big enough to read on a phone
 FAMILY_WORDS = 3                # a topic's setting tag: "ocean", "frozen north"
@@ -30,7 +33,9 @@ COLD_OPEN_SCENES = 6            # a script may open on a later day for this many
 CAST = (0, 4)                   # people besides the main character with a thread of their own
 TRACKER = (2, 4)                # things the viewer counts along with the character (water, food, days left)
 PLACES = (1, 10)                # places the pictures happen in; each is drawn once as a reference picture
+STRETCH_DAYS = 3                # quiet days one scene may tell together ("Day 3-5"); a tenth of the span if longer
 LABEL = re.compile(r"^(Day|Week|Month|Year) (\d+)\b")
+STRETCH = re.compile(r"^Day (\d+)(?:\s*(?:-|–|—|to)\s*(?:Day\s*)?(\d+))?\b")
 DAYS = {"Day": 1, "Week": 7, "Month": 30, "Year": 365}
 
 
@@ -41,6 +46,12 @@ def words(text: str) -> int:
 def _day(label: str) -> int | None:
     m = LABEL.match(label.strip())
     return int(m.group(2)) * DAYS[m.group(1)] if m else None
+
+
+def _days(label: str) -> tuple[int, int] | None:
+    """(first, last) day a "Day 3" or "Day 3-5" label tells; None for weeks, months and anything else."""
+    m = STRETCH.match(label.strip())
+    return (int(m.group(1)), int(m.group(2) or m.group(1))) if m else None
 
 
 def _blank(value) -> bool:
@@ -88,6 +99,28 @@ def _timeline(labels: list[tuple[str, str]], cold_open: int = 0) -> list[str]:
                 problems.append(f"{where}: {label} comes after {last[1]}, which goes back in time")
         if day is not None:
             last = (day, label)
+    return problems
+
+
+def _every_day(scenes: list[dict], cold_open: int = 0) -> list[str]:
+    """A story labeled in days tells every one of them, in order: each new label starts at most the day after the
+    last one ended, and quiet days told together ("Day 3-5") are at most STRETCH_DAYS, or a tenth of the span in a
+    longer story. Scenes before a cold open's restart, and stories labeled in weeks or months, aren't checked."""
+    told = [(n, s.get("label") or "") for n, s in enumerate(scenes, 1) if n > cold_open]
+    spans = [_days(label) for _, label in told]
+    if not told or None in spans:
+        return []
+    longest = max(STRETCH_DAYS, (spans[-1][1] - spans[0][0] + 1) // 10)
+    problems, end, last = [], None, None
+    for (n, label), (first, final) in zip(told, spans):
+        if final - first + 1 > longest:
+            problems.append(f"scene {n} tells {final - first + 1} days at once ({label}); keep a stretch to {longest} days")
+        if end is not None and first > end + 1:
+            gap = f"Day {end + 1}" if first == end + 2 else f"Days {end + 1} to {first - 1}"
+            like = f"Day {end + 1}" if first == end + 2 else f"Day {end + 1}-{min(first - 1, end + longest)}"
+            problems.append(f"scene {n} jumps from {last} to {label}, skipping {gap}; tell every day, on its own or a "
+                            f"few quiet ones together, like \"{like}\"")
+        end, last = final if end is None else max(end, final), label
     return problems
 
 
@@ -197,6 +230,11 @@ def script(scenes: list[dict], outline: dict, clips_per_video: int, places: list
     if missing:
         problems.append(f"beat{'s' if len(missing) > 1 else ''} {', '.join(map(str, missing))} "
                         f"{'have' if len(missing) > 1 else 'has'} no scenes")
+    for b, beat in enumerate(beats, 1):
+        count = sum(1 for s in scenes if s.get("beat") == b)
+        if beat.get("hero") and 0 < count < HERO_SCENES_OK:
+            problems.append(f"beat {b} is a hero beat but has only {count} scene{'s' if count > 1 else ''}; give it "
+                            f"{HERO_SCENES[0]} to {HERO_SCENES[1]}, with the build-up, the moment and the aftermath")
     if clips > clips_per_video:
         problems.append(f"there are {clips} clip scenes; this channel allows {clips_per_video}")
     total = sum(words(s.get("narration") or "") for s in scenes)
@@ -205,6 +243,7 @@ def script(scenes: list[dict], outline: dict, clips_per_video: int, places: list
         problems.append(f"the narration is {total:,} words in total; aim for about {TOTAL_WORDS:,} "
                         f"(it must land between {lo:,} and {hi:,})")
     problems += _timeline([(f"scene {n}", s.get("label") or "") for n, s in enumerate(scenes, 1)], COLD_OPEN_SCENES)
+    problems += _every_day(scenes, cold_open([s.get("label") or "" for s in scenes]))
     return problems + _continuity(scenes, outline, places)
 
 
@@ -308,6 +347,19 @@ def titles(options: list[str]) -> list[str]:
     return problems
 
 
+def description(text: str) -> list[str]:
+    """The viewer-facing blurb for the YouTube page (the chapters and the disclosure are added in code)."""
+    if _blank(text):
+        return ["the description is empty"]
+    n = len(text.strip())
+    if not DESCRIPTION_CHARS[0] <= n <= DESCRIPTION_CHARS[1]:
+        return [f"the description is {n} characters; keep it to {DESCRIPTION_CHARS[0]} to {DESCRIPTION_CHARS[1]}"]
+    if "<" in text or ">" in text:
+        return ["the description has < or >, which YouTube doesn't allow"]
+    planning = [w for w in ("open cold", "rewind", "the hook", "the promise") if w in text.lower()]
+    return [f"the description reads like the outline's note (\"{planning[0]}\"); write it for viewers"] if planning else []
+
+
 def thumb_texts(texts: list[str]) -> list[str]:
     """The words drawn on each thumbnail, one per title."""
     problems = [] if len(texts) == TITLES else [f"there are {len(texts)} thumb_texts; it needs {TITLES}"]
@@ -360,3 +412,99 @@ def topics(proposed: list[dict], count: int, shown: int, taken: list[str], held:
         elif bad := [b for b in based if not isinstance(b, int) or not 1 <= b <= shown]:
             problems.append(f"topic {n} cites hit {bad[0]}; the hits are numbered 1 to {shown}")
     return problems
+
+
+def stage_map(data: dict) -> list[str]:
+    """Claude's map of a place (puppet/stage.py): a floor line, spots, a light, all inside the picture."""
+    problems = []
+    floor = data.get("floor") or []
+    if not 3 <= len(floor) <= 8:
+        problems.append(f"floor has {len(floor)} points; give 3 to 6")
+    for p in floor:
+        if not (0 <= p["x"] <= 100 and 0 <= p["y"] <= 100):
+            problems.append(f"floor point ({p['x']}, {p['y']}) is outside the picture")
+        if not 5 <= p["height"] <= 100:
+            problems.append(f"a floor point's height of {p['height']} isn't a sensible percentage of the picture")
+    spots = data.get("spots") or []
+    if not spots:
+        problems.append("spots is empty; name at least the doors, stairs and main furniture")
+    names = [s["name"].strip().lower() for s in spots]
+    if len(set(names)) != len(names):
+        problems.append("two spots have the same name")
+    for s in spots:
+        if not (0 <= s["x"] <= 100 and 0 <= s["y"] <= 100):
+            problems.append(f"spot {s['name']} is outside the picture")
+    for o in data.get("occluders") or []:
+        if not 3 <= len(o.get("polygon") or []) <= 10:
+            problems.append(f"occluder {o.get('name')} needs a polygon of 4 to 8 points")
+        if any(not (0 <= p["x"] <= 100 and 0 <= p["y"] <= 100) for p in o.get("polygon") or []):
+            problems.append(f"occluder {o.get('name')} has a point outside the picture")
+        for s in spots:
+            if s["y"] < o.get("base_y", 0) and _inside(s["x"], s["y"], [(p["x"], p["y"]) for p in o.get("polygon") or []]):
+                problems.append(f"spot {s['name']} is behind {o.get('name')}: whoever stands there would be hidden by it. "
+                                "Move the spot to open floor beside it, or drop it")
+    light = data.get("light") or {}
+    if not (0 <= light.get("x", -1) <= 100 and 0 <= light.get("y", -1) <= 100):
+        problems.append("the light is outside the picture")
+    return problems
+
+
+def _inside(x: float, y: float, polygon: list[tuple[float, float]]) -> bool:
+    """Ray casting: is the point inside the polygon?"""
+    inside = False
+    n = len(polygon)
+    for i in range(n):
+        (x1, y1), (x2, y2) = polygon[i], polygon[(i + 1) % n]
+        if (y1 > y) != (y2 > y) and x < (x2 - x1) * (y - y1) / ((y2 - y1) or 1e-9) + x1:
+            inside = not inside
+    return inside
+
+
+def parts_map(data: dict, names: list[str]) -> list[str]:
+    """Claude's naming of the blobs on a parts sheet (puppet/parts.py): every name once, boxes from 0 up."""
+    given = [p["name"].strip().lower() for p in data.get("parts") or []]
+    problems = [f"{n} is missing from parts" for n in names if n.lower() not in given]
+    problems += [f"{n} is named more than once" for n in set(given) if given.count(n) > 1]
+    boxes = [p["box"] for p in data.get("parts") or [] if p["box"]]
+    if len(set(boxes)) != len(boxes):
+        problems.append("two parts are given the same box")
+    return problems
+
+
+def inventory(data: dict) -> list[str]:
+    """Claude's props list (prompts/inventory.md): short lowercase names, sensible sizes, a known `stands`."""
+    problems = []
+    names = [p["name"].strip().lower() for p in data.get("props") or []]
+    if len(names) > 12:
+        problems.append(f"{len(names)} props is too many; keep the ones scenes show, at most 12")
+    if len(set(names)) != len(names):
+        problems.append("a prop is listed twice")
+    for p in data.get("props") or []:
+        if not re.fullmatch(r"[a-z][a-z0-9 ]{0,24}", p["name"].strip().lower()):
+            problems.append(f"the prop name {p['name']!r} isn't one or two plain lowercase words")
+        if not 0.02 <= float(p["height"]) <= 2.5:
+            problems.append(f"{p['name']}: a height of {p['height']} isn't a sensible fraction of a person")
+        if p.get("stands") not in ("bottom", "center", "grip"):
+            problems.append(f"{p['name']}: stands must be bottom, center or grip")
+    for person in data.get("people") or []:
+        if not 0.3 <= float(person["scale"]) <= 1.3:
+            problems.append(f"{person['name']}: a scale of {person['scale']} isn't a person's height against an adult")
+    return problems
+
+
+def critique(data: dict) -> list[str]:
+    """The reviewer's answer (prompts/critic.md): a verdict that matches its list, each problem with a real fix."""
+    problems = data.get("problems") or []
+    out = []
+    if data.get("verdict") == "revise" and not problems:
+        out.append("the verdict is revise but no problems are listed")
+    if data.get("verdict") == "fine" and problems:
+        out.append("the verdict is fine but problems are listed; one or the other")
+    if len(problems) > 8:
+        out.append(f"{len(problems)} problems; keep the worst 8")
+    for p in problems:
+        if len((p.get("fix") or "").split()) < 4:
+            out.append(f"the fix for {p.get('where')} is too thin to write from")
+        if not (p.get("where") or "").strip():
+            out.append("a problem has no where")
+    return out

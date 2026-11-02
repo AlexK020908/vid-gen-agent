@@ -4,6 +4,8 @@ FakeAnthropic replays scripted replies (JSON plus usage numbers) through the sam
 shape the SDK has, and records every request. No network, $0. The one live test writes a real
 outline (a few cents) and is skipped without ANTHROPIC_API_KEY.
 """
+import base64
+import io
 import json
 import os
 import shutil
@@ -14,6 +16,7 @@ import httpx2
 import pytest
 from dotenv import load_dotenv
 from fastapi.testclient import TestClient
+from PIL import Image
 
 from core import actions, db
 from core.config import ROOT
@@ -22,12 +25,12 @@ from core.engine import Engine
 from providers import checks, make_providers, prompts
 from providers.claude import ClaudeLLM
 from providers.images import StubImages
-from providers.llm import StubLLM
+from providers.llm import NoMeter, StubLLM
 from server.app import create_app
 
 load_dotenv(ROOT / ".env")  # only the live test uses the key
 
-DAYS = [1, 2, 3, 5, 7, 10, 14, 21, 30, 45, 60, 75, 90, 120, 150, 180, 210, 240, 270, 300, 330, 350, 360, 365, 366]
+DAYS = list(range(1, 31))  # a beat a day, so every day is told
 USAGE = {"input": 2000, "cache_write": 1500, "cache_read": 0, "output": 3000}
 
 
@@ -100,15 +103,27 @@ class HangingStream(Stream):
 
 class FakeAnthropic:
     """Each reply: a dict (sent back as JSON), an exception (raised), (dict, usage, stop_reason), or a ready Message.
-    `client.messages.stream` and `client.beta.messages.stream` (server-side fallback) both land here."""
+    `client.messages.stream` and `client.beta.messages.stream` (server-side fallback) both land here. Picture
+    checks (the schema with `seen`) are answered with `checks` and recorded in `checks_asked` instead, so the
+    scripted replies and `requests` stay in stage order; `checks = None` makes them scripted like the rest."""
 
     def __init__(self, *replies) -> None:
         self.replies = list(replies)
         self.requests: list[dict] = []
+        self.checks: dict | None = {"seen": "A placeholder frame.", "problems": []}
+        self.checks_asked: list[dict] = []
+        self.reviews_asked: list[dict] = []
         self.messages = self
         self.beta = self
 
     def stream(self, **request):
+        properties = request["output_config"]["format"]["schema"]["properties"]
+        if self.checks is not None and "seen" in properties:
+            self.checks_asked.append({**request, "messages": list(request["messages"])})
+            return Stream(Message(json.dumps(self.checks), USAGE, "end_turn"))
+        if "verdict" in properties:  # the reviewer passes every draft unless a test scripts it (core/review.py)
+            self.reviews_asked.append({**request, "messages": list(request["messages"])})
+            return Stream(Message(json.dumps({"verdict": "fine", "problems": []}), USAGE, "end_turn"))
         self.requests.append({**request, "messages": list(request["messages"])})
         reply = self.replies.pop(0)
         if isinstance(reply, Exception):
@@ -128,7 +143,7 @@ def api_error(cls, status: int):
 
 # --- replies ---------------------------------------------------------------------------------
 
-def outline_data(n: int = 11, heroes: int = 3, **changes) -> dict:
+def outline_data(n: int = 9, heroes: int = 3, **changes) -> dict:
     """Rosa is in beats 2 and 3, so her thread ends in beat 3."""
     step = n // heroes
     hero = set(range(0, step * heroes, step))
@@ -147,7 +162,7 @@ PLACES = [{"id": "flat", "name": "the flat", "look": "A small flat: a sofa on th
           {"id": "street", "name": "the street", "look": "A flooded street of brick houses, a bus stop on the right."}]
 
 
-def script_data(outline: dict, n: int = 55, words: int = 35) -> dict:
+def script_data(outline: dict, n: int = 54, words: int = 35) -> dict:
     """Beats alternate between the flat and the street, and each move is told in the line. Each beat's first scene
     carries the tracker, and the cast are named in every scene of the beats that list them."""
     beats = outline["beats"]
@@ -184,7 +199,8 @@ def ctx(tmp_path):
                     overrides={"mode": "live", "providers": {"llm": "claude", "tts": "stub", "images": "stub",
                                                              "video": "stub"},
                                "stub": {"scenes": 6}, "engine": {"retry_backoff_s": 0},
-                               "agent": {"comment_on_gates": False}, "render": {"engine": "ffmpeg"}, "topics": {"competitors": "off"}})
+                               "agent": {"comment_on_gates": False}, "render": {"engine": "ffmpeg"}, "topics": {"competitors": "off"},
+                               "models": {"critic": "off"}})  # scripted replies stay in stage order; the review path is tested with stubs
 
 
 def use(ctx, *replies) -> FakeAnthropic:
@@ -237,7 +253,7 @@ def test_outline_request_cost_and_card(ctx):
     assert req["model"] == "claude-opus-5-5" and req["max_tokens"] == 48000
     [system] = req["system"]
     assert system["cache_control"] == {"type": "ephemeral"}
-    assert channel.scenario_family in system["text"] and "10 to 12 beats" in system["text"]
+    assert channel.scenario_family in system["text"] and "8 to 10 beats" in system["text"]
     assert "{" not in system["text"].replace("{\"", "")  # every placeholder filled
     assert req["output_config"]["effort"] == "high"
     assert req["output_config"]["format"]["type"] == "json_schema"
@@ -245,7 +261,7 @@ def test_outline_request_cost_and_card(ctx):
     assert "current outline" not in user_text(req)
 
     outline = json.loads(video(ctx, vid)["outline_json"])
-    assert outline["topic"] == "Day 1 to Day 365 in a flooded subway" and len(outline["beats"]) == 11
+    assert outline["topic"] == "Day 1 to Day 365 in a flooded subway" and len(outline["beats"]) == 9
     assert "If it is their own story" in user_text(req)
     [cost] = costs(ctx, vid)
     assert cost["provider"] == "llm" and cost["simulated"] == 0
@@ -281,7 +297,7 @@ def test_a_refusal_partway_is_finished_by_the_fallback_model(ctx):
 
     [req] = fake.requests
     assert req["fallbacks"] == "default" and req["betas"] == ["server-side-fallback-2026-07-01"]
-    assert len(json.loads(video(ctx, vid)["outline_json"])["beats"]) == 11  # both halves joined into one reply
+    assert len(json.loads(video(ctx, vid)["outline_json"])["beats"]) == 9  # both halves joined into one reply
     [cost] = costs(ctx, vid)
     detail = json.loads(cost["detail"])
     # each attempt at its own model's rates; one with no listed price is costed at the requested model's
@@ -377,7 +393,7 @@ def test_revise_keeps_the_draft_and_regenerate_starts_fresh(ctx):
 
 
 def test_failed_checks_get_one_retry_with_the_problems(ctx):
-    bad = outline_data(n=8)
+    bad = outline_data(n=7)
     bad["beats"][3]["skill"] = ""
     fake = use(ctx, bad, outline_data())
     vid = actions.new_video(ctx, "zombie", "Thirty days in a mall")
@@ -388,19 +404,19 @@ def test_failed_checks_get_one_retry_with_the_problems(ctx):
     assert len(second["messages"]) == 3
     assert second["messages"][1]["role"] == "assistant"
     fix = second["messages"][2]["content"]
-    assert "there are 8 beats; it needs 10 to 12" in fix and "beat 4 has no skill" in fix
+    assert "there are 7 beats; it needs 8 to 10" in fix and "beat 4 has no skill" in fix
     assert second["system"] == first["system"]  # same cached prefix
     assert len(costs(ctx, vid)) == 2  # both calls cost money
 
 
 def test_failing_twice_stops_at_once_with_the_problems(ctx):
-    fake = use(ctx, outline_data(n=8), outline_data(n=8))
+    fake = use(ctx, outline_data(n=7), outline_data(n=7))
     vid = actions.new_video(ctx, "zombie", "Thirty days in a mall")
     run(ctx)
 
     v = video(ctx, vid)
     assert v["state"] == "failed" and v["resume_state"] == "new"
-    assert "failed its checks twice" in v["error"] and "8 beats" in v["error"]
+    assert "failed its checks twice" in v["error"] and "7 beats" in v["error"]
     assert len(fake.requests) == 2  # not 2 per attempt × 3 attempts
     assert len(costs(ctx, vid)) == 2
     assert cards(ctx, vid, "error")
@@ -419,18 +435,18 @@ def test_script_streams_progress_and_is_saved_in_pipeline_shape(ctx):
     v = video(ctx, vid)
     assert v["state"] == "scripted"
     script = json.loads(v["script_json"])
-    assert len(script) == 55 and script[0]["idx"] == 1 and script[0]["beat_idx"] == 0
-    assert script[-1]["beat_idx"] == 10 and {s["motion"] for s in script} == {"kenburns", "clip"}
+    assert len(script) == 54 and script[0]["idx"] == 1 and script[0]["beat_idx"] == 0
+    assert script[-1]["beat_idx"] == 8 and {s["motion"] for s in script} == {"kenburns", "clip"}
     [progress] = cards(ctx, vid, "progress")
-    assert progress["card"]["unit"] == "scenes" and progress["card"]["done"] == 55
-    assert progress["card_status"] == "done" and progress["text"] == "script 55 scenes"
+    assert progress["card"]["unit"] == "scenes" and progress["card"]["done"] == 54
+    assert progress["card_status"] == "done" and progress["text"] == "script 54 scenes"
     [card] = cards(ctx, vid, "script")
-    assert card["card"]["scene_count"] == 55 and card["card"]["word_count"] == 55 * 35
+    assert card["card"]["scene_count"] == 54 and card["card"]["word_count"] == 54 * 35
     assert [p["name"] for p in card["card"]["places"]] == ["the flat", "the street"]
     first, second = card["card"]["beats"][1]["scenes"][:2]
     assert first["place"] == "the street" and first["cast"] == ["Rosa"] and first["tracker"] == "Water 19.5 L · Food 13.5 days"
     assert second["tracker"] is None
-    assert script[5]["move"] == "he heads out" and json.loads(v["places_json"])[0]["id"] == "flat"
+    assert script[6]["move"] == "he heads out" and json.loads(v["places_json"])[0]["id"] == "flat"
     assert "Cast:\n- Rosa, a lost kid." in user_text(req) and "Tracker: Water, 20 L at the start" in user_text(req)
 
     fake.replies.append(script_data(outline))
@@ -447,19 +463,34 @@ def test_checks_name_each_problem():
     assert checks.script(script, outline, 8, PLACES) == []
     script[4]["narration"] = " ".join(["word"] * 52)
     script[1]["motion"] = "clip"           # scene 2 is in beat 1, a hero beat: allowed
-    script[5]["motion"] = "clip"           # scene 6 is in beat 2, which isn't
+    script[6]["motion"] = "clip"           # scene 7 is in beat 2, which isn't
     script[30]["label"] = "Day 2"          # goes back in time
     script[31]["label"] = "Tuesday"
     script = [s for s in script if s["beat"] != 9]
     problems = checks.script(script, outline, 4, PLACES)
     assert "scene 5's narration is 52 words; keep each scene to 30 to 40" in problems
-    assert "scene 6 is a clip in beat 2, which isn't a hero beat" in problems
+    assert "scene 7 is a clip in beat 2, which isn't a hero beat" in problems
     assert any("goes back in time" in p for p in problems)
     assert any("label 'Tuesday'" in p for p in problems)
     assert "beat 9 has no scenes" in problems
     assert "there are 5 clip scenes; this channel allows 4" in problems
 
-    o = outline_data(n=11, heroes=2)
+    short = [s for n, s in enumerate(script_data(outline)["scenes"]) if n not in (19, 20)]  # hero beat 4 keeps 4
+    assert checks.script(short, outline, 8, PLACES) == [
+        "beat 4 is a hero beat but has only 4 scenes; give it 7 to 9, with the build-up, the moment and the aftermath"]
+
+    told = lambda *labels: [{"label": label} for label in labels]  # noqa: E731
+    assert checks._every_day(told("Day 1", "Day 1", "Day 2-4", "Day 5", "Day 9", "Day 10 to 15", "Day 17")) == [
+        "scene 5 jumps from Day 5 to Day 9, skipping Days 6 to 8; tell every day, on its own or a few quiet ones "
+        "together, like \"Day 6-8\"",
+        "scene 6 tells 6 days at once (Day 10 to 15); keep a stretch to 3 days",
+        "scene 7 jumps from Day 10 to 15 to Day 17, skipping Day 16; tell every day, on its own or a few quiet ones "
+        "together, like \"Day 16\""]
+    assert checks._every_day(told("Day 30", "Day 1", "Day 2"), 1) == []  # after a cold open
+    assert checks._every_day(told(*[f"Day {d}-{d + 4}" for d in range(1, 50, 5)])) == []  # 50 days: 5 at once
+    assert checks._every_day(told("Week 1", "Week 3")) == []  # weeks and months aren't checked
+
+    o = outline_data(n=9, heroes=2)
     o["beats"][5]["skill"] = o["beats"][2]["skill"]
     problems = checks.outline(o)
     assert "2 beats are hero beats; it needs 3 to 4" in problems
@@ -475,6 +506,13 @@ def test_checks_name_each_problem():
     late = labels(1, 2, 3, 4, 5, 6, 7, 2)
     assert checks._timeline(late, checks.COLD_OPEN_SCENES) == ["scene 8: Day 2 comes after Day 7, which goes back in time"]
     assert checks._timeline(labels(30, 1)) == ["scene 2: Day 1 comes after Day 30, which goes back in time"]  # outlines
+    assert checks.description("Open cold on the worst moment, then rewind to the promise: a SEAL with an arsenal who can "
+                              "barely walk, thirty days to cover two miles to the last convoy out of the city.") == [
+        "the description reads like the outline's note (\"open cold\"); write it for viewers"]
+    assert checks.description("Too short.") == ["the description is 10 characters; keep it to 150 to 900"]
+    assert checks.description("You're a Navy SEAL sent home with a rebuilt knee the week the dead came. Thirty days, two "
+                              "miles to the last convoy, and everyone on the street has seen your cane. Told day by "
+                              "day from Day 1, a stick-figure zombie survival story.") == []
     assert checks.thumb_texts(["NO WATER LEFT", "ALONE", "HE WASN'T ALONE AT ALL", "WHY 🔥 NOW"]) == [
         "there are 4 thumb_texts; it needs 3", "thumb_text 2 is 1 word; keep it to 2 to 4",
         "thumb_text 3 is 5 words; keep it to 2 to 4",
@@ -483,15 +521,15 @@ def test_checks_name_each_problem():
 
 def test_continuity_checks_name_each_problem():
     outline = outline_data()
-    scenes = script_data(outline)["scenes"]  # 5 scenes a beat: beat 2 is scenes 6 to 10, on the street, with Rosa
-    scenes[5]["move"] = ""                      # scene 6 is on the street after the flat, and doesn't say how
-    scenes[10]["move"] = "he flies home"        # scene 11 quotes words its line doesn't have
-    scenes[7]["place"] = "roof"
-    scenes[30]["cast"] = ["Rosa"]               # scene 31 is in beat 7, which doesn't list her
-    scenes[31]["cast"] = ["Ghost"]
-    scenes[35]["tracker"] = [{"item": "Water", "amount": -1}]
-    scenes[36]["shot"] = "aerial"
-    scenes[40]["looks"] = [{"who": "Ghost", "now": " "}]
+    scenes = script_data(outline)["scenes"]  # 6 scenes a beat: beat 2 is scenes 7 to 12, on the street, with Rosa
+    scenes[6]["move"] = ""                      # scene 7 is on the street after the flat, and doesn't say how
+    scenes[12]["move"] = "he flies home"        # scene 13 quotes words its line doesn't have
+    scenes[8]["place"] = "roof"
+    scenes[36]["cast"] = ["Rosa"]               # scene 37 is in beat 7, which doesn't list her
+    scenes[37]["cast"] = ["Ghost"]
+    scenes[42]["tracker"] = [{"item": "Water", "amount": -1}]
+    scenes[43]["shot"] = "aerial"
+    scenes[48]["looks"] = [{"who": "Ghost", "now": " "}]
     for s in scenes:
         if s["beat"] == 3:                      # the last beat that lists Rosa never names her
             s["narration"] = s["narration"].replace("Rosa is here. ", "")
@@ -499,17 +537,17 @@ def test_continuity_checks_name_each_problem():
             s["tracker"] = []
     problems = checks.script(scenes, outline, 8, PLACES + [{"id": "flat", "name": "", "look": "x"}])
     assert problems == [
-        "scene 37: shot must be wide, medium or close-up, not 'aerial'",
+        "scene 44: shot must be wide, medium or close-up, not 'aerial'",
         "place 3 has no name", "places 1 and 3 have the same id (flat)",
-        "scene 6 goes from flat to street, so its move must quote the words in its narration that tell where we are now",
-        "scene 8: place 'roof' isn't one of the places",
-        "scene 11's move ('he flies home') isn't in its narration word for word",
-        "scene 31 shows Rosa, but the outline doesn't list them in beat 7",
-        "scene 32 has 'Ghost' in its cast, but the outline's cast has no one by that name",
-        "scene 36's tracker lists water; list every tracked item once: food, water",
-        "scene 36's tracker has an amount that isn't a number of 0 or more",
-        "scene 41's looks names 'Ghost'; use \"the stick figure\" or a cast name",
-        "scene 41's look for Ghost has no now; say what they have on, or \"as usual\"",
+        "scene 7 goes from flat to street, so its move must quote the words in its narration that tell where we are now",
+        "scene 9: place 'roof' isn't one of the places",
+        "scene 13's move ('he flies home') isn't in its narration word for word",
+        "scene 37 shows Rosa, but the outline doesn't list them in beat 7",
+        "scene 38 has 'Ghost' in its cast, but the outline's cast has no one by that name",
+        "scene 43's tracker lists water; list every tracked item once: food, water",
+        "scene 43's tracker has an amount that isn't a number of 0 or more",
+        "scene 49's looks names 'Ghost'; use \"the stick figure\" or a cast name",
+        "scene 49's look for Ghost has no now; say what they have on, or \"as usual\"",
         "beat 5 never shows the tracker; give the first scene of every beat one",
         "Rosa's part ends in beat 3, the last beat that lists them, but no line in it names them; say there what "
         "happens to them"]
@@ -550,9 +588,9 @@ def test_next_part_outline_starts_from_the_story_so_far(ctx):
     assert outline_stage.run_once(ctx)
     text = user_text(fake.requests[-1])
     assert "This video is Part 2 of a series" in text and "Part 1:" in text and "they reach the boat" in text
-    assert "How it ended on screen: Scene 53 of beat 11." in text
+    assert "How it ended on screen: Scene 52 of beat 9." in text
     assert "What people had on at the end: the stick figure: a rain poncho" in text
-    assert "Where the tracker stood at the end: Water 15 L; Food 9 days" in text
+    assert "Where the tracker stood at the end: Water 16 L; Food 10 days" in text
     second = json.loads(video(ctx, nxt)["outline_json"])
     assert second["part"] == 2 and second["cast"][0]["look"] == "a stick-figure girl in a yellow raincoat"
 
@@ -581,6 +619,36 @@ def test_prompt_edits_apply_on_the_next_call_and_bad_placeholders_stop(ctx):
     actions.retry(ctx, vid)
     run(ctx)
     assert video(ctx, vid)["state"] == "outlined" and len(fake.requests) == 2
+
+
+def test_picture_check_sends_the_pictures_and_returns_what_is_wrong(ctx, tmp_path):
+    fake = use(ctx, {"seen": "A boy kneels beside a towel on the floor.",
+                     "noticed": ["The towel is on the floor.", "The flashlight is on the left."],
+                     "problems": ["Eli's hands press the folded towel onto the stick figure's knee, not the floor", " "]})
+    fake.checks = None  # answer this check from the scripted reply
+    before, after = tmp_path / "s031.png", tmp_path / "s032.png"
+    for path in (before, after):
+        Image.new("RGB", (1920, 1080), "white").save(path)
+    values = {"idx": 32, "label": "Day 14", "shot": "close-up", "narration": "Then the blood. You talk Eli through it.",
+              "visual_prompt": "Close-up: Eli's small hands pressing a folded towel hard on the stick figure's knee.",
+              "people": "the stick figure (the main character): a knee brace; Eli: a boy in a red cap",
+              "images": "Image 1 is the moment before this scene, as it was drawn; image 2 is the new picture to check."}
+    problems = ctx.llm.check_picture(ctx.channel("zombie"), "still", values, [before, after], NoMeter())
+    assert problems == ["Eli's hands press the folded towel onto the stick figure's knee, not the floor"]
+
+    [req] = fake.requests
+    assert req["model"] == "claude-sonnet-5-5" and req["max_tokens"] == 4000
+    assert req["output_config"]["effort"] == "medium"
+    assert list(req["output_config"]["format"]["schema"]["properties"]) == ["seen", "noticed", "problems"]  # look, then judge
+    blocks = req["messages"][0]["content"]
+    assert [b["type"] for b in blocks] == ["image", "image", "text"]
+    with Image.open(io.BytesIO(base64.b64decode(blocks[0]["source"]["data"]))) as img:
+        assert img.size == (1280, 720) and blocks[0]["source"]["media_type"] == "image/jpeg"
+    text = blocks[2]["text"]
+    assert text.startswith("Scene 32 (Day 14), a close-up.") and "pressing a folded towel" in text
+    assert "Eli: a boy in a red cap" in text and "image 2 is the new picture to check" in text
+    system = req["system"][0]["text"]
+    assert "Check, in this order" in system and ctx.channel("zombie").style_prompt in system and "{" not in system
 
 
 def test_budget_guard_refuses_before_calling(ctx):
@@ -631,10 +699,13 @@ def test_provider_switch(ctx):
 
 def test_end_to_end_with_claude_writing(ctx, monkeypatch):
     """Small limits so the stub voice, stills and ffmpeg render stay quick; costs split real vs simulated."""
-    for name, value in (("BEATS", (3, 4)), ("HERO_BEATS", (1, 2)), ("SCENES", (4, 8)), ("TOTAL_WORDS_OK", (100, 400))):
+    for name, value in (("BEATS", (3, 4)), ("HERO_BEATS", (1, 2)), ("HERO_SCENES_OK", 1), ("SCENES", (4, 8)),
+                        ("TOTAL_WORDS_OK", (100, 400))):
         monkeypatch.setattr(checks, name, value)
     outline = outline_data(n=3, heroes=1)
-    words = {"titles": ["One", "Two", "Three"], "thumb_texts": ["NO WATER LEFT", "DAY 365", "HE WASN'T ALONE"]}
+    words = {"titles": ["One", "Two", "Three"], "thumb_texts": ["NO WATER LEFT", "DAY 365", "HE WASN'T ALONE"],
+             "description": "You're on a rooftop with a week of water and the streets full of the dead below. Day by "
+                            "day, from Day 1, this is how you last until the river goes down. A stick-figure survival story."}
     fake = use(ctx, outline, script_data(outline, n=6), {**words, "thumb_texts": ["TOO MANY WORDS FOR THIS"] * 3},
                words, {"narration": " ".join(["better"] * 32)})
     vid = actions.new_video(ctx, "zombie", "A week on a rooftop")
@@ -664,7 +735,16 @@ def test_end_to_end_with_claude_writing(ctx, monkeypatch):
     rows = costs(ctx, vid)
     assert {r["simulated"] for r in rows if r["provider"] == "llm"} == {0}
     assert {r["simulated"] for r in rows if r["provider"] != "llm"} == {1}
-    assert [r["stage"] for r in rows if r["provider"] == "llm"] == ["outline", "script", "thumbs", "thumbs", "regen"]
+    stages = [r["stage"] for r in rows if r["provider"] == "llm"]
+    assert [s for s in stages if s != "check"] == ["outline", "script", "thumbs", "thumbs", "regen"]
+    assert stages.count("check") == 7 == len(fake.checks_asked)  # the poncho look, then each of the 6 stills once
+    asked = [c["messages"][0]["content"] for c in fake.checks_asked]
+    assert "redrawn with: a rain poncho" in asked[0][-1]["text"] and len(asked[0]) == 3  # before and after
+    assert asked[1][-1]["text"].startswith("Scene 1 (Day 1), a medium.") and len(asked[1]) == 3  # reference, new
+    assert "The line before it: (this is the first scene)" in asked[1][-1]["text"]
+    assert asked[2][-1]["text"].startswith("Scene 2 (Day 1), a medium.") and len(asked[2]) == 4  # follows scene 1
+    assert "Image 2 is the moment before this scene" in asked[2][-1]["text"]
+    assert "The line before it: Scene 1 of beat 1." in asked[2][-1]["text"]
 
 
 @pytest.mark.live

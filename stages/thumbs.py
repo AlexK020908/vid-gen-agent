@@ -1,7 +1,8 @@
-"""Stage 7: 3 thumbnails and 3 titles. Needs only the script, so it runs alongside the stills.
+"""Stage 7: 3 thumbnails, 3 titles and the YouTube description. Needs only the script, so it runs alongside the stills.
 
-Claude writes the titles and a few words for each thumbnail; the picture comes from the image
-provider and the words are drawn on in code (providers/images.py caption).
+Claude writes the titles, a few words for each thumbnail and the viewer-facing description (the chapters and the
+AI disclosure go under it in core/metadata.py); the picture comes from the image provider and the words are drawn
+on in code (providers/images.py caption).
 """
 import json
 import time
@@ -29,6 +30,7 @@ def _work(ctx, conn, video) -> None:
             ctx.log_cost(conn, video["id"], NAME, "images", ctx.images.thumbnail(channel, title, i, out))
         caption(out, text)
         paths.append(ctx.rel(out))
-    db.update_video(conn, video["id"], thumbs_json=json.dumps({"titles": titles, "thumbs": paths, "texts": texts}))
+    db.update_video(conn, video["id"], thumbs_json=json.dumps({"titles": titles, "thumbs": paths, "texts": texts,
+                                                               "description": written.get("description", "")}))
     ctx.events.emit("stage_progress", video["id"], stage=NAME, done=len(paths), total=3,
                     cost_usd=db.get_video(conn, video["id"])["cost_usd"])

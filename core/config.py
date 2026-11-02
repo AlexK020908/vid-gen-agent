@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import copy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
@@ -25,6 +25,7 @@ class Channel:
     youtube: dict
     competitors: list[str]
     narrator: str = "third"   # "you": the narration talks to the viewer as the main character; "third": about them
+    puppet: dict = field(default_factory=dict)  # part name -> what the parts sheet draws for it (puppet/parts.py)
     path: Path | None = None  # the YAML it came from; Connect writes youtube.channel_id back into it
 
     @property
@@ -96,6 +97,7 @@ def _channel(root: Path, raw: dict, path: Path | None = None) -> Channel:
         youtube=dict(raw.get("youtube") or {}),
         competitors=list(raw.get("competitors") or []),
         narrator=_narrator(raw.get("narrator", "third")),
+        puppet={str(k): str(v) for k, v in (raw.get("puppet") or {}).items()},
         path=path,
     )
 

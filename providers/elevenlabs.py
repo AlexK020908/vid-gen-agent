@@ -4,6 +4,9 @@ The lines before and after each scene go along as previous_text / next_text, so 
 across 120 separate requests. The character timings ElevenLabs returns are grouped into the words that
 captions and chapters use, and the scene's length is read from the MP3 itself. ElevenLabs caps parallel
 requests by plan, so this provider keeps its own limit (elevenlabs.concurrency) under engine.parallel_calls.
+
+elevenlabs.speed slows the voice to a storyteller's pace. It goes on top of the voice's own settings, read once
+per voice (GET /v1/voices/{voice_id}/settings), because settings sent with a request replace the voice's.
 """
 from __future__ import annotations
 
@@ -19,6 +22,7 @@ from core.errors import FinalError
 from render import ffmpeg
 
 API = "https://api.elevenlabs.io/v1/text-to-speech/{voice_id}/with-timestamps"
+SETTINGS = "https://api.elevenlabs.io/v1/voices/{voice_id}/settings"
 RETRIES = 4          # 429 (busy, or over the plan's parallel limit), 5xx and dropped connections, before giving up
 TIMEOUT_S = 120
 
@@ -64,6 +68,8 @@ class ElevenLabsTTS:
         self.output_format = settings.get("output_format", "mp3_44100_128")
         self.price_per_char = float(settings.get("price_per_char", 0.00008))
         self.voice_settings = settings.get("voice_settings") or None
+        self.speed = float(settings.get("speed") or 1)
+        self._own: dict[str, dict] = {}  # each voice's own settings, read once
         self._slots = threading.BoundedSemaphore(int(settings.get("concurrency", 4)))
         self._http = http  # tests pass a client with a fake transport
 
@@ -91,21 +97,35 @@ class ElevenLabsTTS:
             body["previous_text"] = before
         if after:
             body["next_text"] = after
-        if self.voice_settings:
-            body["voice_settings"] = self.voice_settings
-        data = self._post(API.format(voice_id=voice), body)
+        voice_settings = self._settings(voice)
+        if voice_settings:
+            body["voice_settings"] = voice_settings
+        data = self._call("POST", API.format(voice_id=voice), params={"output_format": self.output_format},
+                          json=body)
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_bytes(base64.b64decode(data["audio_base64"]))
         duration_ms = ffmpeg.duration_ms(out)
         words = words_from(data.get("alignment") or data.get("normalized_alignment"), text, duration_ms)
         return {"duration_ms": duration_ms, "words": words}, self.price(text)
 
-    def _post(self, url: str, body: dict) -> dict:
+    def _settings(self, voice: str) -> dict | None:
+        """elevenlabs.voice_settings as written; else the voice's own at elevenlabs.speed; else None (the voice's
+        own, as they are)."""
+        if self.voice_settings:
+            return self.voice_settings
+        if self.speed == 1:
+            return None
+        if voice not in self._own:
+            self._own[voice] = {k: v for k, v in self._call("GET", SETTINGS.format(voice_id=voice)).items()
+                                if v is not None}
+        return {**self._own[voice], "speed": self.speed}
+
+    def _call(self, method: str, url: str, **kwargs) -> dict:
         for attempt in range(RETRIES + 1):
             wait = 2 ** attempt
             with self._slots:
                 try:
-                    response = self.http.post(url, params={"output_format": self.output_format}, json=body)
+                    response = self.http.request(method, url, **kwargs)
                 except httpx2.TransportError as e:
                     response, error = None, f"{type(e).__name__}: {e}"
             if response is not None:

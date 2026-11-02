@@ -17,3 +17,10 @@ youtube:
   ai_disclosure: true
 competitors:
   - UCy7Ke_F2ZANZpSwar-9ZGjw
+puppet:              # the main character's painted parts, drawn once on a sheet and moved by code (puppet/)
+  head: "the head alone: the round white head in its dark blue knit beanie, with the dot eyes, short eyebrow lines and small calm mouth, cut off at the bottom of the chin, no neck, no scarf"
+  head_side: "the same head in its beanie once more, turned three-quarters to the right so the viewer sees more of its right side, the eyes looking the way it faces, cut off at the bottom of the chin, no neck, no scarf"
+  scarf: "the red scarf alone, as it sits wrapped around the neck with its tail hanging down one side, nothing inside it"
+  hand: "one black mitten hand alone, thumb up, no arm"
+  cane: "the wooden walking cane alone, upright, its curved handle at the top"
+  brace: "the hinged metal knee brace wrapped in grey tape alone, upright, no leg inside it"

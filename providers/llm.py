@@ -70,12 +70,33 @@ class LLM(Protocol):
     def revise_visual(self, channel, scene: dict, note: str, meter: Meter) -> str: ...
     def rewrite_line(self, channel, scene: dict, note: str, meter: Meter) -> str: ...
     def titles(self, channel, outline: dict, meter: Meter) -> dict:
-        """{"titles": 3 title options, "thumb_texts": the 2 to 4 words drawn on thumbnail n, one per title}"""
+        """{"titles": 3 title options, "thumb_texts": the 2 to 4 words drawn on thumbnail n, one per title,
+        "description": the viewer-facing blurb for the YouTube page}"""
     def topics(self, channel, hits: list[dict], taken: list[str], count: int, meter: Meter, families=(), held=(),
                winner: dict | None = None) -> list[dict]:
         """`count` ideas [{title, why, family, based_on: hit numbers from 1}] built on competitors' `hits` (title,
         channel, views, per_day, age_days), none in `taken` or in a `held` family; `families` are the tags in use.
         With `winner` (the channel's own 48-hour winner, as the only hit) they're its follow-ups."""
+    def check_picture(self, channel, turn: str, values: dict, pictures: list, meter: Meter) -> list[str]:
+        """Looks at `pictures` (paths; the last one is the picture to judge, any before it are what it follows
+        from) with prompts/picture.md's `turn` filled with `values`, and returns what a viewer would see is
+        wrong, each as an instruction for drawing it again; [] when it's right."""
+    def map_stage(self, channel, name: str, picture, meter: Meter) -> dict:
+        """Where people stand in a place's picture (sent with a labelled grid; puppet/stage.py): {seen, floor:
+        [{x, y, height}], spots: [{name, x, y, what}], light: {x, y, warm}}, positions as percentages."""
+    def name_parts(self, channel, picture, names: list[str], meter: Meter) -> dict[str, dict]:
+        """Which numbered box on a parts sheet holds each of `names` (puppet/parts.py) and which way it faces:
+        {name: {"box": n (0 for one that isn't there), "faces": "left" | "right" | "front"}}."""
+    def critique(self, channel, kind: str, values: dict, meter: Meter) -> dict:
+        """The reviewer's pass (prompts/critic.md, `kind` outline or script, `values` its text):
+        {"verdict": "fine" | "revise", "problems": [{where, what, fix}]} (core/review.py)."""
+    def scene_sheet(self, channel, values: dict, context: dict, check: Callable[[dict], list[str]], meter: Meter) -> dict:
+        """One scene staged (puppet/sheet.py) from prompts/sheet.md filled with `values`; `context` is the same
+        in data (spots, people, props, duration_ms, set_change, narration) for a stub; `check` says what's wrong
+        with a draft so it's written again."""
+    def inventory(self, channel, cast: str, script: str, have: list[str], meter: Meter) -> dict:
+        """{"props": [{name, draw, height, stands}], "people": [{name, scale}]} for a script (prompts/inventory.md);
+        `have` are prop names already painted, to reuse."""
 
 
 def _cost(meter: Meter, usd: float) -> None:
@@ -96,6 +117,71 @@ class StubLLM:
 
     def __init__(self, n_scenes: int = 12) -> None:
         self.n_scenes = n_scenes
+        self.judge: Callable[[dict], list[str]] | None = None  # tests: what check_picture finds, from its values
+        self.critic_problems: list[dict] = []  # tests: what the reviewer finds next (used once, then it passes)
+
+    def check_picture(self, channel, turn: str, values: dict, pictures: list, meter: Meter) -> list[str]:
+        _cost(meter, 0.01)
+        return list(self.judge(values)) if self.judge else []
+
+    def critique(self, channel, kind: str, values: dict, meter: Meter) -> dict:
+        _cost(meter, 0.02)
+        problems, self.critic_problems = list(self.critic_problems), []
+        return {"verdict": "revise" if problems else "fine", "problems": problems}
+
+    def map_stage(self, channel, name: str, picture, meter: Meter) -> dict:
+        _cost(meter, 0.01)
+        return {"seen": f"placeholder map of {name}",
+                "floor": [{"x": 12, "y": 94, "height": 62}, {"x": 50, "y": 90, "height": 56},
+                          {"x": 88, "y": 94, "height": 62}],
+                "spots": [{"name": "door_left", "x": 18, "y": 94, "what": "a door"},
+                          {"name": "middle", "x": 50, "y": 90, "what": "the middle of the floor"},
+                          {"name": "stairs_top", "x": 80, "y": 93, "what": "the top of the stairs"}],
+                "occluders": [{"name": "table", "base_y": 97, "polygon": [
+                    {"x": 60, "y": 80}, {"x": 75, "y": 80}, {"x": 75, "y": 97}, {"x": 60, "y": 97}]}],
+                "light": {"x": 50, "y": 10, "warm": True}}
+
+    def name_parts(self, channel, picture, names: list[str], meter: Meter) -> dict[str, dict]:
+        _cost(meter, 0.01)
+        # the stub sheet draws them biggest first, in the order asked
+        return {n: {"box": i, "faces": "front" if n == "head" else "right"} for i, n in enumerate(names, 1)}
+
+    def scene_sheet(self, channel, values: dict, context: dict, check: Callable[[dict], list[str]], meter: Meter) -> dict:
+        """The main character walks from the first spot to the second over the first half, then kneels; each cast
+        member stands at the next spot; a set change stands the first prop at the second spot; night when the
+        line says so."""
+        _cost(meter, 0.02)
+        spots, people, props = context["spots"], context["people"], context["props"]
+        total = int(context["duration_ms"])
+        half = max(1, total // 2)
+        figures = []
+        for i, who in enumerate(people):
+            if i == 0:
+                actions = [{"from_ms": 0, "to_ms": half, "do": "limp", "start": spots[0], "end": spots[min(1, len(spots) - 1)]},
+                           {"from_ms": half, "to_ms": total, "do": "kneel"}]
+            else:
+                actions = [{"from_ms": 0, "to_ms": total, "do": "stand_free", "at": spots[min(i + 1, len(spots) - 1)],
+                            "facing": "left"}]
+            figures.append({"who": who, "actions": actions, "attached": []})
+        changes = ([{"place": props[0], "at": spots[min(1, len(spots) - 1)], "angle": 0.0}]
+                   if context.get("set_change") and props else [])
+        night = any(w in context.get("narration", "").lower() for w in ("night", "midnight", "dark"))
+        sheet = {"figures": figures, "set": changes,
+                 "camera": [{"at_ms": 0, "center": people[0], "zoom": 1.4}, {"at_ms": total, "center": people[0], "zoom": 1.6}],
+                 "light": {"time": "night" if night else "day", "lamp": "lamp" if night else ""}}
+        problems = check(sheet)
+        if problems:
+            raise ValueError("the stub sheet failed its own check: " + "; ".join(problems))
+        return sheet
+
+    def inventory(self, channel, cast: str, script: str, have: list[str], meter: Meter) -> dict:
+        _cost(meter, 0.02)
+        props = []
+        if "cot" in script.lower() and "cot" not in have:
+            props.append({"name": "cot", "draw": "a folding camp cot, seen from the side", "height": 0.45, "stands": "bottom"})
+        people = [{"name": line.split(":")[0].strip("- ").strip(), "scale": 1.0}
+                  for line in cast.splitlines() if line.startswith("- ")]
+        return {"props": props, "people": people}
 
     def outline(self, channel, topic: str, notes: list[str], previous: dict | None, meter: Meter,
                 sequel: dict | None = None) -> dict:
@@ -173,7 +259,9 @@ class StubLLM:
         part = f" (Part {outline['part']})" if outline.get("part", 1) > 1 else ""
         return {"titles": [t[:90] + part for t in (f"I Survived 365 Days: {topic}", f"{topic} (Day 1 to Day 365)",
                                                    f"What It Really Takes: {topic}")],
-                "thumb_texts": ["365 DAYS ALONE", "THE WORST NIGHT", "HOW DID I LAST?"]}
+                "thumb_texts": ["365 DAYS ALONE", "THE WORST NIGHT", "HOW DID I LAST?"],
+                "description": f"Placeholder description for viewers: one ordinary guy, {topic}, told day by day from "
+                               "Day 1, with the water running out and nobody coming. A stick-figure survival story."}
 
     def topics(self, channel, hits: list[dict], taken: list[str], count: int, meter: Meter, families=(), held=(),
                winner: dict | None = None) -> list[dict]:

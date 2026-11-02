@@ -194,6 +194,23 @@ CREATE TABLE IF NOT EXISTS quota (
   units INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (date, bucket)
 );
+CREATE TABLE IF NOT EXISTS claude_jobs (  -- a Claude call waiting for the Claude Code session (core/jobs.py)
+  id INTEGER PRIMARY KEY,
+  key TEXT NOT NULL UNIQUE,      -- hash of the request, so a stage that runs again finds its answer
+  kind TEXT NOT NULL,            -- providers/claude.py's kind: titles, outline, script, ...
+  what TEXT NOT NULL,            -- "the titles", from the stage's meter
+  video_id INTEGER REFERENCES videos(id),
+  scene_id INTEGER REFERENCES scenes(id),
+  channel_id TEXT,
+  system TEXT NOT NULL,
+  messages_json TEXT NOT NULL,
+  schema_json TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',  -- pending, answered, superseded
+  answer TEXT,
+  created_at REAL NOT NULL,
+  taken_at REAL,
+  answered_at REAL
+);
 """
 
 # Columns added after a table first shipped: (table, column, declaration). init() adds any that are missing.
@@ -228,17 +245,21 @@ MIGRATIONS = (
     ("scenes", "looks_json", "TEXT"),          # {who: [their looks so far, oldest first]}, carried forward
     ("videos", "prev_video_id", "INTEGER"),    # the part this video continues (core/series.py)
     ("videos", "part", "INTEGER NOT NULL DEFAULT 1"),
+    ("videos", "assets_json", "TEXT"),         # puppet pictures: the stage maps, puppets and props made for it
+    ("scenes", "sheet_json", "TEXT"),          # puppet pictures: the scene sheet Claude wrote (puppet/sheet.py)
+    ("scenes", "set_json", "TEXT"),            # puppet pictures: what stands in each place after this scene
 )
 
 VIDEO_COLUMNS = {
     "outline_json", "script_json", "thumbs_json", "title", "thumb_idx", "publish_at", "publish_json",
     "video_path", "highlight_path", "srt_path", "chapters_json", "duration_ms", "youtube_id",
     "attempts", "lease_until", "error", "resume_state", "draft_note", "places_json", "prev_video_id", "part",
+    "assets_json",
 }
 SCENE_COLUMNS = {
     "narration", "visual_prompt", "motion", "state", "audio_path", "still_path", "clip_path",
     "duration_ms", "words_json", "audio_start_ms", "audio_end_ms", "regen_count", "flag_kind",
-    "flag_note", "attempts", "lease_until",
+    "flag_note", "attempts", "lease_until", "sheet_json", "set_json",
 }
 
 
@@ -398,14 +419,16 @@ def claim_video(conn: sqlite3.Connection, state: str, lease_s: float, where: str
     return rows[0] if rows else None
 
 
-def claim_scenes(conn: sqlite3.Connection, state: str, limit: int, lease_s: float, max_attempts: int) -> list[sqlite3.Row]:
-    """Lease up to `limit` scenes in `state` belonging to videos that are generating."""
+def claim_scenes(conn: sqlite3.Connection, state: str, limit: int, lease_s: float, max_attempts: int,
+                 where: str = "") -> list[sqlite3.Row]:
+    """Lease up to `limit` scenes in `state` belonging to videos that are generating (and match `where`, an extra
+    SQL condition on the video as `v`)."""
     now = time.time()
     rows = conn.execute(
-        """UPDATE scenes SET lease_until = ? WHERE id IN (
+        f"""UPDATE scenes SET lease_until = ? WHERE id IN (
              SELECT s.id FROM scenes s JOIN videos v ON v.id = s.video_id
              WHERE v.state = 'generating' AND s.state = ? AND s.attempts < ?
-               AND (s.lease_until IS NULL OR s.lease_until < ?)
+               AND (s.lease_until IS NULL OR s.lease_until < ?) {where}
              ORDER BY s.video_id, s.idx LIMIT ?)
            RETURNING *""",
         (now + lease_s, state, max_attempts, now, limit),

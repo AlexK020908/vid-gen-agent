@@ -4,6 +4,7 @@ render.engine picks Remotion or ffmpeg. If Remotion fails for any reason, ffmpeg
 thread says why, so a broken Node install never blocks a video.
 
 Remotion also draws the corner box with the day and the tracked amounts (statuses below); ffmpeg doesn't.
+Each scene holds its picture a moment after its line ends (pauses below), longer before a new day.
 """
 import json
 import logging
@@ -31,11 +32,12 @@ def _work(ctx, conn, video) -> None:
     outline = json.loads(video["outline_json"])
     beats = outline["beats"]
     items = [{
-        "idx": s["idx"], "beat_idx": s["beat_idx"], "narration": s["narration"], "duration_ms": s["duration_ms"],
+        "idx": s["idx"], "beat_idx": s["beat_idx"], "narration": s["narration"], "duration_ms": s["duration_ms"] + pause,
         "audio": str(ctx.abs(s["audio_path"])), "still": str(ctx.abs(s["still_path"])),
         "clip": str(ctx.abs(s["clip_path"])) if s["motion"] == "clip" and s["clip_path"] else None,
         "words": json.loads(s["words_json"] or "[]"), "status": status,
-    } for s, status in zip(scenes, statuses(scenes, outline.get("tracker") or []))]
+    } for s, status, pause in zip(scenes, statuses(scenes, outline.get("tracker") or []),
+                                  pauses(scenes, ctx.config.render))]
 
     def progress(unit: str | None):  # Remotion reports percent, ffmpeg counts scenes
         return lambda done, total: ctx.events.emit("stage_progress", video["id"], stage=NAME, done=done,
@@ -68,6 +70,14 @@ def _work(ctx, conn, video) -> None:
     ctx.events.emit("gate_reached", video["id"], gate="render")
 
 
+def pauses(scenes, settings: dict) -> list[int]:
+    """The silence after each scene's line, in ms, while its picture holds: render.pause_ms between scenes, and
+    render.new_day_pause_ms when the next scene starts a new day or beat, and after the last one."""
+    short, long = int(settings.get("pause_ms", 400)), int(settings.get("new_day_pause_ms", 1000))
+    return [long if nxt is None or (nxt["beat_idx"], nxt["label"]) != (s["beat_idx"], s["label"]) else short
+            for s, nxt in zip(scenes, [*scenes[1:], None])]
+
+
 def statuses(scenes, tracker: list[dict]) -> list[dict | None]:
     """The corner box for each scene, or None. It shows when a scene starts a new day or changes a tracked amount:
     the day, every tracked amount as it now stands, and an arrow on the ones that just moved. When the story goes
@@ -87,9 +97,14 @@ def statuses(scenes, tracker: list[dict]) -> list[dict | None]:
         if not shows:
             out.append(None)
             continue
-        rows = [{"item": item, "amount": amount(have[item]), "unit": unit,
+        rows = [{"item": item, "amount": amount(have[item]), "unit": _unit(unit, have[item]),
                  "change": f"{'▼' if moved[item] < 0 else '▲'} {amount(abs(moved[item]))}" if item in moved else None,
                  "down": moved.get(item, 0) < 0}
                 for item, unit in units.items() if item in have]
         out.append({"day": label or "", "rows": rows})
     return out
+
+
+def _unit(unit: str, value: float) -> str:
+    """"1 day", not "1 days": a word unit drops its s at exactly one; "L", "%" and "gal" stay as they are."""
+    return unit[:-1] if value == 1 and unit.isalpha() and unit.endswith("s") and len(unit) > 2 else unit

@@ -17,6 +17,15 @@ The spec is [../plan.md](../plan.md). This file tracks what is built, how it dev
 | 9. Own-data loop | Verdicts against the channel's medians, follow-ups for winners, family holds for losers, own-data topic ranking, thumbnail/title swap cards, daily sign-in check (plan.md week 7 on) | **Done** (Oct 29, 2026) |
 | 10. YouTube tools + new channels | The agent's YouTube read and write tools (comments, live metadata, privacy, branding) behind confirm cards, and adding channels 2–5 | Optional, not started |
 | 11. Continuity | Story bible (backstory, cast threads, tracked supplies), places and moves checked in code, reference pictures for every place and cast member with set changes carried forward, the day-and-supplies box on screen. From the first real video's review | **Done** (Oct 31, 2026) |
+| 12. Picture checks | Stills drawn in order with the picture before as a reference, every picture looked at by a vision model and redrawn once with what was wrong, looks sent to the animator only for people in the picture, "1 day" in the corner box. From video 3's review | **Done** (Oct 31, 2026) |
+| 13. Puppets | Phase 1 of the cutout pipeline: the main character's parts painted once by fal on a green sheet and cut out, a stick-figure rig with poses and a limp cycle, a place mapped into a stage (floor, heights, spots, light), a scene sheet rendered by code with shadow, night light and camera moves, over the real narration | **Phase 1 done** (Nov 1, 2026) |
+| 14. Puppets, phase 2 | Props painted once and placed at spots or attached to a joint (a drill in a hand, a towel on a knee), set state carried from scene to scene (the plate stays across the stairs), a second, smaller puppet (Eli), parts that know which way they face, foreground cutouts people stand behind | **Done** (Nov 1, 2026) |
+| 15. Puppets, phase 3 | The puppet pictures wired into the pipeline behind `render.pictures: puppet`: an assets stage (places mapped, puppets and props painted once), a sheets stage (Claude stages each scene in order, checked in code against the stage, set state carried forward) and an animate stage (every scene a clip drawn by code); a stub video runs end to end | **Done; live-staged on 3 scenes** (Nov 1, 2026) |
+| 16. The reviewer | Every outline and script is read once by Claude as the toughest viewer (would a sensible person do this, could it be done, does it take the time it takes, rules, days, threads, real skills) and rewritten once with its fixes before the owner sees it; the thread says what was fixed | **Done** (Nov 1, 2026) |
+| 17. MCP endpoint and jobs | `run.py serve` serves MCP at `/mcp` for the Claude Code session: today's tools, `wait`, `contact_sheet`, and Claude jobs (a stage that needs Claude parks until the session answers), wired for titles first | **Done** (Nov 2, 2026) |
+| 18. The session writes | Outline, script, reviewer, flagged-scene rewrites, titles and topic ideas done by the session; the in-app agent and gate comments off | Not started |
+| 19. The session looks | Puppet assets, scene sheets and picture checks done by the session through a worker subagent; no code path calls the API | Not started |
+| 20. Hooks and the shorts look | The viral-hooks skill without its ad, its checklist in the shared outline prompt, Remotion skills and overlays for explainer shorts | Optional, not started |
 
 The code for plan.md's whole build order is complete (weeks 4–6 are running videos, not building); phase 10 is the YouTube tools plan.md lists that no phase has needed yet. What needs your accounts is under "Your turn" in How YouTube works, How Claude writes, How voice, pictures and clips work, and How topics and metrics work.
 
@@ -68,6 +77,7 @@ Measured on this machine (24 threads), `bench-render`, 120 stub scenes with 8 cl
 - `render/render.py`: `render_video(items, beats, out_dir, progress, engine, settings)`. The ffmpeg engine (per-scene segments cached by content hash, concat), the highlight reel (segments for ffmpeg, cut from the final MP4 for Remotion), SRT and chapters. `render/ffmpeg.py` uses system ffmpeg or the `imageio-ffmpeg` bundled binary; `duration_ms()` reads a file's length.
 - `render/remotion_render.py`: stages the scene files (hardlinks) as a public dir, writes `props.json`, runs `node .../remotion-cli.js render`, turns `Rendered N/M` lines into percent progress. Named so it doesn't shadow the `render/remotion/` folder.
 - `render/remotion/`: the Remotion project (pinned 4.0.539). `src/Video.tsx` (one `<Sequence>` per scene, start frames rounded per scene so 120 scenes never drift; a clip scene plays its clip once, then Ken Burns on the clip's last frame), `KenBurns.tsx` (1.0 → 1.08 zoom, pan direction from `idx % 8`), `Captions.tsx` (2–4 words at a time, current word highlighted), `types.ts` (mirrors `props.json`). `npm run studio` opens Remotion Studio; `npm run typecheck`.
+- `puppet/`: the cutout pipeline. `rig.py` (proportions in H, `Pose`, `blend`, `cycle`, `joints`, `ground`, the poses and the `LIMP` cycle), `parts.py` (`key_out` the green sheet, `blobs` → numbered boxes → `build()` names them through the LLM and saves `channels/<id>/puppet/<who>/`), `stage.py` (`Stage`: floor points with heights, spots, light; `grid()` for Claude, `overlay()` to check by eye), `draw.py` (one frame: strokes at 2× over a painted background, parts rotated on their pivots, shadow, `light()` tint + lamp glow, `view()` camera), `animate.py` (`Scene` from a sheet: actions per figure, camera keyframes, frames piped to ffmpeg with the audio).
 - `youtube/auth.py`: `connect()` (desktop OAuth on a temporary localhost port, `channels.list(mine)`, token to the keychain, `set_channel_id()` into the YAML), `credentials()` (keychain + `client_secret.json`, refreshed, cached), `status()`, `require_connected()`.
 - `youtube/client.py`: `Client(ctx, channel_id)` with `upload` (resumable, 16 MB chunks), `set_thumbnail` (re-encodes to JPEG over 2 MB), `insert_captions`, `add_to_playlist`, `video_status`, `recent_uploads` / `find_upload`, `channel_overview`, `update_title` (sends the whole snippet back), `whoami` (the sign-in check), `video_views`. Every call books quota first; `HttpError` becomes `YouTubeError` (`retriable` for 5xx) with a hint for quota, upload-limit and unverified-thumbnail errors. `ctx.youtube` swaps in a fake service for tests. `api_for()` builds another Google API with the channel's sign-in, `public_service()` the Data API with `YOUTUBE_API_KEY`, `run()` books and executes one call.
 - `youtube/competitors.py`: `fetch()` (competitors' recent long uploads and views), `stub()`, `seconds()` (ISO 8601 durations), `age_days()`.
@@ -75,6 +85,9 @@ Measured on this machine (24 threads), `bench-render`, 120 stub scenes with 8 cl
 - `youtube/quota.py`: per-day, per-bucket ledger in the `quota` table (Pacific-time days). `check()` before a sequence, `spend()` per call.
 - `agent/tools.py`: the 12 fleet tools, built per thread by `build_tools(ctx, thread)` (`make_tools` wraps them in the in-process MCP server). Also `describe()` (the per-turn state line), `thread_brief()` (system prompt tail), `card_summary()` (compact card for the model), `describe_call()` (tool line text).
 - `agent/harness.py`: `AgentHub` (one per server; owns every thread's agent, confirm futures, gate comments) and `ThreadAgent` (one worker task + one `ClaudeSDKClient` per thread). `path_guard` (PreToolUse hook), `confirm_card` (diff for Edit).
+- `core/jobs.py`: Claude's work waiting for the Claude Code session. `NeedsClaude` (a stage parks on it), `plain()` and `key()` (a request as JSON and its hash), `answer_for()`, `park()` (store or find the job, supersede an older one for the same video, scene and kind, register its check), `pending()`, `take()`, `answer()` (check, store, wake the parked stage). The `claude_jobs` table is in `core/db.py`.
+- `providers/session.py`: `SessionLLM`, a `ClaudeLLM` whose `_call` looks up or parks a job instead of calling the API. `READY` lists the calls moved over so far; the rest raise `FinalError` (or go to a `fallback`, in tests).
+- `server/claude_code.py`: the MCP endpoint at `/mcp` (low-level `mcp.server.lowlevel.Server`, streamable HTTP with JSON responses, mounted in `server/app.py` and run in its lifespan). The fleet tools from `agent/tools.py` as a home thread sees them, plus `jobs`, `take_job`, `answer_job`, `wait`, `contact_sheet`. `.mcp.json` points Claude Code at it (one copy here, one in the workspace folder above).
 - `agent/system.md`: the agent's system prompt (includes how prompt files are laid out). `prompts/`: `outline.md`, `script.md`, `visual.md` (how a picture prompt is written, pulled into the others as `{visual_guide}`), `regen.md` (one flagged scene), `titles.md`, and the picture templates `still.md` and `thumbnail.md` (whole files, no user turn).
 - `server/app.py`: `create_app(ctx, run_engine, hosts, agents)`. REST wrappers over `core.actions` (`ActionError` → 409, `LookupError` → 404; `regenerate` has an endpoint but no card button), chat / stop / confirm endpoints, `POST /api/channels/{id}/connect` (one sign-in at a time), `/api/channels` with each channel's YouTube status, `Hub` forwards bus events to websocket clients, `/media` and the built UI as static files.
 - `server/web/src/`: `App.tsx` (state, websocket, event replay over fetches, notifications, tab badge), `Sidebar.tsx`, `ThreadView.tsx` (messages, tool lines, typing dots, composer with Stop), `markdown.tsx` (tiny renderer for assistant replies), `cards/` (one view per card kind, including `ConfirmView`), `api.ts`, `live.ts` (reconnecting websocket), `types.ts` (mirrors `core/cards.py` payloads).
@@ -105,6 +118,35 @@ Media paths are stored relative to `data/media` and served at `/media/...`. Each
 - Spend: `threads.agent_cost_usd` holds the session total (the SDK's `total_cost_usd`, which includes restored spend on resume); each increase is logged in `costs` as stage `agent` and added to the video's `cost_usd`. At `agent.budget_usd_per_session` (default $2) the thread stops answering; the card buttons still work.
 - Gate comments: on `gate_reached` for outline, script or render (not re-posts from `show` or inline edits), if `agent.comment_on_gates` is on and the thread is idle, a short turn gives a two-line take, posted after the card.
 - Verified against the real bundled CLI (2.1.310) at $0: with these options it connects, loads the `fleet` server with all its tools (11 then; 12 since phase 5, not re-run against the CLI), and disconnects cleanly. A real model turn needs `ANTHROPIC_API_KEY` (`pytest -m live`).
+
+## How the Claude Code session works (phase 17)
+
+- `providers.llm: session` (the default since Nov 2, 2026): Claude's work is done by the Claude Code session the owner has open in VS Code, on their Claude plan, never with `ANTHROPIC_API_KEY`. So far that's the titles; the other calls raise "Claude Code doesn't do the … yet", so nothing reaches the API before phases 18–19 move them. `agent.comment_on_gates` is off for the same reason. The chat box in the browser still uses the API key if one is set, until phase 18 removes it.
+- **A stage that needs Claude parks.**
+  - `SessionLLM._call` builds the request exactly as `ClaudeLLM` would: the system prompt, the messages and the schema. It hashes them into a key.
+  - With no answer for that key, it stores a pending job, posts "Waiting for Claude Code: the titles (job N)" in the thread, emits `claude_job`, and raises `NeedsClaude`.
+  - `run_video_stage` leases the video for `PARK_S` (15 min). It counts no attempt and leaves no error.
+  - A later run builds the same request, so it finds the same job: no second job and no second notice. `run_forever` clears every lease at startup, so a restart just re-parks.
+- **Answering.**
+  - `answer_job` runs the stage's own check at once. `ClaudeLLM._ask` now hands `_call` a `verify` built from the same `_checked()` it uses itself, and `jobs.park` keeps it in memory by job id.
+  - If the check fails, the problems go back to the session and the job stays waiting.
+  - If it passes, the answer is stored and the video's lease is cleared, so the engine runs the stage again within `engine.idle_sleep_s`. This time `_call` finds the answer and returns it as the reply.
+  - After a restart there's no registered check, so only the JSON is checked at answer time. The stage's check then runs on the re-run, and a failure becomes a new job holding the earlier reply and "What was wrong with it" (the API path's second attempt).
+- **No cost lines.** A session answer costs nothing, and `costs.log` skips $0, so the session's work doesn't show in `run.py costs`. The `claude_jobs` rows are the record.
+- **The endpoint.**
+  - `/mcp` sits behind the same local-only Host and Origin check as the rest of the app, plus the MCP library's DNS-rebinding check.
+  - The fleet tools act as in a home thread, so a video tool needs `video_id`. With more than one channel, the others take `channel`.
+  - As for the chat agent, there's no approve or publish tool: those stay browser buttons. The session also runs in auto mode, where tool prompts can be skipped.
+  - `wait` returns at once when an untaken job is waiting. Otherwise it waits up to 600 s for `claude_job`, `gate_reached` or `stage_failed`, then reports the waiting jobs and each unfinished video's state and waiting card.
+  - `contact_sheet` tiles the `.thumb.jpg` previews, 24 at a time.
+- **Connecting.** Start `run.py serve`, then open Claude Code in the workspace. `.mcp.json` names `http://localhost:8000/mcp`, and Claude Code asks once to allow the project's server. If the server wasn't running when the session started, `/mcp` reconnects.
+- **Verified at $0** (`tests/test_session.py`, 5 tests):
+  - A stub video (puppet pictures at `puppet_fps` 4) parks at titles. Its job is listed, waited on, taken, refused with the checks' words, accepted, and the video reaches the render card with those titles.
+  - The restart path.
+  - Taking, superseding and JSON-only checks.
+  - A call that hasn't moved fails without the API.
+  - The endpoint over real HTTP (uvicorn on a free port) with the MCP library's own client.
+  - Not yet verified against a real Claude Code session: MCP servers load when a session starts, so that's the first thing to try after this phase.
 
 ## How rendering works
 
@@ -221,7 +263,7 @@ The idea is the one an LLM already works by: everything is written knowing what 
 - **Outline** (`prompts/outline.md`, checked in `checks.outline`): a `backstory` (what happened and how it reached the character, told right after the hook); a `cast` of at most 6 with a name, a fixed `look`, a role and a `thread` (how their part runs and ends); a `tracker` of 2–4 things to count with a unit and a starting amount (water in L, food in days, a countdown where it fits); and each beat's `cast`. The last beat that lists someone is where their thread ends. The card shows all of it, and the backstory can be edited inline (`set_backstory`).
 - **Script** (`prompts/script.md`, checked in `checks._continuity`): `places` first (1–15, each a slug, a name and a 30–60-word `look` with the layout, furniture, colors and light), then per scene `place`, `cast`, `narration`, `move`, `tracker`, `set_change`, `shot`, `visual_prompt` and `motion`. The checks: every place is known; **whenever the place changes, `move` must quote, word for word, the words in that scene's line that say where we are now**, so a cut can't happen silently; cast members appear only in beats that list them (cold-open scenes excepted), and each is named in a line of the last beat that lists them; every beat shows the tracker at least once, and each snapshot lists every tracked item once with an amount of 0 or more; `shot` is wide, medium or close-up. An outline from before the cast and tracker skips those rules. The script card shows each scene's place, cast and tracker line, the set changes, and the list of places.
 - **Pictures** (`stages/stills.py`): a wide or medium still is drawn with three kinds of reference image: the character, the place, and up to two cast members in it (any more are described in words). The first scene that needs a place draws it empty in the channel's style from its `look` (`prompts/place.md`); a `set_change` makes the next version from the previous picture (`prompts/place_change.md`), and each scene is drawn in the version it comes after (`scenes.place_v`, set when generating starts). Cast members are drawn once, full length (`prompts/person.md`). Locks make parallel scenes wait for one picture instead of each drawing it. The files are in `media/<video>/sets/`, named with a hash of what they were drawn from, so a changed description draws a new one. Their cost is logged as stage `sets` (about $0.5–0.9 a video: 15 places at most, plus changes and cast). `still.md` names each reference image in a line built in code.
-- **Shots**: the image model keeps the place picture's viewpoint. Asked for a reverse angle it redraws the reference view, and asked for a close-up it pastes the whole room in behind like a diorama (both seen in a real test). So wide and medium shots get the place picture, with a medium shot drawn closer in from the same side. A close-up gets the place in words only and shows a face, hands or one object. `script.md` tells Claude this, so it writes prompts for that view.
+- **Shots**: the image model keeps the place picture's viewpoint. Asked for a reverse angle it redraws the reference view, and asked for a close-up it pastes the whole room in behind like a diorama (both seen in a real test). So wide and medium shots get the place picture, with a medium shot drawn closer in from the same side. A close-up gets the place in words only and shows a face, hands or one object. `script.md` tells Claude this, so it writes prompts for that view. A close-up that carries straight on from the scene before it also gets that scene's still (Pictures checked and chained, below), so consecutive close-ups stay in the same room.
 - **On screen** (Remotion, `render/remotion/src/StatusBox.tsx`): a box in the top left with the day and every tracked amount, an arrow and color on the ones that just moved ("▼ 3"). It slides in for the first 6 s of a scene that starts a new day or changes an amount, then fades. Amounts start over when the story goes back in time after a cold open, so Day 1 doesn't show as a jump up. Videos with no tracker get just the day. `stages/assemble.py statuses` works out each box. The ffmpeg fallback draws none.
 - New columns: videos `places_json`; scenes `place`, `place_v`, `cast_json`, `tracker_json`, `shot`. Older videos keep working: no places means stills from the character alone, as before.
 - Checked against the real APIs: both new schemas with Claude (a tiny Haiku call), and fal with one room, its barricaded version, one cast member, and stills in that room on different days and framings. The room's door, coat hooks, TV, window, lamp, shelves and kitchen matched from shot to shot, the taped window stayed taped, and the cast member matched her reference. One fal call came back "no media generated" and worked on a retry; the stage retries those anyway. Pictures in `data/sample_continuity/`.
@@ -232,10 +274,172 @@ The idea is the one an LLM already works by: everything is written knowing what 
 - **Who is in the picture** (from video 1's render): the main character's reference went with every still, so they were drawn into street shots where the narration had them at a window, and over other characters. Now a still gets it only when its visual prompt says "the stick figure" (`checks.HERO`). Otherwise the prompt says they aren't in it, and the character's picture is sent only as a style guide when no other reference exists. Cast labels carry their look, and nobody else may wear the main character's clothes.
 - **Medium shots** used to zoom in and move the door and window to fit. Now they keep the place picture's framing with the people nearer the camera.
 - **Looks**: a scene's `looks` lists lasting changes to what someone has on (body armor on or off, a bandage, a borrowed cap), `who` plus `now` or "as usual". `start_generating` carries them forward into `scenes.looks_json`. A still showing that person sends their reference redrawn with the look (`prompts/person_change.md`, once per look, `look_*.png` in `sets/`), so armor put on in one scene is on in the next.
-- **Length and suspense** (the owner found 26 minutes too long and without suspense): videos are now about 12 minutes: 10–12 beats, 3–4 of them hero beats, 45–70 scenes, about 1,900 words (1,600–2,200 pass), at most 4 cast and 10 places. The outline is built around one big danger and one deadline set up in the first minute. Every beat brings it closer, beats end on cliffhangers, and no beat is a small problem solved and forgotten.
+- **Length and suspense** (the owner found 26 minutes too long and without suspense): videos are now about 12 minutes: 8–10 beats, 3–4 of them hero beats, 40–65 scenes, about 1,750 words (1,500–2,000 pass), at most 4 cast and 10 places. The outline is built around one big danger and one deadline set up in the first minute. Every beat brings it closer, beats end on cliffhangers, and no beat is a small problem solved and forgotten.
+- **Pacing** (video 2 felt too fast): it read at 166 words a minute with no gap between scenes, and fit about 15 big events into 11½ minutes, so most got one to three scenes (Day 15's horde breaking in, the raider running into them and the plate over the stairs took 36 seconds). Now: `elevenlabs.speed: 0.9` slows the voice to about 150–155 a minute (it read the same line 8% slower than 1, measured; the owner picked it over 0.88 by ear), on top of the voice's own settings (read once per voice, since settings sent with a request replace them); `render.pause_ms` (400) holds each picture in silence after its line, and `render.new_day_pause_ms` (1000) before a new day or beat and at the end (`stages/assemble.py pauses`). The outline has 8–10 beats with one event each; each hero beat gets 7–9 scenes (the build-up, the moment, the aftermath; fewer than 6 is sent back by `checks.script`). The script spends longer on what comes before a big moment than on the moment, writes whole sentences instead of strings of fragments, and drops shorthand like "Rule three brings the crowd".
+- **Every day told** (the owner: the channels that do well go day by day, even when nothing happens): beats only mark the days with events, and the script tells every day between them, each on its own or two or three quiet ones in one scene labeled "Day 3-5" (`checks.STRETCH_DAYS`, or a tenth of the span in a story longer than a month). `checks._every_day` sends back a script that skips a day or stretches too far; stories labeled in weeks or months aren't checked. outline.md asks for a span the story can fill, about a month.
+- **The rules bind everyone** (video 2: "sound brings the dead", and the hero tapes a clicking brace hinge, yet raiders drove a van through the cul-de-sac, idled it at the curb and sped off after a fight with nothing coming until the next night): outline.md's rules bullet and a script.md chain rule now say the threat reacts to everyone by the same rules and within minutes, so other people get away with it in a way the story shows (on foot, engine off, a distraction) or pay for it, and the outline checks every beat against the rules.
+- **Pictures checked and chained** (video 3's review: a towel drawn beside the knee it should press on, the hero standing when the line says he went down, zombies inside the car-wash bay the words put them outside of, the pickup redrawn as a sedan, the stairwell's steel plate drawn as a back wall and inherited by five scenes, "midnight" scenes in daylight, and consecutive close-ups in three different rooms). Every text output had a check and a retry; no picture did, and an image model gets about one prompt in ten wrong, so 58 pictures meant 5–8 wrong ones every video whatever the prompt said. Now (`stages/stills.py`): stills are drawn **one at a time in scene order** (`run_scene_stage(limit=1)`), and a scene that carries straight on from the one before it (same place, same day) sends that scene's still as one more reference, "the moment just before this one", so poses, light and who holds what carry over and close-ups stay in the room. **Every still, set change and look picture is checked** by `models.check` (Sonnet 5.5, `prompts/picture.md`, the picture at 1280 wide as a JPEG, with the picture before it when there is one): it reports what it sees, then what a viewer would see is wrong, as instructions. A picture with problems is drawn once more with them in a `{fix}` paragraph (still.md, place_change.md, person_change.md); still wrong after that, it's kept and the problems are posted in the thread so the scene can be flagged from the render card. About a cent a check, logged as stage `check`; a video's pictures take 15–25 minutes instead of 3, since they're drawn in order. **Calibration** (a live bench on video 3's scenes 23–32, $1.18): the chain worked at once (the break-in became one continuous dark room with poses carrying over), but the first checker listed 3–5 problems for every picture and the redraws changed too much; it didn't know the main character's look and told a redraw to take off his beanie and scarf (which the chain then carried on), it policed left and right on stick figures (wrong every time), and it asked for blood. Now the check gets the character reference and the line before as well, never reports sides or asks for blood, lists everything it notices in `noticed` and sends at most three at-a-glance problems to the redraw, and `_checked` keeps whichever of the two drawings checked better. Re-run on scenes 29–32 after that: two passed first time, two were redrawn for real reasons (a bright midnight, the towel beside the knee), the hero kept his look, $0.35 for four scenes. The bench script is in the session scratchpad (`bench_chain.py`); it draws into a scratch folder from the real providers and touches nothing in the database. Then video 3's 16 worst scenes were redrawn through the live pipeline (flags with no note, plus line and prompt edits written straight into the database): 15 came out right, 2 of them after a redraw; the check posted notices for 3 it couldn't fix in two tries (27, 43, 53), and only 43 (a black band along the bottom, the hero at the top of the stairs instead of halfway down) is worth another flag. About $5.30 all in, four clips included.
+- **fal locks the account at zero balance** and keeps answering `403 User is locked. Reason: Exhausted balance` for about 35 minutes after a top-up, to new keys as well; the dashboard shows the credits the whole time. The stills stage fails final with that message and Retry resumes where it stopped, nothing already drawn is paid for twice, and a clip already in flight finishes and is charged. A free probe: a queue request with `image_urls: []` answers 403 while locked, 200 (queued, then rejected) once unlocked, 401 for a bad key. `visual.md` now asks for the light in every prompt (the place picture is drawn by day, so a prompt without it got daylight at midnight) and for a continuing scene to say what changed since the last one. **Things that block a way** (video 3, scene 31: "a steel plate laid across the whole stair opening", drawn as a plate lying on the landing floor beside the stairs, which stayed open; the set change was drawn the same way and five scenes inherited it): visual.md, script.md's `set_change` and the check now say a blocking thing is drawn where the way was, so the way is gone from the picture (the stairs end at a plate bolted upright between the walls; no steps visible), and the check reports a plate beside the stairs as blocking nothing. The old guide example asked for the hardest version to draw, a lid laid flat over the stair opening seen from the landing.
+- **Time is real** (video 3, scenes 30–31: the stairwell is "full of reaching hands", and in the next scene the stabbed hero drags the plate across and bolts it down while they're on the stairs): outline.md and script.md now say everything takes the time it would really take and the threat doesn't wait, so a minutes-long job happens before the threat is close or after the story shows what buys the time, and a threat seconds away allows only moves that take seconds. The outline checks every beat for it. Not checkable in code; a candidate for a script logic check (write, critique against the rules, revise once), the same pattern as the picture check. Stub mode: `StubLLM.judge` lets tests say what a check finds.
+- **Looks in clips** (video 3, scene 30: the raider in the undershirt ran down the stairs wearing the hero's knee brace, cane in hand): `stages/clips.py` sent every look in `looks_json` to the animator, the main character's included, even when he wasn't in the picture, and Kling put them on the one figure it had. `clips.wearing_of` now sends only the looks of people in the picture (the main character when the visual prompt names him, and the scene's cast), and `clip.md` says nobody gains anything the picture doesn't show on them.
+- **The YouTube description** (video 3's publish card opened with the outline's planning note, "Open cold on the worst moment... Then rewind to the promise"): `titles.md` now also asks for a `description`, three to five sentences for viewers in the narration's point of view (the fix they're in, the span, the danger and deadline, a rule or two, no ending), checked by `checks.description` (150–900 characters, no < >, and sent back if it says "open cold", "rewind", "the hook" or "the promise"). The thumbs stage keeps it in `thumbs_json`, and `metadata.description` puts it above the chapters and the disclosure, falling back to the hook for videos from before.
 - **The owner's own story**: the new-video text can be a full story (events, people, ending, even rough notes). outline.md treats it as the backbone and refines it rather than replacing it, inventing only what's left open. Paste it into + New video. The card heading shows only its first two lines.
 - **Series** (`core/series.py`): a video's header gets a **Next part** button once its script is approved (the agent has `next_part`, and `POST /api/videos/{id}/next_part {idea}`). The box takes the owner's direction or their own story for the part, or nothing to carry the story on. A next part has `videos.prev_video_id` and `part`. Its outline uses outline.md's `next_part` turn, built from the story so far: every earlier part's outline, how it ended on screen (the last three lines), where the tracker stood and what people had on. It opens with a recap, continues the days, and ends on a question for the next part. Returning cast keep their look word for word (`series.keep_looks`). The script gets the earlier parts' places to reuse. `start_generating` inherits every earlier place with its set changes and the last part's looks, so the reference pictures have the same names, and `stills._from_earlier` copies them instead of drawing them. Titles end with "(Part N)", and once the part before is on YouTube, the description opens with a link back to it. Every outline now leaves one question open, so any video can get a next part.
 - Not done: no button to redraw a place or cast member whose reference came out wrong. For now, delete its file from `media/<video>/sets/` and flag that place's scenes.
+
+## How puppets work (phase 1: the look test)
+
+The generative pipeline (stills, set changes, looks, clips) draws every scene anew, so every scene can drift: the
+cop walking as the hero, the towel beside the knee, the plate off the stairs. The cutout pipeline paints each
+thing **once** and moves it by code, so nothing can drift. Nothing of the writing changes; it replaces the
+drawing stages, in phases. Phase 1 is the look test, built to be judged before anything else is replaced.
+
+- **Parts sheet** (`prompts/parts.md`, `FalImages.sheet`): fal draws the character's parts separated on flat
+  green from the look picture (`channels/zombie.yaml` `puppet:` says what each part is). `puppet/parts.py` keys
+  the green out, finds the blobs, numbers them on a copy, and asks the check model which is which
+  (`prompts/puppet.md` `parts` turn, `ClaudeLLM.name_parts`). The hero's sheet came out clean on the first try
+  (head with beanie, scarf, mitten, cane, brace; 4.4¢) and is in `channels/zombie/puppet/hero/`.
+- **Rig** (`puppet/rig.py`): the stick figure as the reference draws it: a torso stroke, arms and legs as strokes
+  with round caps, no feet, the painted head on the neck, the scarf over the neck, mittens on the hands, the
+  brace on the right knee, the cane in the right hand. Lengths are fractions of H (the standing height) so one
+  pose draws at any depth. Poses are angles written for a figure facing right and mirrored for left. `LIMP` is a
+  four-key cycle: the braced leg stays straight and steps short, the body dips when it lands, the cane plants with
+  it. `ground()` stands the lowest point of the legs on the floor line.
+- **Stage** (`puppet/stage.py`, `prompts/puppet.md` `stage` turn, `ClaudeLLM.map_stage`): the check model reads a
+  labelled grid over the place picture and gives the floor as points with a standing height at each, named
+  spots (doors, stairs top/bottom, furniture) and the light. Kept as `<place>.stage.json`; `overlay()` draws it
+  for checking by eye.
+- **Frames** (`puppet/draw.py`, `puppet/animate.py`): a scene sheet says who is where doing what from when to when
+  (`do` a pose or a cycle, `start`/`end` spots), the camera keyframes (a spot means the middle of the person
+  standing there) and the light (a level and tint, a lamp glow). Figures are drawn far-side first at 2× and
+  scaled down, with a soft shadow, a small jitter every 4 frames so the lines feel drawn, then the tint, then the
+  camera crop. Frames go straight to ffmpeg with the scene's narration. 311 frames of 1080p take 25 s on the CPU.
+
+**Result**: `data/puppet_demo/scene23_puppet.mp4` is scene 23 of video 3 (the stairwell at midnight) with the hero
+limping from the bathroom door to the top of the stairs and kneeling, over its real narration; `contact.jpg`
+beside it has six frames. The painted parts keep the stills' look and shading; the figure is the same in every
+frame; it stands on the floor at the right size for its depth; the plate, when it comes, will sit at the stairs
+spot by construction.
+
+**Caveats of the test**: the Anthropic API account ran out of credits mid-run, so the parts were named and the
+stairwell mapped by hand for this demo (the code paths exist and are tested with the stubs; `puppet_demo.py` in
+the session scratchpad runs them live once credits are back). The kneel pose is rough; the mittens don't yet
+turn with the arm's side; the camera clamps at the picture's bottom edge, so a figure on a floor near the bottom
+sits low in the frame. Those are pose and camera work, not pipeline problems.
+
+**Next phases** (each judged on one scene before the next): 2. places drawn in layers (back, middle, front) with
+props painted once and placed at spots; set state (a door closed, a plate up) carried between scenes. 3. the
+stager: Claude writes the scene sheet from the script with the previous sheet in hand, checked in code against
+the stage (no one off the floor, a blocked way has its blocker, nothing appears from nowhere). 4. a render stage
+that replaces stills, sets and clips, feeding the existing Remotion assembly as clips. 5. actions started on the
+narrator's words, a pose library per cast member (zombies, Eli), expressions as head variants, and the optional
+motion-control pass on fal for the hero scenes.
+
+
+## How puppets work (phase 2: props, state, a second puppet)
+
+- **Props** (`puppet/props.py`, `prompts/props.md`): fal draws the story's objects on one green sheet in the style
+  of a reference picture; `parts.build` cuts them with their own pivots (a plate stands on its bottom edge, a drill
+  is held by its grip) and sizes in H. A part is cut along its own blob now, not its box, so a diagonal rifle doesn't
+  bring the drill beside it along. The six demo props are in `channels/zombie/props/`.
+- **Placed and attached** (`puppet/animate.py`, `puppet/draw.py`): a scene's `set` stands props at spots (with an
+  angle and an offset in H); a figure's `attached` puts a prop on a joint (`r_hand`, `r_knee`...) with an angle.
+  Everything is drawn back to front by where it meets the floor, so a person in front of the plate is in front.
+- **Set state** (`puppet/state.py`): {place: {prop: placement}}; a scene starts from the state the scene before left
+  and says only what it changes (`place`, `remove`). The demo stands the plate across the stairs in scene 31 and
+  scenes 32 and 42 inherit it untouched.
+- **Which way a part faces**: Claude says `left`, `right` or `front` for each part it names (a cap's visor, a
+  mitten's thumb, a drill's bit, a scarf's tail); `draw._rotated` mirrors a part only when the figure faces the
+  other way from how it was painted. Before this, Eli's cap looked away from whoever he faced.
+- **Occluders**: the stage map can list foreground things (a banister, a table) as polygons with a `base_y`; the
+  renderer cuts them from the painted place and draws them over anyone whose feet are above that line.
+- **A second puppet**: Eli, from his cast picture, two parts (head with cap, shirt), `scale` 0.62 of an adult.
+  Any cast member is a sheet away. New poses: reach, kneel_work, kneel_press, sit, sit_knee_up; a plain walk cycle.
+
+**Result**: `data/puppet_demo/plate_scenes_31_32_42.mp4` (37 s, the three scenes back to back over their real
+narration; `contact2.jpg` beside it). The plate stands across the top of the stairs because the stairs-top spot is
+where it stands; the drill, wrench and flashlight are in hands; the towel is on the raised knee; Eli is the same
+boy in all three. Two fal pictures, 9 cents. Parts and props were again named by hand (no Anthropic credits).
+
+**Still to do in later phases**: the stager (Claude writes these sheets from the script), word-timed actions,
+head variants for expressions, a motion-control pass for the hero scenes, and the render stage that feeds the
+assembly. Props still need a shadow on the wall when leaning; Eli's shirt hides the top of his arms.
+
+
+## How puppets work (phase 3: in the pipeline)
+
+`render.pictures: puppet` in stickfleet.yaml swaps the drawing stages. The writing (outline, script, voice) and
+the assembly (thumbs, Remotion, publish) don't change; stills and clips stand aside. Three stages take their place:
+
+- **assets** (`stages/assets.py`, per video, after the voice): draws each place's picture (the same call the stills
+  pipeline uses) and has the check model map it into a stage (`<picture>.stage.json`, with a `.map.jpg` to check
+  by eye); builds the main character's puppet once per channel (`data/channels/<id>/puppet/hero/`) and each cast
+  member's once per video (`media/<video>/puppets/<slug>/`, from their cast picture, head and shirt); asks Claude
+  for the script's props and the cast's sizes (`prompts/inventory.md`), reuses props already in the channel's
+  library (`data/channels/<id>/props/`) and paints the new ones on one sheet into it. Writes `videos.assets_json`.
+- **sheets** (`stages/sheets.py`, per scene, in order): Claude writes the scene sheet (`prompts/sheet.md`,
+  `puppet/sheet.py`): who stands where doing what from when to when, timed on the narration's words (each word
+  with its second), what stands in the place, the camera (a spot, or a person it follows) and the light. It gets
+  the stage's spots with their positions, the people, the props, the poses and movements, where the scene before
+  left everyone, and what stands in the place. `puppet/sheet.py check()` sends a sheet back with what's wrong
+  (an unknown spot, pose or prop, overlapping or out-of-range times, a camera on nothing). The set state after
+  the scene (`scenes.set_json`) feeds the next sheet.
+- **animate** (`stages/animate.py`, per scene, in parallel): resolves the sheet to puppets, placements and light,
+  draws every frame at `render.puppet_fps` and encodes it with the narration; the first frame is the scene's still
+  for the contact sheet and the scene becomes a `clip` scene for the assembly. Costs nothing.
+
+The stubs run the whole path for $0 (`tests/test_puppet_pipeline.py`: a 4-scene video staged, animated and
+assembled, the stub script's cot placed in scene 1 and still there later, no stills or clips cost logged). The
+live run needs Anthropic API credits for the inventory, the maps and the sheets; the two new prompts render
+without placeholder errors. Costs per 58-scene video, estimated: maps ~15¢, puppets and props ~30¢, sheets
+~$1.50 to $2.50 (Sonnet, one call per scene with a retry when a check fails); no fal clips.
+
+**First live staging** (Nov 1, 2026, video 3's stairwell, scenes 31, 32 and 42, 6 to 8 cents a run): Sonnet named
+the hero's five parts exactly as the hand naming had; mapped the stairwell (floor, 7 spots, the lamp); listed the
+script's props (6 new ones, the 6 painted ones reused); staged the three scenes with the plate across the stairs,
+the drill, towel, wrench and flashlight in the right places. Four runs, each fixing what the one before showed,
+all in shared code and prompts:
+- A spot inside an occluder hid whoever stood there (Eli vanished behind the banister): `checks.stage_map` refuses
+  a spot behind an occluder, and the map prompt asks for solid occluders only (a banister's gaps would hide people
+  behind them too).
+- The towel went on Eli's knee: the sheet prompt says a thing attaches to the person it is on.
+- Scene 32 lost the midnight light: the previous scene's light is in the "where things were left" summary and the
+  prompt keeps the time of day unless the line changes it.
+- The cane was drawn in the hand holding the drill: a prop in the right hand sets the cane down (`draw.figure`).
+- Everyone piled onto one spot: actions take a `side` (left/right, a step from the spot), and the check refuses two
+  people on one spot and side at the same time.
+- The inventory listed the cane and the jacket: looks are painted with the puppet, never as props.
+- The face always looked at the camera: every puppet now has a second head, `head_side`, painted three-quarters to the right and mirrored for left, drawn whenever the figure faces a side; an action with `look: camera` uses the front head (a reaction to the viewer). The hero and Eli got theirs on a sheet of their own (`parts.add` merges parts into a puppet); new characters get it on their first sheet.
+`data/puppet_demo/live/` has the sheets, the map overlay and the rendered three scenes.
+
+Not yet: regen in puppet mode (a flagged scene goes back to `voiced` and is re-staged, but later scenes keep
+their old set state), head variants for expressions, the motion-control pass, and the look of a whole video:
+the next step is one video of the zombie channel with `render.pictures: puppet` (about $8).
+
+
+## How the reviewer works
+
+The pictures can only be as sensible as the script, and video 3's script had a man with a rebuilt knee hauling a
+door-sized steel plate upstairs and bolting it over the staircase while the dead hammered the other side. The
+writer's prompts already said "time is real" and "real skills"; what was missing was a second reading. So every
+outline and script now gets one (`core/review.py`, `prompts/critic.md`, `models.critic`, Opus): the reviewer reads
+the draft as the channel's toughest viewer and a practical survival expert and lists at most eight things a viewer
+would call out, each with a concrete fix. The draft goes back to the writer once through the same revise turn a
+sent-back draft uses, with the reviewer's notes alongside the owner's, and the thread posts what was fixed. One
+pass: whatever is still wrong reaches the owner's card, to be sent back with a note as always. Nothing runs with
+`models.critic: off`.
+
+Tried on video 3's outline and script after the fact (53 cents): the outline review's first finding was the plate
+("a window plate wouldn't cover a stair opening, there's nothing at the top to bolt it to, and driving lag bolts
+takes minutes of loud drilling"; its fix: a dresser and door wedges staged in the bedroom on Day 2), then the 45
+shots across half a mile against the story's own noise rule, the drilling on Day 2 that drew nothing, the leaking
+tank that couldn't have restarted, the food that ran out two days before the end, and Dale's men who vanished.
+The script review, reading against the approved outline, kept the plate but stood it upright and bolted it to
+the studs, caught the brace tape never repaired, the garage door hauled up by hand beside the pouring dead, the
+gas math, and "aimed and quiet" shots after Day 5 had said a suppressor cracks. Cost per video: about 25 cents
+for the outline review and 30 for the script's, plus the rewrites (an outline rewrite is cents; a script rewrite
+about $1).
+
 
 ## Deviations from plan.md (synced into the plan)
 
@@ -308,6 +512,74 @@ Goal: the YouTube read and write tools plan.md lists for the agent, each write b
 Before writing code, read the Data API pages for `commentThreads.list`, `comments.insert` (replies), `videos.update` (description and tags; the same whole-snippet rule as titles), `videos.update` with `status.privacyStatus`, and `channels.update` (`brandingSettings`) plus `channelBanners.insert`: the fields, the quota (comment reads 1, writes 50; `channels.update` 50; banners 50), and what each clears when omitted. Ask before adding packages.
 
 - **Read tools** (no card): `channel_overview` (subscribers, recent uploads, quota used today, sign-in health), `video_stats` (the metrics rows and the latest public counts), `list_comments` (top-level comments on one of our videos, newest or most liked).
-- **Write tools, each a confirm card** with the exact change and an Apply button, like the swap card: `reply_comment` (the agent drafts, you edit and send), `update_video` grows description and tags (from the current snippet, sent back whole), `set_privacy` (public / unlisted / private; never delete), `update_branding` (channel description and keywords; banner from an image file). Every write books quota first and records what it changed.
+- **Write tools, each a confirm card** with the exact change and an Apply button, like the swap card: `reply_comment` (the agent drafts, you edit and send), `update_video` grows description and tags (from the current snippet, sent back whole), `set_privacy` (public / unlisted / private; never delete), `update_branding` (channel description and keywords; banner from an image file). Every write books quota first and records what it changed. `set_privacy` should come with a **Publish now** button on a scheduled video: video 3 (Nov 1, 2026) was published scheduled and the owner wanted it public at once, which was done by hand with `videos.update(part="status")`, sending the current writable status fields back with `privacyStatus: public` and no `publishAt` (leaving it out removes the schedule; `uploadStatus` and `madeForKids` are read-only and must not be sent), then setting `videos.publish_at` to now so the readings line up.
 - **New channels**: `run.py new-channel <id>` writes `channels/<id>.yaml` from the zombie one with placeholders, makes `channels/<id>/` for the character picture, and prints plan.md's per-channel checklist. The sidebar shows a channel's missing pieces (no voice id, no character picture, not connected, no competitors).
 - **Tests**: each tool against the fake service, every write refused without its card's click, the whole-snippet rule for description and tags, quota, the new-channel scaffold.
+
+## Phases 17–20 spec: every Claude call moves into the Claude Code session
+
+Goal: no `ANTHROPIC_API_KEY` spend. Every place the app calls Claude becomes a job that the Claude Code session opened in this repo does through MCP tools, on the owner's Claude plan. The app keeps everything else: ElevenLabs, fal, the puppet painter and animator, ffmpeg and Remotion, YouTube, the browser UI. Decided Nov 2, 2026, when the owner said "move anything involving claude api onto this session, so we dont waste api key credits".
+
+Where Claude is called today. All but the last row go through the `LLM` protocol in `providers/llm.py`, which `ClaudeLLM` in `providers/claude.py` implements:
+
+| Call | Where | How often |
+| --- | --- | --- |
+| `outline`, `script` | `stages/outline.py`, `script.py` | Once per video each, plus a revision when the reviewer sends one back |
+| `critique` (the reviewer) | `core/review.py` | Twice per video (outline, script) |
+| `rewrite_line`, `revise_visual` | `stages/regen.py` | Once per flagged scene |
+| `titles` | `stages/thumbs.py` | Once per video |
+| `topics` | `stages/topics.py` | Per channel, after a competitor check and for each winner |
+| `check_picture` | `stages/stills.py` (`render.pictures: generative`) | 1–2 per still, set change and look, in scene order |
+| `inventory`, `map_stage`, `name_parts` | `stages/assets.py` (`render.pictures: puppet`, the current setting) | Once, then once per new place and per new puppet or prop |
+| `scene_sheet` | `stages/sheets.py` (puppet) | Once per scene, in scene order |
+| The chat agent and gate comments | `agent/harness.py` (Agent SDK) | Per message |
+
+Design:
+
+- **Transport.** `run.py serve` serves MCP over streamable HTTP at `/mcp`. The `mcp` 2.3.0 SDK is already installed (`mcp.server.mcpserver`); read its docs for mounting into FastAPI before writing code. The tools run in the same process as the engine, the event bus and the UI, so what the session does shows live in the browser. `.mcp.json` points Claude Code at `http://localhost:8000/mcp`, so the server must be running before the session connects. Claude Code reads `.mcp.json` and `.claude/` from the folder it's opened on, and the owner's VS Code workspace is `youtube/`, this repo's parent. Ask whether those files go there or whether VS Code moves to `stickfleet/`.
+- **Jobs.**
+  - A `claude_jobs` table: id, kind, video_id, scene_id, key, status (pending / answered), brief, answer, created_at.
+  - `providers.llm: session` selects a new `SessionLLM`. Each of its methods builds the same prompt `ClaudeLLM` builds: move prompt building and answer parsing out of `claude.py` so both classes share them. It hashes that prompt into `key` and returns the stored answer when one exists. Otherwise it inserts a pending job and raises `NeedsClaude`.
+  - The stage runner treats `NeedsClaude` as a wait. The claim is released with a long lease, no failed attempt is counted, and the thread shows "Waiting for Claude: <what>".
+  - `answer_job` clears the lease, so the engine claims the video again at once. The stage re-runs from the top and replays earlier answers by key.
+- **Re-runs never pay twice.** A stage may draw or voice something before it parks; for example, `stills.py` `_checked` draws a still and then checks it. Every stage that parks must skip work whose output already exists (the hashed file names mostly do this already). For each such stage, a test counts provider calls across a park and a re-run.
+- **Tools.** These come on top of the ~20 in `agent/tools.py`, which are served as they are:
+  - `jobs`: what's waiting, oldest first, grouped by video.
+  - `take_job`: the brief, meaning the system prompt and filled turn from `prompts/*.md`, any pictures as image content, and the JSON shape to return.
+  - `answer_job`: runs the parsing and code checks the API path runs (`providers/checks.py`) and returns any problems for the session to fix. A large answer, like a script, can come in parts, one beat at a time (`part`, `last`), with each part checked as it arrives.
+  - `wait`: holds up to N seconds until a job appears or a card or stage changes.
+  - `contact_sheet`: a video's pictures as one image.
+- **Claude Code files.**
+  - `.claude/skills/stickfleet/SKILL.md`: the loop (`jobs` → `take_job` → do the work → `answer_job`), when to ask the owner, and what costs money.
+  - `.claude/agents/critic.md`: the reviewer, built from `prompts/critic.md`, run with fresh context so the writer doesn't grade its own draft.
+  - A worker agent for long runs of looking jobs (scene sheets, picture checks), so the pictures don't fill the main chat. Subagents run on the same plan.
+  - `.claude/settings.json`: allows the free tools without asking. Gate approvals, flags, regenerations and publishing ask every time.
+- **Turned off.**
+  - The in-app chat agent and gate comments. The browser keeps its buttons, and the home composer's "Start video" already works without the agent.
+  - `ClaudeLLM`: it stays in the code, but nothing selects it. `ANTHROPIC_API_KEY` comes out of `.env` after phase 19.
+  - The `pytest -m live` Claude tests are removed.
+- **What the owner sees change.** Nothing that needs Claude runs while no chat is open: a video waits at each Claude step until the session picks it up. The competitor check (YouTube API, free) still runs every `topics.poll_every_h`, and its ideas wait for the chat. Claude work counts against the plan's usage limits instead of the API key.
+
+Phases:
+
+- **17. Endpoint and jobs.** Done (Nov 2, 2026); see How the Claude Code session works. `/mcp`, today's tools, `wait`, `contact_sheet`, the `claude_jobs` table, `SessionLLM` with park and replay, and `jobs` / `take_job` / `answer_job`, wired end to end on stubs for titles only (one small call). What phases 18–19 need from it:
+  - Moving a call over is adding it to `session.READY` and making its stage park safely. `run_scene_stage` doesn't catch `NeedsClaude` yet. When it does, a parked scene must hold its place: the sheets and stills stages run scenes in order (limit 1), and `claim_scenes` would otherwise move on to the next scene.
+  - `Meter` has no scene id. Give the scene stages one, so `park()` records `scene_id` and `answer()` wakes the scene. `SessionLLM` reads `meter.scene_id` and `meter.channel_id` if present.
+  - Topic ideas run in the topics stage and inside the `suggest_topics` tool call. Neither is a stage that can park, so the topics stage needs its own wait, and `suggest_topics` should say a job is waiting. `ChannelMeter` needs `channel_id`.
+  - Stop: `SessionLLM` raises `Stopped` before parking when Stop was pressed. A writing stage that's parked has nothing to stop yet; `stop_writing` on it should supersede its job.
+  - Large answers: `answer_job` takes one whole reply. The script needs parts.
+  - A new request supersedes the pending job with the same video, scene, kind and channel. Two jobs of one kind for one video at once (two flagged scenes' rewrites) therefore need their scene ids, or the second replaces the first.
+  - Tests: an MCP client against the app, and a stub video that parks at titles, is answered, and finishes.
+  - Done when a session in VS Code answers a stub video's titles job and sees the publish card arrive in the browser.
+- **18. Writing.**
+  - The work: outline; script, in parts with each beat checked; the reviewer through the critic agent; flagged-scene rewrites; titles; topic ideas.
+  - The skill and agent files.
+  - The in-app agent and gate comments turned off.
+- **19. Looking.**
+  - The work: puppet assets (inventory, maps, part names), scene sheets in order, and picture checks for generative pictures, all through the worker agent.
+  - Re-run tests for every stage that parks.
+  - Afterwards no code path calls the API, and the key is deleted.
+- **20. Hooks and the shorts look** (optional).
+  - The viral-hooks skill from `vyralcontent/content-skills` goes into `.claude/skills/viral-hooks/` with its 5 reference files. The "Mentioning Vyral" section and the header banner are removed, and their MIT `LICENSE` is kept in the folder.
+  - Its checklist goes into the shared outline prompt.
+  - Remotion's agent skills, plus label and arrow overlays, for vertical explainer shorts like the .mov reels in the folder above this repo.

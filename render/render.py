@@ -3,7 +3,8 @@
 Two engines make the MP4: Remotion (Ken Burns, clips, word captions; render/remotion_render.py) and
 ffmpeg (stills held for their audio), which is the fallback. In both, a clip plays once and its last
 frame holds for the rest of the scene (looping would jump back to the first frame). The highlight reel,
-SRT and chapters are the same for both. The audio is the timeline: each scene lasts as long as its narration.
+SRT and chapters are the same for both. The audio is the timeline: each scene lasts as long as its narration and the pause after it
+(stages/assemble.py pauses), which both engines fill with silence while the picture holds.
 """
 from __future__ import annotations
 
@@ -127,7 +128,8 @@ def _cut_highlight(video: Path, ranges: list[tuple[int, int]], out: Path) -> Non
 def render_video(items: list[dict], beats: list[dict], out_dir: Path,
                  progress: Callable[[int, int], None] | None = None,
                  engine: str = "ffmpeg", settings: dict | None = None) -> dict:
-    """`items`: one dict per scene with idx, beat_idx, narration, duration_ms, audio, still, clip (optional),
+    """`items`: one dict per scene with idx, beat_idx, narration, duration_ms (its line and the pause after it),
+    audio, still, clip (optional),
     words (optional, Remotion captions), status (optional, Remotion's corner box with the day and the tracked
     amounts; stages/assemble.py statuses). `settings`: the render section of stickfleet.yaml (Remotion's
     concurrency and x264_preset). Raises if the engine fails; assemble decides about falling back."""

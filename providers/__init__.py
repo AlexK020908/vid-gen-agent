@@ -1,6 +1,7 @@
 """Provider factory. `providers:` in stickfleet.yaml picks one per kind; `mode: stub` makes them all stubs.
 
-Stub providers cost $0 and need no keys. Real ones: llm `claude`, tts `elevenlabs`, images and video `fal`.
+Stub providers cost $0 and need no keys. Real ones: llm `session` (the Claude Code session, providers/session.py) or
+`claude` (the API), tts `elevenlabs`, images and video `fal`.
 """
 from __future__ import annotations
 
@@ -30,6 +31,9 @@ def _make(config, kind: str):
     if kind == "llm" and name == "claude":
         from providers.claude import ClaudeLLM
         return ClaudeLLM(config)
+    if kind == "llm" and name == "session":
+        from providers.session import SessionLLM
+        return SessionLLM(config)
     if kind == "tts" and name == "elevenlabs":
         from providers.elevenlabs import ElevenLabsTTS
         return ElevenLabsTTS(config)

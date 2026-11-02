@@ -35,9 +35,12 @@ def next_slot(slot: str, now: datetime | None = None) -> float:
     return slot_time.timestamp()
 
 
-def description(outline: dict, chapters: list[dict], ai_disclosure: bool, previous: str | None = None) -> str:
-    """`previous` is the line pointing back at the part before, for a next part already on YouTube."""
-    lines = ([previous, ""] if previous else []) + [outline.get("hook", ""), "", "Chapters"]
+def description(outline: dict, chapters: list[dict], ai_disclosure: bool, previous: str | None = None,
+                blurb: str | None = None) -> str:
+    """`blurb` is the viewer-facing paragraph Claude writes with the titles (thumbs_json["description"]); videos
+    from before it existed fall back to the outline's hook. `previous` is the line pointing back at the part
+    before, for a next part already on YouTube."""
+    lines = ([previous, ""] if previous else []) + [blurb or outline.get("hook", ""), "", "Chapters"]
     lines += [f"{fmt_ts(c['t_ms'])} {c['title']}" for c in chapters]
     if ai_disclosure:
         lines += ["", DISCLOSURE]
@@ -56,7 +59,7 @@ def publish_meta(ctx, conn: sqlite3.Connection, video: sqlite3.Row) -> dict:
     thumb_idx = video["thumb_idx"]
     meta = {
         "title": video["title"] or outline.get("topic", ""),
-        "description": description(outline, chapters, ai, _previous_part(conn, video)),
+        "description": description(outline, chapters, ai, _previous_part(conn, video), thumbs.get("description")),
         "tags": ["stick figure", "day by day", "survival", channel.name.lower()],
         "publish_at": video["publish_at"] or next_slot(yt.get("publish_slot") or "Sat 15:00 UTC"),
         "privacy": "private",  # with publishAt set, YouTube flips it public at that time

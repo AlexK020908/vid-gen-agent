@@ -183,6 +183,14 @@ def test_next_part_carries_the_story_cast_places_and_looks_on(ctx):
     assert json.loads(first["looks_json"]) == {"the stick figure": ["a red backpack"]}
 
 
+def test_pauses_are_longer_before_a_new_day():
+    from stages.assemble import pauses
+    scenes = [{"beat_idx": 0, "label": "Day 1"}, {"beat_idx": 0, "label": "Day 1"}, {"beat_idx": 0, "label": "Day 2"},
+              {"beat_idx": 1, "label": "Day 2"}, {"beat_idx": 1, "label": "Day 2"}]
+    assert pauses(scenes, {"pause_ms": 300, "new_day_pause_ms": 900}) == [300, 900, 900, 300, 900]
+    assert pauses(scenes, {}) == [400, 1000, 1000, 400, 1000]
+
+
 def test_status_box_shows_new_days_and_moved_amounts():
     from stages.assemble import statuses
     tracker = [{"item": "Water", "unit": "L", "start": 20}, {"item": "Food", "unit": "days", "start": 14}]
@@ -205,6 +213,62 @@ def test_status_box_shows_new_days_and_moved_amounts():
         {"item": "Food", "amount": "14", "unit": "days", "change": None, "down": False}]}
     assert statuses([row("Day 1"), row("Day 1"), row("Day 2")], []) == [{"day": "Day 1", "rows": []}, None,
                                                                          {"day": "Day 2", "rows": []}]
+    one = statuses([row("Day 29", 1, 1)], tracker)[0]["rows"]
+    assert [(r["amount"], r["unit"]) for r in one] == [("1", "L"), ("1", "day")]  # "1 day", not "1 days"
+
+
+def test_a_still_that_fails_its_check_is_drawn_again_with_what_was_wrong(ctx):
+    """Scene 1's first drawing fails its check and the second passes; scene 3's fails twice and the redraw checks
+    worse, so the first drawing is kept and the thread hears what's wrong with it; every other picture passes
+    first time."""
+    calls, real = [], ctx.images.still
+
+    def still(*a, **k):
+        usd = real(*a, **k)
+        calls.append((a, k, a[3].read_bytes()))  # the picture as drawn this time
+        return usd
+
+    ctx.images.still = still
+    judged = []
+
+    def judge(values):
+        judged.append(values)
+        idx = values.get("idx")
+        nth = sum(1 for v in judged if v.get("idx") == idx)
+        if idx == 1 and nth == 1:
+            return ["the towel is pressed on the knee, not lying beside it"]
+        if idx == 3:
+            return ["the cane is in his hand, not on the floor"] + (["the brace is missing"] if nth == 2 else [])
+        return []
+
+    ctx.llm.judge = judge
+    notices = []
+    ctx.events.subscribe(lambda e: notices.append(e.data["text"]) if e.kind == "notice" else None)
+    vid = actions.new_video(ctx, "zombie", "A week in a flooded town")
+    to_render_review(ctx, vid)
+
+    fixes, previous, drawn = {}, {}, {}
+    for a, k, picture in calls:
+        n = int(a[2].split("scene ")[1])
+        fixes.setdefault(n, []).append(k["fix"])
+        drawn.setdefault(n, []).append(picture)
+        previous[n] = k["previous"].name if k["previous"] else None
+    assert fixes[1] == ["", "the towel is pressed on the knee, not lying beside it"]
+    assert fixes[3] == ["", "the cane is in his hand, not on the floor"]
+    assert all(fixes[n] == [""] for n in (2, 4, 5, 6))
+    assert [n for n in notices if "still looks wrong" in n] == [
+        "The picture for scene 3 still looks wrong after a second drawing: the cane is in his hand, not on the floor. "
+        "Flag it on the render card to draw it again with a note."]
+    # the moment before: scenes 2 and 4 carry on from the scene before them in the same place on the same day
+    assert previous == {1: None, 2: "s001_r0.png", 3: None, 4: "s003_r0.png", 5: None, 6: None}
+    kept = ctx.abs(scenes(ctx, vid)[3]["still_path"])
+    assert kept.name == "s003_r0.png" and kept.read_bytes() == drawn[3][0] != drawn[3][1]  # the first drawing
+    assert ctx.abs(scenes(ctx, vid)[1]["still_path"]).read_bytes() == drawn[1][1]  # scene 1's redraw checked better
+    assert not list(kept.parent.glob("*.first.png"))
+    with ctx.connect() as conn:
+        checked = conn.execute("SELECT COUNT(*) AS n, SUM(simulated) AS sim FROM costs WHERE video_id = ? "
+                               "AND stage = 'check'", (vid,)).fetchone()
+    assert checked["n"] == 10 == checked["sim"]  # 6 stills, 2 redraws, the backpack look and the cot change
 
 
 def test_script_gate_off_goes_straight_to_generation(ctx):
@@ -297,3 +361,49 @@ def test_guards(ctx):
         actions.flag_scenes(ctx, vid, [99], "visual")
     with pytest.raises(ActionError, match="say how"):
         actions.flag_scenes(ctx, vid, [1], "narration", "")
+
+
+def test_the_reviewer_sends_a_draft_back_once_and_the_thread_hears_what_was_fixed(ctx):
+    ctx.llm.critic_problems = [{"where": "beat 2", "what": "A steel plate bolted across the stairs makes no sense.",
+                                "fix": "Wedge the hall door at the bottom with the dresser instead."}]
+    vid = actions.new_video(ctx, "zombie", "Day 1 to Day 30 in a split-level house")
+    run(ctx)
+    v = video(ctx, vid)
+    assert v["state"] == "outlined"
+    hook = json.loads(v["outline_json"])["hook"]
+    assert "revision 1" in hook and "Reviewer, beat 2" in hook and "dresser" in hook     # rewritten with the note
+    with ctx.connect() as conn:
+        notices = conn.execute("SELECT text FROM messages WHERE video_id = ? AND text LIKE 'The reviewer found%'",
+                               (vid,)).fetchall()
+        stages = {r["stage"]: r["n"] for r in conn.execute(
+            "SELECT stage, COUNT(*) AS n FROM costs WHERE video_id = ? GROUP BY stage", (vid,))}
+    assert len(notices) == 1 and "dresser" in notices[0]["text"]
+    assert stages["critic"] == 1 and stages["outline"] == 2                                # one review, two drafts
+    actions.approve(ctx, vid, "outline")
+    run(ctx)
+    assert video(ctx, vid)["state"] == "scripted"                                          # the script passed clean
+    with ctx.connect() as conn:
+        stages = {r["stage"]: r["n"] for r in conn.execute(
+            "SELECT stage, COUNT(*) AS n FROM costs WHERE video_id = ? GROUP BY stage", (vid,))}
+    assert stages["critic"] == 2 and stages["script"] == 1
+
+
+def test_a_reviewed_rewrite_that_fails_its_checks_keeps_the_draft(ctx):
+    from core import review
+    from core.errors import FinalError
+
+    ctx.llm.critic_problems = [{"where": "beat 3", "what": "The ladder is never lashed.", "fix": "Lash it to the radiator."}]
+    heard = []
+    ctx.events.subscribe(lambda kind, video_id, **data: heard.append((kind, data)))
+    vid = actions.new_video(ctx, "zombie", "Day 1 to Day 30 on a ferry")
+    with ctx.connect() as conn:
+        video_row = db.get_video(conn, vid)
+        channel = ctx.channel("zombie")
+
+        def rewrite(notes):
+            raise FinalError("Claude's outline failed its checks twice: a thread never ends")
+
+        kept = review.reviewed(ctx, conn, video_row, channel, "outline", {"outline": "x"}, {"hook": "the draft"}, rewrite)
+    assert kept == {"hook": "the draft"}
+    notices = [d["text"] for k, d in heard if k == "notice"]
+    assert len(notices) == 1 and "goes through as first written" in notices[0] and "radiator" in notices[0]

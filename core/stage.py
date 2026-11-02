@@ -10,6 +10,7 @@ from typing import Callable
 from core import db
 from core.costs import BudgetExceeded
 from core.errors import FinalError, Stopped
+from core.jobs import PARK_S, NeedsClaude
 
 log = logging.getLogger("stickfleet.stage")
 
@@ -49,6 +50,8 @@ def run_video_stage(ctx, name: str, state: str, work: VideoWork, where: str = ""
             return False
         try:
             wait = work(ctx, conn, video)
+        except NeedsClaude:  # parked until the Claude Code session answers (core/jobs.py); not a failed attempt
+            db.update_video(conn, video["id"], lease_until=time.time() + PARK_S)
         except Stopped:
             back_to_review(ctx, conn, video["id"], name)
         except (BudgetExceeded, FinalError) as e:
@@ -93,14 +96,17 @@ def back_to_review(ctx, conn: sqlite3.Connection, video_id: int, stage: str) -> 
     ctx.events.emit("gate_reached", video_id, gate=gate)
 
 
-def run_scene_stage(ctx, name: str, state: str, work: SceneWork, done_sql: str) -> bool:
+def run_scene_stage(ctx, name: str, state: str, work: SceneWork, done_sql: str, limit: int | None = None,
+                    where: str = "") -> bool:
     """Claim a batch of scenes in `state` and run `work` on them in parallel.
 
     `work` returns (fields to update, next scene state). `done_sql` is a scene-level SQL
-    condition used for the progress line ("voice 40/120").
+    condition used for the progress line ("voice 40/120"). `limit` is how many scenes to claim at once
+    (two per parallel call when None); 1 runs the scenes one at a time in order, for work where each
+    scene builds on the one before it.
     """
     with ctx.connect() as conn:
-        scenes = db.claim_scenes(conn, state, ctx.parallel_calls * 2, ctx.lease_s, ctx.max_attempts)
+        scenes = db.claim_scenes(conn, state, limit or ctx.parallel_calls * 2, ctx.lease_s, ctx.max_attempts, where)
     if not scenes:
         return False
 

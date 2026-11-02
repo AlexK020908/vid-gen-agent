@@ -3,8 +3,11 @@
 If a clip would push the video over budget, the scene is downgraded to Ken Burns instead of failing.
 Clips run in parallel, so each one holds its price against the budget until it's done (ctx.reserve).
 """
+import json
+
 from core import series
 from core.stage import run_scene_stage
+from providers import checks
 
 NAME = "clips"
 
@@ -26,8 +29,18 @@ def _work(ctx, conn, video, scene) -> tuple[dict, str]:
                             text=f"Scene {scene['idx']}: clip downgraded to Ken Burns to stay under budget.")
             return {"motion": "kenburns"}, "ok"
         out = ctx.media(video["id"]) / "clips" / f"s{scene['idx']:03d}_r{scene['regen_count']}.mp4"
-        wearing = "; ".join(f"{who}: {chain[-1]}" for who, chain in series.looks_of(scene).items())
         usd = ctx.video.clip(channel, ctx.abs(scene["still_path"]), scene["visual_prompt"], out, seconds,
-                             wearing=wearing)
+                             wearing=wearing_of(scene))
         ctx.log_cost(conn, video["id"], NAME, "video", usd)
     return {"clip_path": ctx.rel(out)}, "ok"
+
+
+def wearing_of(scene) -> str:
+    """What the people in the picture have on beyond their usual look (scenes.looks_json), for those the picture
+    shows only: the main character when the visual prompt names them, and the scene's cast. A look sent for
+    someone who isn't in it gets drawn onto whoever is (video 3: a raider ran down the stairs in the main
+    character's knee brace, cane in hand)."""
+    shown = set(json.loads(scene["cast_json"] or "[]"))
+    if checks.HERO in scene["visual_prompt"].lower():
+        shown.add(checks.HERO)
+    return "; ".join(f"{who}: {chain[-1]}" for who, chain in series.looks_of(scene).items() if who in shown)

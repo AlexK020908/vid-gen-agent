@@ -1,4 +1,5 @@
-"""Local web app: REST endpoints for the card buttons and the chat, a websocket for live updates, and the built UI.
+"""Local web app: REST endpoints for the card buttons and the chat, a websocket for live updates, the built UI, and
+the MCP endpoint at /mcp that the Claude Code session connects to (server/claude_code.py).
 
 There is no login, so the server binds to localhost and refuses requests whose Host or Origin is not
 local. Without the Origin check, any web page you visit could POST to /publish from your browser.
@@ -22,6 +23,7 @@ from core.context import Ctx, make_ctx
 from core.engine import Engine
 from core.errors import ActionError
 from core.events import Event
+from server import claude_code
 from youtube import auth
 
 log = logging.getLogger("stickfleet.server")
@@ -153,13 +155,15 @@ def create_app(ctx: Ctx | None = None, run_engine: bool = True, hosts: frozenset
     hub = Hub(ctx, agents)
     ctx.events.subscribe(hub.on_event)
     engine = Engine(ctx)
+    mcp = claude_code.make_manager(claude_code.make_server(ctx))
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         hub.loop = asyncio.get_running_loop()
         agents.start(hub.loop)
         task = asyncio.create_task(engine.run_forever()) if run_engine else None
-        yield
+        async with mcp.run():
+            yield
         await agents.close()
         engine.stop()
         if task is not None:
@@ -398,6 +402,10 @@ def create_app(ctx: Ctx | None = None, run_engine: bool = True, hosts: frozenset
         finally:
             sender.cancel()
             hub.clients.discard(queue)
+
+    # --- the Claude Code session's MCP endpoint (server/claude_code.py) ---------------
+
+    app.add_route("/mcp", claude_code.endpoint(mcp))
 
     # --- files ----------------------------------------------------------------------
 

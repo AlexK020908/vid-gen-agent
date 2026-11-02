@@ -5,8 +5,9 @@ clears it, so a fresh outline is written with the current prompts (and every not
 """
 import json
 
-from core import db, series
+from core import db, review, series
 from core.stage import run_video_stage
+from providers import prompts
 
 NAME = "outline"
 
@@ -24,8 +25,12 @@ def _work(ctx, conn, video) -> None:
         sequel = {"part": video["part"], "story": series.story_so_far(conn, video)}
         if topic == f"Part {video['part']}":
             topic = "(nothing: carry the story on the way the last part set it up)"
-    outline = ctx.llm.outline(channel, topic, db.notes(conn, video["id"], "outline"), previous,
-                              ctx.meter(conn, video, NAME, "the outline"), sequel)
+    notes = db.notes(conn, video["id"], "outline")
+    outline = ctx.llm.outline(channel, topic, notes, previous, ctx.meter(conn, video, NAME, "the outline"), sequel)
+    db.update_video(conn, video["id"], outline_json=json.dumps(outline))
+    outline = review.reviewed(ctx, conn, video, channel, "outline", {"outline": prompts.outline_text(outline)}, outline,
+                              lambda found: ctx.llm.outline(channel, topic, notes + found, outline,
+                                                            ctx.meter(conn, video, NAME, "the outline, revised"), sequel))
     if sequel:
         series.keep_looks(conn, video, outline)
         thread = conn.execute("SELECT title FROM threads WHERE video_id = ?", (video["id"],)).fetchone()

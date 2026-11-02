@@ -23,8 +23,9 @@ from providers import checks
 MARKER = re.compile(r"^<!--\s*user turn(?::\s*([a-z_]+))?\s*-->[ \t]*$", re.M)
 PLACEHOLDER = re.compile(r"\{([a-z_]+)\}")
 CHANNEL_NAMES = ("channel_name", "scenario_family", "style_prompt", "clips_per_video", "beat_count", "hero_count",
-                 "scene_count", "scene_words", "total_words", "minutes", "thumb_words", "thumb_chars", "cold_open",
-                 "cast_max", "tracker_count", "places_count", "narrator", "visual_guide")
+                 "hero_scenes", "scene_count", "scene_words", "total_words", "minutes", "thumb_words", "thumb_chars", "cold_open",
+                 "cast_max", "tracker_count", "places_count", "narrator", "visual_guide",
+                 "stretch_days")
 
 
 class PromptError(FinalError):
@@ -65,11 +66,12 @@ def channel_values(root: Path, channel) -> dict:
         "channel_name": channel.name, "scenario_family": channel.scenario_family,
         "style_prompt": channel.style_prompt, "clips_per_video": channel.clips_per_video,
         "beat_count": _span(checks.BEATS), "hero_count": _span(checks.HERO_BEATS),
-        "scene_count": _span(checks.SCENES), "scene_words": _span(checks.SCENE_WORDS),
+        "hero_scenes": _span(checks.HERO_SCENES),        "scene_count": _span(checks.SCENES), "scene_words": _span(checks.SCENE_WORDS),
         "total_words": f"{checks.TOTAL_WORDS:,}", "minutes": round(checks.TOTAL_WORDS / checks.WPM),
         "thumb_words": _span(checks.THUMB_WORDS), "thumb_chars": checks.THUMB_CHARS,
         "cold_open": checks.COLD_OPEN_SCENES, "cast_max": checks.CAST[1], "tracker_count": _span(checks.TRACKER),
         "places_count": _span(checks.PLACES), "narrator": NARRATORS[channel.narrator],
+        "stretch_days": checks.STRETCH_DAYS,
     }
     guide = root / "prompts" / "visual.md"
     text = guide.read_text(encoding="utf-8").strip()

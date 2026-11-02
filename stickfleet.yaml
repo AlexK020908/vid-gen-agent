@@ -1,7 +1,8 @@
 # Global settings. Per-channel settings live in channels/*.yaml.
 mode: live            # stub: every provider below is a placeholder, $0. live: use the providers below
 providers:            # stub, or the real one. Each real one needs its key in .env
-  llm: claude         # outline, script, scene fixes, titles (ANTHROPIC_API_KEY)
+  llm: session        # session: the Claude Code session does Claude's work over MCP, no API key (providers/session.py;
+                      # titles so far, the rest in phases 18-19). claude: the API (ANTHROPIC_API_KEY)
   tts: elevenlabs     # elevenlabs: voice with word timestamps (ELEVENLABS_API_KEY, voice_id in the channel YAML)
   images: fal         # fal: stills and thumbnails from the channel's character_ref (FAL_KEY)
   video: fal          # fal: hero clips animated from each clip scene's still (FAL_KEY)
@@ -13,6 +14,9 @@ models:
   regen: claude-opus-5-5   # one flagged scene's new picture prompt or line
   titles: claude-opus-5-5
   topic: claude-opus-5-5   # topic ideas from competitors' recent hits
+  check: claude-sonnet-5-5 # looks at each drawn picture against its scene and says what's wrong (stages/stills.py)
+  critic: claude-opus-5-5  # reads each outline and script as the toughest viewer and sends it back once with fixes
+                           # (prompts/critic.md, core/review.py); off to skip
   agent: claude-opus-5-5
   voice: eleven_multilingual_v2            # steadiest over long narration; eleven_v4 is the newer, more expressive one
   still: google/nano-banana-2.1/edit       # fal image-edit model; takes the character reference as image_urls
@@ -26,8 +30,8 @@ engine:
   parallel_calls: 8
 
 claude:               # how providers.llm: claude calls the API
-  effort: {outline: high, script: high, regen: medium, titles: medium, topic: medium}
-  max_tokens: {outline: 48000, script: 128000, regen: 8000, titles: 8000, topic: 8000}   # thinking counts toward these; 128000 is the most Opus 5.5 can write
+  effort: {outline: high, script: high, regen: medium, titles: medium, topic: medium, check: medium, critic: high}
+  max_tokens: {outline: 48000, script: 128000, regen: 8000, titles: 8000, topic: 8000, check: 4000, critic: 16000}   # thinking counts toward these; 128000 is the most Opus 5.5 can write
   fallbacks: default  # when Anthropic's safety filter declines (it can misfire on survival stories), the same call
                       # carries on on Anthropic's recommended model. null turns it off
   prices:             # USD per million tokens, list prices Oct 2026; cache_write is the 5-minute rate
@@ -38,7 +42,10 @@ elevenlabs:           # how providers.tts: elevenlabs calls the API
   output_format: mp3_44100_128
   price_per_char: 0.00017   # Creator plan: $22 for 131,000 characters a month (pay-as-you-go API rate is 0.00008)
   concurrency: 4            # requests at once; ElevenLabs caps it by plan (Creator 5, Pro 10)
-  voice_settings: null      # e.g. {stability: 0.5, similarity_boost: 0.75, style: 0, speed: 1}; null = the voice's own
+  speed: 0.9                # the pace, on top of the voice's own settings: 1 is its own (about 165 words a minute),
+                            # 0.9 about 150 to 155, a storyteller's (measured: a line read 8% slower). ElevenLabs takes 0.7 to 1.2
+  voice_settings: null      # e.g. {stability: 0.5, similarity_boost: 0.75, style: 0, speed: 1}, sent as is in place of
+                            # the voice's own and speed above; null = the voice's own
 
 fal:                  # how providers.images: fal and providers.video: fal call the API
   resolution: 1K            # 1K, 2K or 4K from the model, then scaled to 1920x1080; 2K is sharper and costs more
@@ -75,8 +82,14 @@ topics:               # stages/topics.py: competitors' recent hits, Claude's top
 
 render:
   engine: remotion    # remotion: Ken Burns + word captions (needs render/remotion/node_modules). ffmpeg: plain, the fallback
+  pictures: puppet      # generative: fal stills, set changes and hero clips (stages/stills.py, clips.py).
+                        # puppet: places painted once and mapped, characters and props painted once as parts, every
+                        # scene staged by Claude and animated by code (stages/assets.py, sheets.py, animate.py)
+  puppet_fps: 30        # frames a second the puppet scenes are drawn at
   concurrency: null   # Remotion's parallel browser tabs; null = its default. See BUILD.md for the measured best
   x264_preset: null   # Remotion's encoder speed (veryfast ... medium); null = medium
+  pause_ms: 400       # silence after each scene's line while its picture holds, so it lands before the next one
+  new_day_pause_ms: 1000   # the longer one when the next scene starts a new day or beat, and at the end
 
 stub:
   scenes: 12          # scenes per placeholder script (120 = full length)
@@ -84,7 +97,7 @@ stub:
 
 agent:
   budget_usd_per_session: 5   # per thread, all turns together; read at startup
-  comment_on_gates: true
+  comment_on_gates: false   # was true; off since Nov 2, 2026, because it calls the API on every card (BUILD.md phase 17)
 
 youtube:
   mode: live          # stub: writes what it would send. live: uploads (needs secrets/client_secret.json + Connect)
