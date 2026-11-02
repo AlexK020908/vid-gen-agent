@@ -309,25 +309,6 @@ wheels = [
 ]
 
 [[package]]
-name = "claude-agent-sdk"
-version = "0.2.174"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "anyio" },
-    { name = "jsonschema" },
-    { name = "mcp" },
-    { name = "sniffio" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/9c/e2/bdfaa2332b92492a8c056b7650348280e3394d1993879ea2656d95c36270/claude_agent_sdk-0.2.174.tar.gz", hash = "sha256:2380f28ad19c9f95d2de01d75ad4eeffa1ec2008cb4e35e5bc569de6279d85f9", size = 398744, upload-time = "2026-10-24T00:21:40.502Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b9/92/4fd927a4c8cd3ebbdf16b6a3d2c1932df6dd46561a8747f82f34a9636919/claude_agent_sdk-0.2.174-py3-none-macosx_11_0_arm64.whl", hash = "sha256:7729458ca2e0031e6d67452dd8fdda4ff07b4fcf40c4bfed867c78ae963bdbdd", size = 115876275, upload-time = "2026-10-24T00:21:45.526Z" },
-    { url = "https://files.pythonhosted.org/packages/4a/ad/c09cd2dcae60d1c3b43b1587633e22a77a637ca8ba6783cd91285a700a0b/claude_agent_sdk-0.2.174-py3-none-macosx_11_0_x86_64.whl", hash = "sha256:368699227f4ccb6fff541f4add983854fdd6e95fed5e509264cb079316ae234b", size = 121558071, upload-time = "2026-10-24T00:21:49.748Z" },
-    { url = "https://files.pythonhosted.org/packages/c4/f1/58aa5f772dd370fd764948641a4a87b1e7661adb0772d73a219276f59514/claude_agent_sdk-0.2.174-py3-none-manylinux_2_17_aarch64.whl", hash = "sha256:0d46be4e858418227d1d455c7787335f4bed073899f48b657c01cc210683803f", size = 125627582, upload-time = "2026-10-24T00:21:54.903Z" },
-    { url = "https://files.pythonhosted.org/packages/7c/f6/6f63561fbb79d9d2bd26219dffe1458c99b59ee5ae78bb9dac808c22d546/claude_agent_sdk-0.2.174-py3-none-manylinux_2_17_x86_64.whl", hash = "sha256:728592effdfe63e96fbad7ba3b2ddf642e3aad344e73692b429898fbfcb33f12", size = 125972029, upload-time = "2026-10-24T00:21:59.907Z" },
-    { url = "https://files.pythonhosted.org/packages/03/b0/d0e30318a9a48beed59f73f21341afbd50ffa24d5c2c73cd4edfff15509f/claude_agent_sdk-0.2.174-py3-none-win_amd64.whl", hash = "sha256:8be611533b7be210791a39716479d7d692e5e3afe8798529b5262db00f470165", size = 129448695, upload-time = "2026-10-24T00:22:05.045Z" },
-]
-
-[[package]]
 name = "click"
 version = "8.5.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1407,11 +1388,11 @@ wheels = [
 
 [[package]]
 name = "python-multipart"
-version = "0.0.32"
+version = "0.0.33"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/5b/42/55c32bb9b12693c092ad250a0e82edb5b31ddeda6eb772de5f308b3804ad/python_multipart-0.0.32.tar.gz", hash = "sha256:be54b7f3fa167bb83e4fcd936b887b708f4e57fe75911c02aebf53efaf8d938e", size = 46881, upload-time = "2026-06-04T16:18:58.647Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9f/b7/15b905f6142a9a8a68f66900788da1a32e4d4254452783b37ad1eccb0506/python_multipart-0.0.33.tar.gz", hash = "sha256:b8112424a6abd162ec08d390565dd113ad699f2fe6fef3c987b8bbcbfe9e390d", size = 50499, upload-time = "2026-10-31T14:23:47.461Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e1/04/e8135ebd1ad02c56ec633277529b2602ff99ff634be76cdba5744cf554fd/python_multipart-0.0.32-py3-none-any.whl", hash = "sha256:ff6d3f776f16878c894e52e107296ffc890e913c611b1a4ec6c44e2821fe2e23", size = 30042, upload-time = "2026-06-04T16:18:57.319Z" },
+    { url = "https://files.pythonhosted.org/packages/dd/1b/6b1b4164ec734cac911460ab599bfbe46afedd42c5c9627fe4235942c314/python_multipart-0.0.33-py3-none-any.whl", hash = "sha256:8f16c07b36add9da6b2ee87d3efcaf0a45a6de9c3d0a5dd94e9ccf7675a7bc45", size = 32253, upload-time = "2026-10-31T14:23:46.33Z" },
 ]
 
 [[package]]
@@ -1692,7 +1673,6 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "anthropic" },
-    { name = "claude-agent-sdk" },
     { name = "fal-client" },
     { name = "fastapi" },
     { name = "google-api-python-client" },
@@ -1700,6 +1680,7 @@ dependencies = [
     { name = "httpx2" },
     { name = "imageio-ffmpeg" },
     { name = "keyring" },
+    { name = "mcp" },
     { name = "pillow" },
     { name = "python-dotenv" },
     { name = "pyyaml" },
@@ -1716,7 +1697,6 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "anthropic", specifier = ">=2.3.0" },
-    { name = "claude-agent-sdk", specifier = ">=0.2.174" },
     { name = "fal-client", specifier = ">=1.0.3" },
     { name = "fastapi", specifier = ">=0.162.0" },
     { name = "google-api-python-client", specifier = ">=2.201.0" },
@@ -1724,6 +1704,7 @@ requires-dist = [
     { name = "httpx2", specifier = ">=2.16.0" },
     { name = "imageio-ffmpeg", specifier = ">=0.6" },
     { name = "keyring", specifier = ">=25.7.0" },
+    { name = "mcp", specifier = "==2.3.0" },
     { name = "pillow", specifier = ">=11.0" },
     { name = "python-dotenv", specifier = ">=1.0" },
     { name = "pyyaml", specifier = ">=6.0" },

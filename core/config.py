@@ -47,7 +47,6 @@ class Config:
     engine: dict
     render: dict
     stub: dict
-    agent: dict
     youtube: dict
     channels: dict[str, Channel]
 
@@ -130,7 +129,6 @@ def load(root: Path = ROOT, data_dir: Path | None = None, overrides: dict | None
         engine=raw.get("engine") or {},
         render=raw.get("render") or {},
         stub=raw.get("stub") or {},
-        agent=raw.get("agent") or {},
         youtube=raw.get("youtube") or {},
         channels=channels,
     )

@@ -102,15 +102,16 @@ def _timeline(labels: list[tuple[str, str]], cold_open: int = 0) -> list[str]:
     return problems
 
 
-def _every_day(scenes: list[dict], cold_open: int = 0) -> list[str]:
+def _every_day(scenes: list[dict], cold_open: int = 0, last_day: int | None = None) -> list[str]:
     """A story labeled in days tells every one of them, in order: each new label starts at most the day after the
     last one ended, and quiet days told together ("Day 3-5") are at most STRETCH_DAYS, or a tenth of the span in a
-    longer story. Scenes before a cold open's restart, and stories labeled in weeks or months, aren't checked."""
+    longer story. Scenes before a cold open's restart, and stories labeled in weeks or months, aren't checked.
+    `last_day`: where the story ends, for a script that has only come in part of the way."""
     told = [(n, s.get("label") or "") for n, s in enumerate(scenes, 1) if n > cold_open]
     spans = [_days(label) for _, label in told]
     if not told or None in spans:
         return []
-    longest = max(STRETCH_DAYS, (spans[-1][1] - spans[0][0] + 1) // 10)
+    longest = max(STRETCH_DAYS, (max(spans[-1][1], last_day or 0) - spans[0][0] + 1) // 10)
     problems, end, last = [], None, None
     for (n, label), (first, final) in zip(told, spans):
         if final - first + 1 > longest:
@@ -194,12 +195,26 @@ def _tracker(tracker: list[dict]) -> list[str]:
     return problems
 
 
-def script(scenes: list[dict], outline: dict, clips_per_video: int, places: list[dict]) -> list[str]:
-    """`scenes` as the model writes them: `beat` numbered from 1, no idx (scene numbers are list order)."""
+def _beats_done(scenes: list[dict], beats: list, partial: bool) -> int:
+    """The beats the scenes have finished: all of them, or for a script still coming in parts (whole beats at a
+    time, in order), every beat up to the last one written."""
+    if not partial:
+        return len(beats)
+    return max((s["beat"] for s in scenes if isinstance(s.get("beat"), int) and 1 <= s["beat"] <= len(beats)),
+               default=0)
+
+
+def script(scenes: list[dict], outline: dict, clips_per_video: int, places: list[dict],
+           partial: bool = False) -> list[str]:
+    """`scenes` as the model writes them: `beat` numbered from 1, no idx (scene numbers are list order).
+
+    `partial`: the script so far, sent in parts of whole beats (core/jobs.py). Every rule holds for the beats
+    written; the counts that need the whole script (scenes, words, places) are only checked for going over."""
     problems = []
     beats = outline["beats"]
+    done = _beats_done(scenes, beats, partial)
     lo, hi = SCENES
-    if not lo <= len(scenes) <= hi:
+    if len(scenes) > hi or not partial and len(scenes) < lo:
         problems.append(f"there are {len(scenes)} scenes; it needs {lo} to {hi}")
     lo, hi = SCENE_WORDS_OK
     last_beat, clips = 0, 0
@@ -226,11 +241,11 @@ def script(scenes: list[dict], outline: dict, clips_per_video: int, places: list
             clips += 1
             if isinstance(beat, int) and 1 <= beat <= len(beats) and not beats[beat - 1].get("hero"):
                 problems.append(f"scene {n} is a clip in beat {beat}, which isn't a hero beat")
-    missing = sorted(set(range(1, len(beats) + 1)) - {s.get("beat") for s in scenes})
+    missing = sorted(set(range(1, done + 1)) - {s.get("beat") for s in scenes})
     if missing:
         problems.append(f"beat{'s' if len(missing) > 1 else ''} {', '.join(map(str, missing))} "
                         f"{'have' if len(missing) > 1 else 'has'} no scenes")
-    for b, beat in enumerate(beats, 1):
+    for b, beat in enumerate(beats[:done], 1):
         count = sum(1 for s in scenes if s.get("beat") == b)
         if beat.get("hero") and 0 < count < HERO_SCENES_OK:
             problems.append(f"beat {b} is a hero beat but has only {count} scene{'s' if count > 1 else ''}; give it "
@@ -239,21 +254,24 @@ def script(scenes: list[dict], outline: dict, clips_per_video: int, places: list
         problems.append(f"there are {clips} clip scenes; this channel allows {clips_per_video}")
     total = sum(words(s.get("narration") or "") for s in scenes)
     lo, hi = TOTAL_WORDS_OK
-    if not lo <= total <= hi:
+    if total > hi or not partial and total < lo:
         problems.append(f"the narration is {total:,} words in total; aim for about {TOTAL_WORDS:,} "
                         f"(it must land between {lo:,} and {hi:,})")
     problems += _timeline([(f"scene {n}", s.get("label") or "") for n, s in enumerate(scenes, 1)], COLD_OPEN_SCENES)
-    problems += _every_day(scenes, cold_open([s.get("label") or "" for s in scenes]))
-    return problems + _continuity(scenes, outline, places)
+    end = _days(beats[-1].get("label") or "") if partial and beats else None
+    problems += _every_day(scenes, cold_open([s.get("label") or "" for s in scenes]), end[1] if end else None)
+    return problems + _continuity(scenes, outline, places, done, partial)
 
 
-def _continuity(scenes: list[dict], outline: dict, places: list[dict]) -> list[str]:
+def _continuity(scenes: list[dict], outline: dict, places: list[dict], done: int | None = None,
+                partial: bool = False) -> list[str]:
     """What makes each scene follow on from the last: a known place, a told move whenever the place changes, the
     cast where the outline puts them with every thread ended in words, and the tracker on every beat. An outline
-    from before the cast and tracker existed skips those rules."""
+    from before the cast and tracker existed skips those rules. `done`: the beats written so far (script())."""
     problems, ids = [], {}
+    done = len(outline["beats"]) if done is None else done
     lo, hi = PLACES
-    if not lo <= len(places) <= hi:
+    if len(places) > hi or not partial and len(places) < lo:
         problems.append(f"there are {len(places)} places; it needs {lo} to {hi}")
     for n, p in enumerate(places, 1):
         empty = [k for k in ("id", "name", "look") if _blank(p.get(k))]
@@ -307,7 +325,7 @@ def _continuity(scenes: list[dict], outline: dict, places: list[dict]) -> list[s
                 problems.append(f"scene {n}'s tracker has an amount that isn't a number of 0 or more")
             if beat:
                 tracked.add(beat)
-    untracked = sorted(set(range(1, len(beats) + 1)) - tracked) if items else []
+    untracked = sorted(set(range(1, done + 1)) - tracked) if items else []
     if untracked:
         many = len(untracked) > 1
         problems.append(f"beat{'s' if many else ''} {', '.join(map(str, untracked))} never show{'' if many else 's'} "
@@ -315,7 +333,7 @@ def _continuity(scenes: list[dict], outline: dict, places: list[dict]) -> list[s
     for key, name in cast.items():
         last = max((i for i, names in enumerate(in_beat, 1) if key in names), default=None)
         said = _plain(" ".join(s.get("narration") or "" for s in scenes if s.get("beat") == last))
-        if last is not None and _plain(name.split()[-1]) not in said:
+        if last is not None and last <= done and _plain(name.split()[-1]) not in said:
             problems.append(f"{name}'s part ends in beat {last}, the last beat that lists them, but no line in it "
                             "names them; say there what happens to them")
     return problems

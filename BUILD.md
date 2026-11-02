@@ -15,7 +15,7 @@ The spec is [../plan.md](../plan.md). This file tracks what is built, how it dev
 | 7. Real hero clips | fal image-to-video for `motion: clip` scenes from each scene's own still, thumbnail text, budget held for running calls (plan.md week 2) | **Done** (Oct 29, 2026) |
 | 8. Topics + metrics | Competitor check and ranking, Claude's topic ideas as cards, the weekly cadence, 48 h / 7 d metrics with the reach report (plan.md week 3) | **Done** (Oct 29, 2026) |
 | 9. Own-data loop | Verdicts against the channel's medians, follow-ups for winners, family holds for losers, own-data topic ranking, thumbnail/title swap cards, daily sign-in check (plan.md week 7 on) | **Done** (Oct 29, 2026) |
-| 10. YouTube tools + new channels | The agent's YouTube read and write tools (comments, live metadata, privacy, branding) behind confirm cards, and adding channels 2–5 | Optional, not started |
+| 10. YouTube tools + new channels | YouTube read and write tools for the chat (comments, live metadata, privacy, branding), each write behind Claude Code's permission prompt, and adding channels 2–5 | Optional, not started |
 | 11. Continuity | Story bible (backstory, cast threads, tracked supplies), places and moves checked in code, reference pictures for every place and cast member with set changes carried forward, the day-and-supplies box on screen. From the first real video's review | **Done** (Oct 31, 2026) |
 | 12. Picture checks | Stills drawn in order with the picture before as a reference, every picture looked at by a vision model and redrawn once with what was wrong, looks sent to the animator only for people in the picture, "1 day" in the corner box. From video 3's review | **Done** (Oct 31, 2026) |
 | 13. Puppets | Phase 1 of the cutout pipeline: the main character's parts painted once by fal on a green sheet and cut out, a stick-figure rig with poses and a limp cycle, a place mapped into a stage (floor, heights, spots, light), a scene sheet rendered by code with shadow, night light and camera moves, over the real narration | **Phase 1 done** (Nov 1, 2026) |
@@ -23,9 +23,10 @@ The spec is [../plan.md](../plan.md). This file tracks what is built, how it dev
 | 15. Puppets, phase 3 | The puppet pictures wired into the pipeline behind `render.pictures: puppet`: an assets stage (places mapped, puppets and props painted once), a sheets stage (Claude stages each scene in order, checked in code against the stage, set state carried forward) and an animate stage (every scene a clip drawn by code); a stub video runs end to end | **Done; live-staged on 3 scenes** (Nov 1, 2026) |
 | 16. The reviewer | Every outline and script is read once by Claude as the toughest viewer (would a sensible person do this, could it be done, does it take the time it takes, rules, days, threads, real skills) and rewritten once with its fixes before the owner sees it; the thread says what was fixed | **Done** (Nov 1, 2026) |
 | 17. MCP endpoint and jobs | `run.py serve` serves MCP at `/mcp` for the Claude Code session: today's tools, `wait`, `contact_sheet`, and Claude jobs (a stage that needs Claude parks until the session answers), wired for titles first | **Done** (Nov 2, 2026) |
-| 18. The session writes | Outline, script, reviewer, flagged-scene rewrites, titles and topic ideas done by the session; the in-app agent and gate comments off | Not started |
-| 19. The session looks | Puppet assets, scene sheets and picture checks done by the session through a worker subagent; no code path calls the API | Not started |
-| 20. Hooks and the shorts look | The viral-hooks skill without its ad, its checklist in the shared outline prompt, Remotion skills and overlays for explainer shorts | Optional, not started |
+| 18. The chat replaces the browser | Every card action is an MCP tool in the Claude Code chat: approve, publish, swaps, YouTube sign-in, `review` (the waiting card in full, with pictures and file paths), `news`. Anything that spends money or changes YouTube goes through Claude Code's permission prompt. The browser UI, REST API, websocket, in-app chat agent and card comments are deleted | **Done** (Nov 2, 2026) |
+| 19. The session writes | Outline, script (in parts, each checked as it arrives), the reviewer (the `critic` agent), flagged-scene rewrites and topic ideas are jobs this chat does; the `stickfleet` skill, the `critic` agent, and the viral-hooks skill with its checklist in the shared outline prompt | **Done** (Nov 2, 2026) |
+| 20. The session looks; the API is gone | Puppet assets, scene sheets and picture checks done through a worker subagent; the API code path, the `anthropic` package, `ANTHROPIC_API_KEY` and the live Claude tests deleted | Not started |
+| 21. The shorts look | Remotion skills and label and arrow overlays for vertical explainer shorts (the hooks half came in phase 19) | Optional, not started |
 
 The code for plan.md's whole build order is complete (weeks 4–6 are running videos, not building); phase 10 is the YouTube tools plan.md lists that no phase has needed yet. What needs your accounts is under "Your turn" in How YouTube works, How Claude writes, How voice, pictures and clips work, and How topics and metrics work.
 
@@ -33,12 +34,13 @@ The code for plan.md's whole build order is complete (weeks 4–6 are running vi
 
 ```
 uv sync
-cd server/web && npm install && npm run build && cd ../..   # once, and after UI changes
 cd render/remotion && npm install && cd ../..               # once; the first render also downloads Chrome Headless Shell
-copy .env.example .env           # then put your ANTHROPIC_API_KEY in it (no key = no chat agent, no Claude writing)
-uv run python run.py serve       # http://localhost:8000, engine + UI + agent in one process
-uv run pytest -q                 # 112 tests, ~5 min (the session and puppet ones are slowest), real ffmpeg + Remotion; fake agent, Claude, ElevenLabs, fal, Google APIs; $0
-uv run pytest -m live            # 6 tests against real APIs (Claude agent + outline, a voice line, a still, a 3 s clip ~$0.35, competitors' videos, free); skipped without keys
+copy .env.example .env           # ElevenLabs, fal and YouTube keys; ANTHROPIC_API_KEY stays empty (providers.llm: session)
+copy claude-settings.json .claude\settings.json   # once, by hand (and into the workspace folder above): the permission prompts
+                                 # .claude\skills and .claude\agents are in the repo; the workspace folder above has copies
+uv run python run.py serve       # the engine, and MCP for Claude Code at http://localhost:8000/mcp
+uv run pytest -q                 # 107 tests, ~5 min (the session and puppet ones are slowest), real ffmpeg + Remotion; fake Claude, ElevenLabs, fal, Google APIs; $0
+uv run pytest -m live            # 5 tests against real APIs (a Claude outline, a voice line, a still, a 3 s clip ~$0.35, competitors' videos, free); skipped without keys
 uv run python run.py demo        # headless run through every gate
 uv run python run.py status
 uv run python run.py costs 3     # every cost logged for video 3; Claude calls show tokens and the guard's estimate
@@ -47,27 +49,36 @@ uv run python run.py still-test zombie   # one fal picture with the character re
 uv run python run.py clip-test zombie    # animates that picture with models.clip -> data/clip_test_zombie.mp4 (~$0.90)
 uv run python run.py topics zombie       # check competitors now, list their top recent videos and the queued topics; --propose
 uv run python run.py bench-render --engine remotion   # or ffmpeg; --scenes, --concurrency, --x264-preset
-uv run python run.py connect zombie                   # YouTube sign-in for one channel (or the sidebar button)
+uv run python run.py connect zombie                   # YouTube sign-in for one channel (or connect_youtube in the chat)
 uv run python run.py youtube-test zombie              # day-1 unlisted upload check
 ```
 
-The tests never touch a real YouTube channel: `tests/conftest.py` gives every test an empty keychain, practice-mode YouTube unless the test asks for live (with a fake service), and fixed channel settings (clips on, all gates), whatever the real files say. Before it existed, a test run with `youtube.mode: live` and a connected channel uploaded two placeholder videos to the real channel (Oct 30, 2026).
+With `run.py serve` running, open Claude Code in this folder or the workspace folder above. `.mcp.json` points it at the server; approve the `stickfleet` server once, then ask it what's waiting (How the chat runs the fleet).
 
-Without `render/remotion/node_modules`, renders fall back to ffmpeg (the thread says so) and the Remotion test is skipped.
+The tests never touch a real YouTube channel. `tests/conftest.py` gives every test:
+- an empty keychain;
+- practice-mode YouTube, unless the test asks for live (with a fake service);
+- fixed channel settings (clips on, all gates) and fal pictures, whatever the real files say.
 
-UI development with hot reload: keep `run.py serve` running, then `cd server/web && npm run dev` and open http://localhost:5173 (Vite forwards `/api`, `/ws`, `/media` to :8000).
+Before it existed, a test run with `youtube.mode: live` and a connected channel uploaded two placeholder videos to the real channel (Oct 30, 2026). The picture pin came in Nov 2, 2026: the real file's puppet pictures at 30 fps kept the suite running for over an hour.
 
-To start from an empty pipeline, stop the server and delete `data/`. The agent's conversation transcripts live where Claude Code keeps them (`~/.claude/projects/<this folder>`); deleting `data/` orphans them harmlessly.
+Without `render/remotion/node_modules`, renders fall back to ffmpeg (the video's messages say so) and the Remotion test is skipped.
 
-Measured on this machine (24 threads), `bench-render`, 120 stub scenes with 8 clips, 28.1 minutes: Remotion 13.3 min (798 s), video exactly as long as the audio (28:08.28), 295 MB; ffmpeg 52 s, 0.2 s longer than the audio. A full-length render therefore holds the render card back about 13 minutes; the Remotion test and the 6-scene stub videos in the UI take under a minute.
+To start from an empty pipeline, stop the server and delete `data/`.
+
+Measured on this machine (24 threads), `bench-render`, 120 stub scenes with 8 clips, 28.1 minutes:
+- Remotion took 13.3 min (798 s). The video was exactly as long as the audio (28:08.28), 295 MB.
+- ffmpeg took 52 s, and the video was 0.2 s longer than the audio.
+
+So a full-length render holds the render card back about 13 minutes. The Remotion test and the 6-scene stub videos take under a minute.
 
 ## How the code is laid out
 
 - `core/db.py`: schema, `MIGRATIONS` (columns added after a table shipped; `init()` adds missing ones), `transition()` (atomic state change, raises `StateError`), `claim_video` / `claim_scenes` (leases), `tx()` (BEGIN IMMEDIATE), `neighbors()` (the lines either side of a scene). Tables added in phase 8: `competitor_videos` and `competitor_views` (snapshots), `reach_days` and `reach` (the reach files).
 - `core/stage.py`: `run_video_stage` / `run_scene_stage` (claim → work → release, retries with backoff, `fail()` → `failed` + `resume_state`).
-- `core/actions.py`: every verb a person or the agent can use (`new_video`, `start_topic`, `dismiss_topic`, `suggest_swap`, `apply_swap`, `keep_swap`, `approve`, `revise`, `regenerate`, `edit_outline`, `flag_scenes`, `edit_scene`, `pick`, `update_publish`, `request_publish`, `retry`, `show`, `status`). All state checks live here.
+- `core/actions.py`: every verb the owner can use, through the chat's tools or the CLI (`new_video`, `start_topic`, `dismiss_topic`, `suggest_swap`, `apply_swap`, `keep_swap`, `approve`, `revise`, `regenerate`, `edit_outline`, `flag_scenes`, `edit_scene`, `pick`, `update_publish`, `request_publish`, `retry`, `status`). All state checks live here.
 - `core/context.py`: `Ctx` (config, events, providers), `is_stub(provider)`, `log_cost` / `guard` (stub providers log simulated costs, real ones real), `reserve()` (holds a running call's price against the budget so parallel calls can't all pass one check), `meter()` → `Meter` with `check(usd)` and `spend(usd, detail)` for LLM calls, and `channel_meter()` for a channel's calls (topic ideas: capped per call, logged with no video). `ctx.google` holds test fakes for the other Google APIs. `core/errors.py`: `ActionError`, and `FinalError` (a stage failure retrying won't fix, so it fails at once).
-- `core/cards.py`: `CardPoster` turns events into rows in `messages` (cards + progress lines) and emits `message` / `message_updated` events. Card payload builders: `outline_card`, `script_card`, `render_card`, `publish_card`, `error_card`, `topics_card` (home thread; competitor ideas or a winner's follow-ups), `metrics_card` (posts as done; verdict, medians, the last swap), `swap_card`.
+- `core/cards.py`: `CardPoster` turns events into rows in `messages` (cards, notices and progress lines), the inbox the chat's `status`, `review` and `news` read; it emits `message` / `message_updated` events. Card payload builders: `outline_card`, `script_card`, `render_card`, `publish_card`, `error_card`, `topics_card` (home thread; competitor ideas or a winner's follow-ups), `metrics_card` (posts as done; verdict, medians, the last swap), `swap_card`.
 - `core/performance.py`: the own-data rules. `medians()`, `verdict()`, `judge()` (once per complete reading: the surge, the swap card, the family hold), `ranked_topics()` / `rank()` (competitor views per day scaled by the family's own results, held families last), `held()`, `own_results()`, `swap_since()`.
 - `core/events.py`: thread-safe bus. `emit(kind, video_id, /, **data)`. Emit only after commit.
 - `core/metadata.py`: publish metadata, description with chapters, `next_slot()`, YouTube validation rules.
@@ -83,45 +94,120 @@ Measured on this machine (24 threads), `bench-render`, 120 stub scenes with 8 cl
 - `youtube/competitors.py`: `fetch()` (competitors' recent long uploads and views), `stub()`, `seconds()` (ISO 8601 durations), `age_days()`.
 - `youtube/reporting.py`: the reach job (`ensure_job`), `import_new()` (new daily files, backfills replace), `parse()`, `window()` (impressions and CTR over a run of days, once all have arrived), `pacific_days()`.
 - `youtube/quota.py`: per-day, per-bucket ledger in the `quota` table (Pacific-time days). `check()` before a sequence, `spend()` per call.
-- `agent/tools.py`: the 12 fleet tools, built per thread by `build_tools(ctx, thread)` (`make_tools` wraps them in the in-process MCP server). Also `describe()` (the per-turn state line), `thread_brief()` (system prompt tail), `card_summary()` (compact card for the model), `describe_call()` (tool line text).
-- `agent/harness.py`: `AgentHub` (one per server; owns every thread's agent, confirm futures, gate comments) and `ThreadAgent` (one worker task + one `ClaudeSDKClient` per thread). `path_guard` (PreToolUse hook), `confirm_card` (diff for Edit).
-- `core/jobs.py`: Claude's work waiting for the Claude Code session. `NeedsClaude` (a stage parks on it), `plain()` and `key()` (a request as JSON and its hash), `answer_for()`, `park()` (store or find the job, supersede an older one for the same video, scene and kind, register its check), `pending()`, `take()`, `answer()` (check, store, wake the parked stage). The `claude_jobs` table is in `core/db.py`.
-- `providers/session.py`: `SessionLLM`, a `ClaudeLLM` whose `_call` looks up or parks a job instead of calling the API. `READY` lists the calls moved over so far; the rest raise `FinalError` (or go to a `fallback`, in tests).
-- `server/claude_code.py`: the MCP endpoint at `/mcp` (low-level `mcp.server.lowlevel.Server`, streamable HTTP with JSON responses, mounted in `server/app.py` and run in its lifespan). The fleet tools from `agent/tools.py` as a home thread sees them, plus `jobs`, `take_job`, `answer_job`, `wait`, `contact_sheet`. `.mcp.json` points Claude Code at it (one copy here, one in the workspace folder above).
-- `agent/system.md`: the agent's system prompt (includes how prompt files are laid out). `prompts/`: `outline.md`, `script.md`, `visual.md` (how a picture prompt is written, pulled into the others as `{visual_guide}`), `regen.md` (one flagged scene), `titles.md`, and the picture templates `still.md` and `thumbnail.md` (whole files, no user turn).
-- `server/app.py`: `create_app(ctx, run_engine, hosts, agents)`. REST wrappers over `core.actions` (`ActionError` → 409, `LookupError` → 404; `regenerate` has an endpoint but no card button), chat / stop / confirm endpoints, `POST /api/channels/{id}/connect` (one sign-in at a time), `/api/channels` with each channel's YouTube status, `Hub` forwards bus events to websocket clients, `/media` and the built UI as static files.
-- `server/web/src/`: `App.tsx` (state, websocket, event replay over fetches, notifications, tab badge), `Sidebar.tsx`, `ThreadView.tsx` (messages, tool lines, typing dots, composer with Stop), `markdown.tsx` (tiny renderer for assistant replies), `cards/` (one view per card kind, including `ConfirmView`), `api.ts`, `live.ts` (reconnecting websocket), `types.ts` (mirrors `core/cards.py` payloads).
+- `core/jobs.py`: Claude's work waiting for the Claude Code session. `NeedsClaude` (a stage parks on it), `plain()` and `key()` (a request as JSON and its hash), `answer_for()`, `park()` (store or find the job, supersede an older one for the same video, scene and kind, register its checks), `pending()`, `take()`, `answer()` (check, store, wake the parked stage; or one part of a long answer), `merge()` and `parts_so_far()` (the parts as one reply), `resume_with()` / `to_resume()` / `resumed()` (a topic round waiting on its job), `supersede()` (Stop). The `claude_jobs` table is in `core/db.py`.
+- `providers/session.py`: `SessionLLM`, a `ClaudeLLM` whose `_call` looks up or parks a job instead of calling the API. `READY` lists the calls moved over: all the writing since phase 19; the looking calls raise `FinalError` until phase 20 (or go to a `fallback`, in tests).
+- `server/claude_code.py`: the MCP endpoint at `/mcp` (low-level `mcp.server.lowlevel.Server`, streamable HTTP with JSON responses, mounted in `server/app.py` and run in its lifespan), its instructions to the session, the fleet tools from `server/tools.py`, and `jobs`, `take_job` (a brief over `BRIEF_MAX` goes to `data/jobs/job-N.md`), `answer_job` (whole, or in parts), `wait`, `contact_sheet`. `.mcp.json` points Claude Code at it (one copy here, one in the workspace folder above).
+- `server/tools.py`: the fleet tools (`make_tools(ctx)`: name → MCP tool and handler), thin wrappers over `core.actions`, plus `review` (a waiting card in full; the script as a Markdown file in `data/review/`, thumbnails as pictures, media as file paths), `news` (unseen notices and cards, marked in `messages.seen_at`), `status`, `connect_youtube`. `ASK`: the tools behind Claude Code's permission prompt, kept equal to `claude-settings.json` by a test.
+- `.claude/`: `skills/stickfleet/SKILL.md` (the job loop, the script in parts, reviews to the critic agent, what needs the owner's yes and what costs money), `agents/critic.md` (the reviewer with fresh context; only `take_job`, `answer_job` and `Read`), `skills/viral-hooks/` (from `vyralcontent/content-skills`, MIT, its `LICENSE` kept, without the header banner and the "Mentioning Vyral" section). Copies sit in the workspace folder above, since Claude Code reads the folder it's opened on. `settings.json` is the owner's copy of `claude-settings.json`.
+- `tests/replies.py`: outline and script replies in Claude's shape that pass the checks, for the API tests and the session tests.
+- `prompts/`: `outline.md` (with the hook checklist), `script.md`, `visual.md` (how a picture prompt is written, pulled into the others as `{visual_guide}`), `regen.md` (one flagged scene), `titles.md`, and the picture templates `still.md` and `thumbnail.md` (whole files, no user turn).
+- `server/app.py`: `create_app(ctx, run_engine, hosts)`: the engine in the lifespan, the local-only Host and Origin check, and `/mcp`. Nothing else is served.
 
-Media paths are stored relative to `data/media` and served at `/media/...`. Each still has a `.thumb.jpg` preview for the contact sheet. `/media` supports range requests, so the players can seek.
+Media paths are stored relative to `data/media`. Card payloads still write them as `/media/...`, and the chat's tools turn that into the file's path on this machine. Each still has a `.thumb.jpg` preview for the contact sheet.
 
-## How the UI works
+## How the chat runs the fleet (phase 18)
 
-- Sidebar: one block per channel. The channel row opens its home thread. Under it, the YouTube channel it's connected to, or Connect YouTube (opens Google's sign-in in your browser and waits; the result is also posted in the home thread). Video threads show a state badge, the cost so far, and a dot when a card is waiting.
-- Cards are open with live buttons while `card_status == "active"` and fold to one line once resolved (Approved, Sent back, Replaced, Denied, ...). Every button posts to `/api/videos/{id}/{verb}`; a 409 shows the server's message under the button.
-- Outline: inline edits (move, hero toggle, edit, cut, add, hook, ending) queue locally with Undo, then go to `edit_outline` in one call. `OutlineView.apply()` mirrors `_apply_outline_op`, so keep them in sync.
-- Render: highlight reel and full video tabs, 3 thumbnails, 3 titles plus your own, a contact sheet (click to select, ▶ seeks the full video to that scene), and a flag panel: New picture, Change the line (needs a note), or Edit by hand (one scene; calls `edit_scene`).
-- Publish: editable title, description, tags, go-public time, AI label; Save sends only the fields you changed. In live mode Publish asks for confirmation first, and the card warns while the channel isn't connected (read live from the sidebar state, so connecting clears it).
-- Progress lines: the Remotion render and the YouTube upload show percent; the script shows scenes written so far while Claude streams it and closes when the script card arrives; other stages show done/total. A regenerated card folds to "Written again"; card versions count drafts sent back either way. Links in system lines and assistant replies are clickable (Studio and watch links after publishing).
-- Error: Retry. When blocked, it also lists the stuck scenes with prompt and narration editors.
-- Chat: the composer sends to the agent (home thread too). With the agent offline, the home composer's button reads "Start video" and calls `new_video` directly; video threads answer that the assistant is offline. While a turn runs: typing dots and a Stop button; you can keep typing, and those messages go in the next turn.
-- Assistant replies render basic markdown. Each tool call shows as a small muted line (`↳ flag_scenes 14, 37 · visual`), with the error in red if it failed.
-- Confirm card (agent wants to Edit a prompt or channel file): the diff, Approve change / Deny. Nothing is written before Approve.
-- Live updates: the websocket pushes `message`, `message_updated`, `thread` (sidebar row) and `turn` (agent running) events; the UI re-fetches on every reconnect and replays any event that arrived while a fetch was in flight, so a slow fetch never rolls back a newer update. Browser notification (after you click "Turn on notifications") when a card arrives in a thread you aren't looking at; the tab title shows how many cards are waiting.
+The browser app and the in-app chat agent were deleted on Nov 2, 2026, when the owner said "i want to approve in this chat, i want to retire the browser, i dont need card comments". The Claude Code chat is the only way in. It works over the same MCP endpoint as the jobs, at `/mcp`. Git history has the old UI (`server/web/`) and agent (`agent/`).
 
-## How the agent works
+- **Seeing what's waiting.**
+  - `status` lists each channel (its YouTube connection, sign-in errors, budget) and its videos, each with its state and the card waiting on the owner. It also says how much news is unseen. With a `video_id` it gives one video's state, cost, metrics and the waiting card in short.
+  - `review` gives the waiting card in full:
+    - outline: every beat, the cast and the tracker;
+    - script: the counts and beats, plus the whole script written to `data/review/video-N-script-vM.md` for the session to read and the owner to open in VS Code;
+    - render: the MP4 and highlight-reel paths (VS Code plays them), the three titles and thumbnails (as pictures) with their texts, what's picked, cost and budget, and each scene's line;
+    - publish: every field, the go-public time and the thumbnail;
+    - error: the error and any blocked scenes;
+    - swap: the options.
+  - `contact_sheet` shows the scene pictures.
+  - `news` gives the notices and cards posted since the last call (new cards, sign-in trouble, topic ideas, metrics, published, went live), each once. `messages.seen_at` marks them. Everything posted before phase 18 counts as seen, so the first call isn't the whole history.
+  - `wait` returns when a job arrives, a card waits, a video fails or is blocked, topic ideas or a swap are posted, metrics come in, or a video is published or goes live.
+- **Acting.**
+  - The gates: `approve`, `revise`, `regenerate`, `edit_outline`, `flag_scenes`, `edit_scene`, `pick`, `set_schedule`, `update_publish` (title, description, tags, AI label), `publish`, `retry`, `stop_writing`.
+  - Topics and series: `new_video`, `next_part`, `topics`, `start_topic`, `dismiss_topic`, `suggest_topics`.
+  - Live videos: `suggest_swap`, `apply_swap`, `keep_swap`.
+  - YouTube: `connect_youtube`. Google's sign-in page opens in the browser, because Google requires it, and the tool waits up to 5 minutes. `run.py connect` does the same.
+  - Each tool is a thin wrapper over `core.actions`, so every state check still holds. A refused action comes back as an error result with the reason.
+- **The owner says yes to what costs money or changes YouTube.**
+  - `claude-settings.json` belongs in `.claude/settings.json`, here and in the workspace folder above. It allows every `stickfleet` tool, and asks every time for `approve`, `flag_scenes`, `edit_scene`, `retry`, `publish` and `apply_swap`.
+  - Claude Code's permissions docs say an ask rule prompts even in auto mode. The exception is bypassPermissions, which skips every prompt.
+  - The MCP instructions also tell the session to do these only when the owner asks.
+  - Claude Code's auto mode refused to let the session write `.claude/settings.json` itself (it's Claude Code's own config), so the owner copies the file in once.
+  - A test keeps the file's ask list equal to `server/tools.py` `ASK`.
+- **Gone.**
+  - The React UI, the REST API, the websocket and `/media`.
+  - The in-app chat agent, with its confirm cards, gate comments, per-thread budgets and `agent:` config.
+  - `actions.show`, and the `claude-agent-sdk` package. `mcp` 2.3.0 is now a direct dependency.
+  - The `threads` table stays as where `messages` hang. Its `sdk_session_id` and `agent_cost_usd` columns are unused.
+- **Verified at $0** (`tests/test_tools.py`):
+  - A stub video goes from idea to scheduled using only MCP tools: `status`, `review` of the outline, script, render and publish cards (the script file, the video file, thumbnails as pictures), `edit_outline`, `approve`, `pick`, `update_publish`, `publish`, and `news` shown once.
+  - Flags.
+  - A refused approve, an unknown video, and an error card through `review` and `retry`.
+  - Pre-phase-18 messages counted as seen.
+  - The ask list.
+  - `/mcp` is local-only and `/api` is gone.
+  - Swaps, topics, sign-in status and `connect_youtube` moved onto the tools in their own tests.
 
-- One worker task and one `ClaudeSDKClient` per thread, created on the first message (or gate comment). The SDK requires a client to stay in the task that connected it, so the worker owns it until shutdown.
-- Options: `models.agent`, system prompt = `agent/system.md` + `thread_brief()`, `mcp_servers={"fleet": ...}`, `tools=["Read", "Edit"]` (no Bash, Write, web, Task, Skill), `allowed_tools` = the 12 fleet tools + Read, `can_use_tool` for Edit, PreToolUse hook on `Read|Edit`, `cwd` = project root, `resume` = `threads.sdk_session_id`, `max_budget_usd` = what's left of the thread's budget, `include_partial_messages`, `setting_sources=[]` and `strict_mcp_config` so nothing from `~/.claude` (your hooks, plugins, MCP servers) leaks in.
-- Each turn's prompt starts with `<now>…</now>`: the time and the video's current state and waiting card, so the agent never acts on a stale picture.
-- Text streams into one assistant message per text block (updated at most every 250 ms). Tool calls become `tool` messages; failed results mark them red.
-- Session id is saved from the init message and the result. If resuming fails before any output (the transcript was deleted), the thread starts a fresh session and retries the turn once.
-- Spend: `threads.agent_cost_usd` holds the session total (the SDK's `total_cost_usd`, which includes restored spend on resume); each increase is logged in `costs` as stage `agent` and added to the video's `cost_usd`. At `agent.budget_usd_per_session` (default $2) the thread stops answering; the card buttons still work.
-- Gate comments: on `gate_reached` for outline, script or render (not re-posts from `show` or inline edits), if `agent.comment_on_gates` is on and the thread is idle, a short turn gives a two-line take, posted after the card.
-- Verified against the real bundled CLI (2.1.310) at $0: with these options it connects, loads the `fleet` server with all its tools (11 then; 12 since phase 5, not re-run against the CLI), and disconnects cleanly. A real model turn needs `ANTHROPIC_API_KEY` (`pytest -m live`).
+## How the session writes (phase 19)
+
+- **What moved.** `outline`, `script`, `critique`, `rewrite_line`, `revise_visual` and `topics` joined `titles` in `session.READY`. Each builds the prompt and runs the checks it always did; only the API request became a job, answered in the chat and checked at once. A video now waits at each writing step until the chat does it: "Waiting for Claude Code: the outline (job N)" shows in its thread and in `news`. With `providers.llm: session`, the tools that set writing off (`new_video`, `start_topic`, `next_part`, `approve` of an outline, `revise`, `regenerate`, `flag_scenes` with a note) say a job is coming.
+- **One video's jobs, in order:**
+  - the outline, its review, and the outline revised with the reviewer's notes if it found anything; then the outline card;
+  - after approval, the script, its review and the revision, then the script card;
+  - after approval, the titles, then the render card;
+  - flagged scenes with a note: one rewrite job per scene.
+- **A stage runs again from the top after each answer**, replaying the answers it has (by request hash), so it must ask for exactly the same thing each time.
+  - The outline and script stages used to save their draft before the review. On the re-run that made the draft look like an earlier version, and the stage asked for a revision of it.
+  - Now the draft is saved only when Stop comes during the review, which is what the save was for.
+  - After Stop, `SessionLLM` still replays what was answered, and stops where it would have waited.
+- **The script comes in parts.**
+  - `take_job` tells the session to send a beat or more at a time with `answer_job(part=N)`, and `last=true` on the final part.
+  - `core/jobs.py` keeps the parts in `claude_jobs.parts_json` and joins their lists in order (`merge`).
+  - Each part is checked with `checks.script(partial=True)` on the script so far. Every rule holds for the beats written. The totals (40–65 scenes, 1,500–2,000 words, at least one place) are only checked for going over until the last part, which is checked as the whole script. The stretch rule uses the outline's last day as the story's end.
+  - A part that fails isn't kept. A last part that fails keeps the parts, so only the ones that need it are sent again. A part sent again by its number replaces it.
+  - `jobs` and `take_job` show how many parts are in.
+- **Long briefs go to a file.** A brief over 30,000 characters is written to `data/jobs/job-N.md`, and `take_job` gives the path. A script's review or rewrite carries the whole script, and this keeps it under Claude Code's cap on MCP output (25,000 tokens by default).
+- **The reviewer is the `critic` agent.**
+  - A job of kind `critic` goes to `.claude/agents/critic.md` with only its id. The agent starts with a fresh context, so the session that wrote the draft never grades it.
+  - The agent's tools are `take_job`, `answer_job` and `Read`.
+  - The MCP instructions, the skill and the brief all say so. Nothing in code can tell which agent answered.
+- **Flagged scenes wait one at a time.**
+  - `run_scene_stage` catches `NeedsClaude`: the scene is leased for `PARK_S` with no failed attempt.
+  - The job carries the scene id (`Meter.scene_id`), so two flagged scenes get two jobs, and answering one wakes its scene.
+  - Stages that go in order (`limit=1`: stills, sheets) now claim only a video's first scene in that state (`claim_scenes(in_order=True)`). A scene that's waiting, or backing off to try again, holds its place.
+- **Topic ideas.** A round of ideas isn't a stage that can park.
+  - `propose` and `follow_ups` mark their job with what to run in `claude_jobs.resume_json`: a competitor round with its count, or a winner's follow-ups.
+  - Every loop, the topics stage looks for answered ones and runs the round again. That replays the answer, queues the ideas and posts the card. The mark is cleared first, so a failure is posted once, not every loop.
+  - A winner's follow-ups carry its video id (`ChannelMeter.video_id`), so they don't supersede the channel's competitor round.
+  - The "Waiting for Claude Code" line for a round goes to the channel's home thread, and `suggest_topics` gives the job's number.
+- **Stop.** `stop_writing` on a video whose outline, script or review is waiting supersedes those jobs and clears the lease, so the stage runs at once and stops:
+  - a revision goes back to its draft, with the note kept as the draft note;
+  - a first script goes back to the outline;
+  - a review goes back to the draft it was reading.
+
+  Stop's notice now says "draft note" instead of the browser's "note box", and the script file from `review` labels that note as the one taken back by Stop. Phase 18 had it as "Rewritten with the note", which was wrong.
+- **The hook checklist.**
+  - `prompts/outline.md` has a checklist adapted from the viral-hooks skill to these long videos: the stake first, a concrete thing or number in the first sentence, a question, the title's promise kept, no bait, the stakes up within a minute.
+  - The outline's `hook` now ends with the opening line as it will be said, and `prompts/script.md` opens the first scene with that line.
+  - The skill itself is in `.claude/skills/viral-hooks/` for when a hook won't come.
+- **Claude Code files** are in this repo's `.claude/`, with copies in the workspace folder above: the `stickfleet` skill, the `critic` agent and `viral-hooks` (How the code is laid out). Writing them worked under auto mode; only `settings.json` had been refused.
+- **Verified at $0** (`tests/test_writing.py`, 6 tests).
+  - A stub video goes from idea to render card with every word written by "the session" over MCP:
+    - the outline and its review, including a refused review;
+    - the script in three parts: one sent out of order, one that fails, and a last part that fails and is sent again;
+    - the reviewer sending the script back, and the rewrite;
+    - the titles.
+
+    Then two flagged scenes are rewritten as two jobs, each holding its place.
+  - A long brief written to a file.
+  - Stop on a waiting revision.
+  - Topic ideas, from the stage and from `suggest_topics`.
+  - A winner's follow-ups.
+  - An in-order scene holding its place.
+- Not yet done with a real outline and script in this chat. That's next, and it's free: nothing is paid for until the script is approved.
 
 ## How the Claude Code session works (phase 17)
 
-- `providers.llm: session` (the default since Nov 2, 2026): Claude's work is done by the Claude Code session the owner has open in VS Code, on their Claude plan, never with `ANTHROPIC_API_KEY`. So far that's the titles; the other calls raise "Claude Code doesn't do the … yet", so nothing reaches the API before phases 18–19 move them. `agent.comment_on_gates` is off for the same reason. The chat box in the browser still uses the API key if one is set, until phase 18 removes it.
+- `providers.llm: session` (the default since Nov 2, 2026): Claude's work is done by the Claude Code session the owner has open in VS Code, on their Claude plan, never with `ANTHROPIC_API_KEY`. Since phase 19 that's all the writing (How the session writes); the looking calls raise "Claude Code doesn't do the … yet" until phase 20 moves them, so nothing reaches the API. Gate comments were turned off for the same reason, and phase 18 deleted them with the in-app agent.
 - **A stage that needs Claude parks.**
   - `SessionLLM._call` builds the request exactly as `ClaudeLLM` would: the system prompt, the messages and the schema. It hashes them into a key.
   - With no answer for that key, it stores a pending job, posts "Waiting for Claude Code: the titles (job N)" in the thread, emits `claude_job`, and raises `NeedsClaude`.
@@ -135,8 +221,7 @@ Media paths are stored relative to `data/media` and served at `/media/...`. Each
 - **No cost lines.** A session answer costs nothing, and `costs.log` skips $0, so the session's work doesn't show in `run.py costs`. The `claude_jobs` rows are the record.
 - **The endpoint.**
   - `/mcp` sits behind the same local-only Host and Origin check as the rest of the app, plus the MCP library's DNS-rebinding check.
-  - The fleet tools act as in a home thread, so a video tool needs `video_id`. With more than one channel, the others take `channel`.
-  - As for the chat agent, there's no approve or publish tool: those stay browser buttons. The session also runs in auto mode, where tool prompts can be skipped.
+  - The fleet tools are in How the chat runs the fleet. A video tool needs `video_id`; with more than one channel, the others take `channel`.
   - `wait` returns at once when an untaken job is waiting. Otherwise it waits up to 600 s for `claude_job`, `gate_reached` or `stage_failed`, then reports the waiting jobs and each unfinished video's state and waiting card.
   - `contact_sheet` tiles the `.thumb.jpg` previews, 24 at a time.
 - **Connecting.** Start `run.py serve`, then open Claude Code in the workspace. `.mcp.json` names `http://localhost:8000/mcp`, and Claude Code asks once to allow the project's server. If the server wasn't running when the session started, `/mcp` reconnects.
@@ -162,7 +247,7 @@ Media paths are stored relative to `data/media` and served at `/media/...`. Each
 ## How YouTube works
 
 - Everything goes through `youtube/` (Google's `google-api-python-client`, `google-auth-oauthlib`, and `keyring`). There is no delete call anywhere in it; `tests/test_youtube.py` fails if one appears.
-- Sign-in: Connect (sidebar or `run.py connect <channel>`) runs Google's desktop flow with `prompt=consent`, checks every scope was granted (`youtube.upload`, `youtube.force-ssl`, `youtube.readonly`, `yt-analytics.readonly`; a sign-in missing one added later shows Reconnect in the sidebar), asks `channels.list(mine=True)` which channel you picked, refuses one already connected to another of our channels, stores `{refresh_token, scopes, youtube_channel_id, title}` in Windows Credential Manager (service `stickfleet-youtube`, username = our channel id), and writes `youtube.channel_id` into the channel YAML (that one line; comments kept). The client id and secret stay in `secrets/client_secret.json`, not the keychain.
+- Sign-in: `connect_youtube` in the chat (or `run.py connect <channel>`) runs Google's desktop flow with `prompt=consent`, checks every scope was granted (`youtube.upload`, `youtube.force-ssl`, `youtube.readonly`, `yt-analytics.readonly`; a sign-in missing one added later shows in `status` as missing scopes; connect again), asks `channels.list(mine=True)` which channel you picked, refuses one already connected to another of our channels, stores `{refresh_token, scopes, youtube_channel_id, title}` in Windows Credential Manager (service `stickfleet-youtube`, username = our channel id), and writes `youtube.channel_id` into the channel YAML (that one line; comments kept). The client id and secret stay in `secrets/client_secret.json`, not the keychain.
 - `youtube.mode: stub` (default) writes `publish_request.json` and uploads nothing. `live` uploads; Publish is refused until the channel is connected, and needs a go-public time at least 15 minutes away.
 - Live publish (`stages/publish.py`): check quota for the remaining steps; if the go-public time is under 10 minutes away, send the video back to the publish card (a past `publishAt` makes YouTube publish at once); upload private with `publishAt`, `containsSyntheticMedia`, `selfDeclaredMadeForKids: false`, category, `defaultLanguage: en`; then thumbnail, captions (SRT, English), playlist (skipped if the channel has none). Each finished step is saved in `publish_json["steps"]`, and `youtube_id` as soon as the upload finishes, so Retry resumes. If an upload's reply was lost, the next attempt looks for a same-titled upload since it started and adopts it instead of uploading again.
 - Errors: 5xx and dropped connections count as attempts (3, with backoff). Anything that needs you (reconnect, quota, phone verification for thumbnails, other 4xx) fails at once with the reason on the error card; Retry resumes from the last finished step.
@@ -174,14 +259,14 @@ Media paths are stored relative to `data/media` and served at `/media/...`. Each
 
 1. Google Cloud setup from plan.md: one project; enable YouTube Data API v3, YouTube Analytics API and YouTube Reporting API; OAuth consent screen External and **published to In production**; an OAuth client of type **Desktop app**, saved as `secrets/client_secret.json`.
 2. Create the brand channel and phone-verify it (youtube.com/verify).
-3. Click **Connect YouTube** under the channel (or `uv run python run.py connect zombie`), pick the brand channel, tick every box. Google shows an "unverified app" warning once; continue past it.
+3. Ask the chat to connect the channel to YouTube (`connect_youtube`, or `uv run python run.py connect zombie`), pick the brand channel, tick every box. Google shows an "unverified app" warning once; continue past it.
 4. Day-1 test: `uv run python run.py youtube-test zombie`. It uploads a 20-second test pattern as unlisted and prints whether it stayed unlisted or YouTube locked it private (if locked, file the audit form it links). Remove the test video in Studio.
 5. When ready for real uploads: `youtube.mode: live` in `stickfleet.yaml`, and the series `playlist_id` in the channel YAML.
 
 ## How topics and metrics work
 
-- **Competitor check** (`stages/topics.py`, every `topics.poll_every_h`, 24): each competitor in the channel YAML is read through the Data API with `YOUTUBE_API_KEY` (`topics.competitors: youtube`): one `channels.list` for every uploads playlist, one `playlistItems.list` per competitor, one `videos.list` per 50 videos, about 3 of the 10,000 daily quota units per competitor. Uploads older than `recent_days` (90), shorter than `min_minutes` (8) or live/upcoming are skipped; the rest are ranked by views per day since publish (at least one day, so a few-hours-old video isn't first on a handful of views). Every check keeps a view-count snapshot in `competitor_views` for later velocity work. YouTube's RSS feeds would be free, but they've answered 404 for hours at a time since December 2025 (they did for every channel from here today), so they aren't used. An unknown competitor id is posted in the home thread. `competitors: stub` (the repo default) uses 8 made-up hits so the cards can be tried; with a real LLM they're only used when you ask (`run.py topics --propose`, the agent's `suggest_topics`), so Claude is never paid for ideas built on them unasked. `off` turns the check off.
-- **Topic ideas**: after a check, if fewer than `propose` (3) topics are queued, the LLM gets the top `shown` (8) hits and the channel's topics so far (`prompts/topic.md`) and proposes 3 one-line ideas, each a variant of hits it names, with a one-sentence why. Code checks the count, length, that none repeats a topic the channel has (dismissed ones included), and that the cited hits exist; a failed reply gets the usual one retry. They go into `topics` (score = views per day of the best hit they build on) and post as a card in the home thread: Start video (creates the video and opens its thread) or Dismiss on each; the card closes when none is left queued. A round costs about $0.05 with Opus 5.5; it's logged with no video and capped by `topics.max_usd` (1) instead of a video budget. A failed check or round posts its reason once and tries again an hour later. The agent has `topics`, `start_topic`, `dismiss_topic` and `suggest_topics` in home threads.
+- **Competitor check** (`stages/topics.py`, every `topics.poll_every_h`, 24): each competitor in the channel YAML is read through the Data API with `YOUTUBE_API_KEY` (`topics.competitors: youtube`): one `channels.list` for every uploads playlist, one `playlistItems.list` per competitor, one `videos.list` per 50 videos, about 3 of the 10,000 daily quota units per competitor. Uploads older than `recent_days` (90), shorter than `min_minutes` (8) or live/upcoming are skipped; the rest are ranked by views per day since publish (at least one day, so a few-hours-old video isn't first on a handful of views). Every check keeps a view-count snapshot in `competitor_views` for later velocity work. YouTube's RSS feeds would be free, but they've answered 404 for hours at a time since December 2025 (they did for every channel from here today), so they aren't used. An unknown competitor id is posted in the home thread. `competitors: stub` (the repo default) uses 8 made-up hits so the cards can be tried; with a real LLM they're only used when you ask (`run.py topics --propose`, the chat's `suggest_topics`), so Claude is never paid for ideas built on them unasked. `off` turns the check off.
+- **Topic ideas**: after a check, if fewer than `propose` (3) topics are queued, the LLM gets the top `shown` (8) hits and the channel's topics so far (`prompts/topic.md`) and proposes 3 one-line ideas, each a variant of hits it names, with a one-sentence why. Code checks the count, length, that none repeats a topic the channel has (dismissed ones included), and that the cited hits exist; a failed reply gets the usual one retry. They go into `topics` (score = views per day of the best hit they build on) and post as a card in the home thread: Start video (creates the video and opens its thread) or Dismiss on each; the card closes when none is left queued. A round costs about $0.05 with Opus 5.5; it's logged with no video and capped by `topics.max_usd` (1) instead of a video budget. A failed check or round posts its reason once and tries again an hour later. The chat has `topics`, `start_topic`, `dismiss_topic` and `suggest_topics`.
 - **Cadence** (`topics.cadence: true`): a channel that has published, with nothing in progress (failed counts as in progress), starts its top queued topic `lead_days` (5) before its next slot (last go-public time + `baseline_cadence_days`). The video stops at the outline gate like any other, so the most it spends unasked is one outline (~$0.30). A channel that has never published waits for you.
 - **Metrics** (`stages/analytics.py`): 48 hours and 7 days after a video goes public, one reading: views from `videos.list` (the public count, minutes behind), average view duration and percentage and subscribers gained from the Analytics API's `reports.query` (`ids=channel==MINE`, `filters=video==ID`, Pacific dates), impressions and click-through rate from the reach files. Analytics lags a day or two, so the 48-hour watch-time numbers run low; the card says so. Each reading is a row in `metrics` (`after_h` 48 or 168) and a card in the video's thread. A problem reading them never fails the video: it's posted once in the thread and retried hourly. With `youtube.mode: stub` the numbers are made up and marked.
 - **Reach** (`youtube/reporting.py`, every 6 hours for connected channels when `youtube.mode: live` and `youtube.reach: true`): the Analytics API has no impressions or CTR, so the first import creates a Reporting API job for `channel_reach_basic_a1` (or reuses one), then downloads each daily file created since the last import. YouTube posts the first files within 48 hours of the job, with 30 days of history, and keeps them 30–60 days. A newer file for a day already imported replaces it. Rows are summed per video and day (CTR weighted by impressions), and a reading's impressions and CTR fill in once every Pacific day of its window has arrived; the card updates in place. Google's page calls the CTR a percentage without saying whether 5% arrives as 5 or 0.05; the card assumes 5, so check it against Studio on the first real file.
@@ -193,16 +278,16 @@ Media paths are stored relative to `data/media` and served at `/media/...`. Each
 1. In Google Cloud (the same project as the OAuth client): Credentials, Create credentials, API key, restricted to YouTube Data API v3. Put it in `.env` as `YOUTUBE_API_KEY`. Make sure YouTube Analytics API and YouTube Reporting API are enabled too.
 2. Check `competitors` in `channels/zombie.yaml`: the one there (`UCy7Ke_F2ZANZpSwar-9ZGjw`) is Day by Day Stick, the reference channel (checked Oct 29, 2026 with a real API key). Add the channel ids (they start with UC; on a channel page, Share channel, Copy channel ID) of 3–6 channels in the genre.
 3. Set `topics.competitors: youtube`, then `uv run python run.py topics zombie` to see their top recent videos ranked (a few quota units, free). `--propose` also asks Claude for ideas in live mode (~$0.05), or start `run.py serve` and the card appears within a minute.
-4. If you connected the channel before this phase, click Reconnect under it (one new permission). After the first live video, the reach report starts arriving within two days.
+4. If you connected the channel before this phase, connect it again (one new permission). After the first live video, the reach report starts arriving within two days.
 
 ## How the own-data loop works
 
 - **Verdicts** (`core/performance.py`): each reading at 48 hours and 7 days is judged once it's complete (its click-through rate has arrived from the reach files), against the median of the channel's last 10 readings at the same point. Above the median on both average view % and CTR is a winner, below on both a loser, anything else mixed. Until 3 videos have that reading it's "early" and nothing happens. The card shows the verdict and the medians it was judged against. Stub readings are only compared with stub readings.
 - **Surge**: a 48-hour winner asks the LLM for 2 follow-ups (`prompts/topic.md`'s `winner` turn: a sequel and adjacent scenarios), queued above everything else and posted as a "Follow-ups to winner #N" card in the home thread. A round costs about $0.05 and is capped by `topics.max_usd`; if it fails, the home thread says so and `suggest_topics` asks again.
 - **Family holds**: every idea now gets a `family` tag (its kind of setting: "ocean", "underground"), which Claude reuses across rounds. A 7-day loser holds its topic's family for 4 weeks: queued topics in it rank last (with "held until …" on their card), new rounds are told to avoid it and code rejects ideas in it, and the cadence skips it. Typed ideas have no family, so a losing typed video holds nothing.
-- **Ranking**: queued topics are ranked by competitor views per day × (1 + 0.25 × the family's winners minus losers here over the last 8 weeks, between −2 and +2). The cadence starts the top-ranked one, and the agent's `topics` tool lists them in that order with the reason.
-- **Swap card**: a 48-hour reading with CTR below the median posts a card in the video's thread with its three thumbnails and three titles from the render card. Pick another and click Apply: in live mode it reads the video's current snippet and sends it back whole with only the title changed (`videos.update` clears any snippet field it isn't sent, description and tags included; 1 + 50 quota units), and calls `thumbnails.set` (50 units). In stub mode it writes `swap_request.json`. Each change that went through is recorded in `swaps` with the CTR before it, even if the other failed, and later reading cards show "swapped …, when click-through was X%; Y% since" once the reach files cover a whole day after it. Keep as is closes the card. The agent's `update_video` tool only posts the card.
-- **Daily sign-in check** (`youtube.signin_check: true`, live mode): once a day per connected channel, `channels.list(mine)` (1 unit). A refused sign-in, or one for a different YouTube channel than the YAML says, posts a warning in the home thread once and shows "sign-in refused" with Reconnect in the sidebar; when it works again, the home thread says so. Network trouble is retried in an hour without a warning.
+- **Ranking**: queued topics are ranked by competitor views per day × (1 + 0.25 × the family's winners minus losers here over the last 8 weeks, between −2 and +2). The cadence starts the top-ranked one, and the chat's `topics` tool lists them in that order with the reason.
+- **Swap card**: a 48-hour reading with CTR below the median posts a card in the video's thread with its three thumbnails and three titles from the render card. `apply_swap` (it asks the owner first) changes it: in live mode it reads the video's current snippet and sends it back whole with only the title changed (`videos.update` clears any snippet field it isn't sent, description and tags included; 1 + 50 quota units), and calls `thumbnails.set` (50 units). In stub mode it writes `swap_request.json`. Each change that went through is recorded in `swaps` with the CTR before it, even if the other failed, and later reading cards show "swapped …, when click-through was X%; Y% since" once the reach files cover a whole day after it. `keep_swap` closes the card. `suggest_swap` only posts it.
+- **Daily sign-in check** (`youtube.signin_check: true`, live mode): once a day per connected channel, `channels.list(mine)` (1 unit). A refused sign-in, or one for a different YouTube channel than the YAML says, posts a warning once (in `news`) and shows in `status` as the channel's sign-in error; when it works again, the home thread says so. Network trouble is retried in an hour without a warning.
 - Verified at $0: verdicts with exact medians (early, winner, loser, mixed, waiting for CTR), follow-ups from the stub and through Claude's winner turn (its request, the held-family retry), the swap in stub mode over HTTP and in live mode against a fake Data API (the exact snippet sent, quota, a refused thumbnail after the title went through), holds and ranking, held topics skipped by the cadence, and the sign-in check (wrong channel, 401, not posted twice, recovered). In the browser: the follow-ups card with family tags and rank notes, a mixed reading with its swap card, Apply, and a winner's card. Not verified against the real APIs: no connected channel here.
 
 ### Your turn
@@ -211,12 +296,14 @@ Nothing new to set up: the loop starts acting once a channel has 3 videos with 4
 
 ## How Claude writes
 
+This is the API path (`providers.llm: claude`), which phase 20 removes. Since phase 19 the session writes, with the same prompts and checks (How the session writes).
+
 - Turned on by `mode: live` with `providers.llm: claude` in `stickfleet.yaml`. The repo default is still `mode: stub` ($0). The other providers can stay `stub`: their costs stay marked simulated, Claude's are real.
 - One call per outline, script, flagged-scene fix and title set, through `anthropic` 2.3.0 `messages.stream()`. The prompt file's system part (channel facts filled in) goes as one system block with `cache_control`; the idea, outline, notes and previous draft go in the user turn. `output_config` carries that kind's effort and a JSON schema (structured outputs), so the reply always parses. Models come from `models.outline` / `script` / `regen` / `titles`; effort and `max_tokens` (thinking included) from `claude:`. Opus 5.5 always thinks; effort is the only dial.
 - Prompt files are read fresh on every call, so an approved edit applies to the next regenerate. A file is the system part, then `<!-- user turn -->`, or named turns: outline and script have `new` and `revise`, regen has `visual` and `narration`. `{placeholders}` are filled in code. An unknown one, or a per-video one above the first marker (it would break the cache), stops the stage with a message naming it before anything is sent. The counts the prompts ask for (`{beat_count}`, `{scene_count}`, ...) come from `providers/checks.py`, so a prompt can't ask for what the checks reject. The outline and script system parts are about 750 and 1,000 tokens, so they cache (512 minimum); regen and titles are under that and don't.
 - Checks in code. Outline: 20–25 beats, 5–7 hero, every beat has a label, title, summary and skill, no skill twice, labels like "Day 12" that never go back in time. Script: 100–140 scenes in beat order with every beat used, each line 25–45 words (the prompt asks 30–40; a line a few words off isn't worth a $0.50 rewrite), 3,200–4,400 words in all (asked: 3,800), clips only on hero beats and at most `clips_per_video`. Titles: 3, under 100 characters, no `<` or `>`, all different; with each a thumbnail text of 2–4 words, at most 24 characters, in characters the caption font has. A reply that fails gets one more try in the same conversation with the problems listed; failing again stops the stage at once with them on the error card.
 - Stop: while Claude writes or rewrites an outline or script, the video's header has a Stop button (and the agent a `stop_writing` tool). It closes the stream (checked against the real API: cut off within half a second) and returns the video to the card it came from: a revision to its previous draft, with the note that started it taken out of the notes and put back in the card's note box (`videos.draft_note`) to change and resend; a first script to the outline; a first outline to an error card with Retry. The stopped call is billed for what it produced; with no usage to read, the logged cost is an estimate from the prompt and the text received (`approx` in `costs.detail`).
-- Revise vs regenerate: `revise` sends the last draft plus every note ("change what the notes ask, keep the rest word for word"). `regenerate` (the agent's tool, or `POST /api/videos/{id}/regenerate`) clears the draft and writes a fresh one with every note so far. Flagged scenes get the lines before and after them.
+- Revise vs regenerate: `revise` sends the last draft plus every note ("change what the notes ask, keep the rest word for word"). `regenerate` (a chat tool) clears the draft and writes a fresh one with every note so far. Flagged scenes get the lines before and after them.
 - Spend: before each call (the retry too) the budget guard checks the most it can cost: prompt characters ÷ 3 as input tokens, plus `max_tokens` as output. At the default settings that's about $0.64 for an outline and $1.30 for a script, against expected real costs of roughly $0.10–0.30 and $0.40–0.80. `run.py costs <video>` shows both for each call, so compare them on the first real runs. Each response's usage × `claude.prices` is logged, with the model, token counts and stop reason in `costs.detail`. Failed calls count too.
 - Refusals: Anthropic's safety classifiers can decline a request, even partway through (the first real script, a zombie story with a veteran and guns, was stopped at 56 scenes as "cyber"; it was billed $0.79). Every call therefore uses server-side fallback (`claude.fallbacks: default`, beta `server-side-fallback-2026-07-01`, through `client.beta.messages.stream`): a declined request carries on, on the same stream, on Anthropic's recommended model for that category, continuing from the partial reply. Each attempt in `usage.iterations` is costed at its own model's price (a model not in `claude.prices` at the requested model's), the guard allows for two attempts, and a retry after failed checks drops the thinking from before the `fallback` block as the API requires. If the fallback declines too, the stage stops with the reason. Checked against the real API (streaming, JSON format and fallback together).
 - Errors: a bad or missing key, a bad request, an unknown model, running out of `max_tokens`, or a refusal stops at once with a plain message. Overloaded, rate-limited, 5xx and dropped connections are retried by the SDK (twice), then by the stage (3 attempts with backoff). A stream that drops part-way costs money that isn't logged, since there's no usage to read.
@@ -225,7 +312,7 @@ Nothing new to set up: the loop starts acting once a channel has 3 videos with 4
 ### Your turn
 
 1. Put `ANTHROPIC_API_KEY` in `.env`.
-2. `uv run pytest -m live`: one agent turn and one real outline (a few cents). The outline test prints the outline and what it cost.
+2. `uv run pytest -m live`: one real outline (a few cents, on the API key; phase 20 removes it). The outline test prints the outline and what it cost.
 3. In `stickfleet.yaml`, set `mode: live`, and leave `providers` as it is (Claude writes; voice, pictures and clips stay stubs). Restart `run.py serve`.
 4. Start a video and read the outline. Where it falls short, ask the assistant to change `prompts/outline.md`, approve the diff, and have it regenerate. Same for the script. By plan.md's measure, week 1 is done when one topic's script reads right to you.
 
@@ -241,7 +328,7 @@ Nothing new to set up: the loop starts acting once a channel has 3 videos with 4
 - Default clip model: **Kling 3.0 Pro, silent, 8 s, $0.90 a clip** ($7.20 for 8 clips). fal's own pages (Oct 29, 2026) price these per second, silent: Kling 3.0 Pro $0.112 and Standard $0.084 (any length 3–15 s); Wan 2.6 $0.10 at 720p and $0.15 at 1080p, Wan 2.6 Flash $0.05 / $0.075 (5, 10 or 15 s only). The plan's $0.0375 for Wan was from a third-party list; on fal, Wan 2.6 at 1080p costs more per second than Kling Pro and can't do 8 s. All four are in the config. fal's page doesn't say what size Kling's videos are; both renderers scale clips to fill 1080p. Wan Flash's page says silent costs less than its listed price without saying how much, so it logs the listed price.
 - A clip plays once and then its last frame holds (How rendering works), so an 8 s clip in a ~15 s scene is 8 s of motion and 7 s of slow push.
 - Budget: every paid call holds its price against the budget while it runs (`ctx.reserve`), so the 8 clips the clips stage starts at once can't all pass the same check. Clips that don't fit are downgraded to Ken Burns with a notice; stills, voice and thumbnails stop with the budget error as before. In the test, with the hold turned off, three $20 clips all ran against a $50 budget; with it, two ran and one was downgraded.
-- **Thumbnail text**: `titles.md` now asks for `thumb_texts` too, one per title (2–4 words, checked in code). The thumbs stage draws each in the thumbnail's upper left in code (`providers/images.py caption`): capitals in Impact (Arial Bold where it's missing), yellow with a black outline, as big as fits in two evenly split lines across 60% of the width. `thumbnail.md` asks the picture model to keep that corner plain. `thumbs_json` keeps the texts; the render card and the agent's `show` include them.
+- **Thumbnail text**: `titles.md` now asks for `thumb_texts` too, one per title (2–4 words, checked in code). The thumbs stage draws each in the thumbnail's upper left in code (`providers/images.py caption`): capitals in Impact (Arial Bold where it's missing), yellow with a black outline, as big as fits in two evenly split lines across 60% of the width. `thumbnail.md` asks the picture model to keep that corner plain. `thumbs_json` keeps the texts; the render card and `review` include them.
 - Verified at $0: clips with a fake fal client and real MP4s, the Kling and Wan request shapes, errors, the budget downgrade with clips running in parallel, a flagged clip scene redoing its still and then its clip from the new still, captions drawn on the thumbnails, and the hold in ffmpeg (a test compares frames) and in Remotion (a render's frames: the clip's last frame at the cut, then the push). Not verified against the real API yet: no `FAL_KEY` here. Request and reply shapes come from fal's OpenAPI schemas for each model.
 
 ### Your turn
@@ -284,7 +371,7 @@ The idea is the one an LLM already works by: everything is written knowing what 
 - **Looks in clips** (video 3, scene 30: the raider in the undershirt ran down the stairs wearing the hero's knee brace, cane in hand): `stages/clips.py` sent every look in `looks_json` to the animator, the main character's included, even when he wasn't in the picture, and Kling put them on the one figure it had. `clips.wearing_of` now sends only the looks of people in the picture (the main character when the visual prompt names him, and the scene's cast), and `clip.md` says nobody gains anything the picture doesn't show on them.
 - **The YouTube description** (video 3's publish card opened with the outline's planning note, "Open cold on the worst moment... Then rewind to the promise"): `titles.md` now also asks for a `description`, three to five sentences for viewers in the narration's point of view (the fix they're in, the span, the danger and deadline, a rule or two, no ending), checked by `checks.description` (150–900 characters, no < >, and sent back if it says "open cold", "rewind", "the hook" or "the promise"). The thumbs stage keeps it in `thumbs_json`, and `metadata.description` puts it above the chapters and the disclosure, falling back to the hook for videos from before.
 - **The owner's own story**: the new-video text can be a full story (events, people, ending, even rough notes). outline.md treats it as the backbone and refines it rather than replacing it, inventing only what's left open. Paste it into + New video. The card heading shows only its first two lines.
-- **Series** (`core/series.py`): a video's header gets a **Next part** button once its script is approved (the agent has `next_part`, and `POST /api/videos/{id}/next_part {idea}`). The box takes the owner's direction or their own story for the part, or nothing to carry the story on. A next part has `videos.prev_video_id` and `part`. Its outline uses outline.md's `next_part` turn, built from the story so far: every earlier part's outline, how it ended on screen (the last three lines), where the tracker stood and what people had on. It opens with a recap, continues the days, and ends on a question for the next part. Returning cast keep their look word for word (`series.keep_looks`). The script gets the earlier parts' places to reuse. `start_generating` inherits every earlier place with its set changes and the last part's looks, so the reference pictures have the same names, and `stills._from_earlier` copies them instead of drawing them. Titles end with "(Part N)", and once the part before is on YouTube, the description opens with a link back to it. Every outline now leaves one question open, so any video can get a next part.
+- **Series** (`core/series.py`): once a video's script is approved, `next_part` in the chat starts the next one. It takes the owner's direction or their own story for the part, or nothing to carry the story on. A next part has `videos.prev_video_id` and `part`. Its outline uses outline.md's `next_part` turn, built from the story so far: every earlier part's outline, how it ended on screen (the last three lines), where the tracker stood and what people had on. It opens with a recap, continues the days, and ends on a question for the next part. Returning cast keep their look word for word (`series.keep_looks`). The script gets the earlier parts' places to reuse. `start_generating` inherits every earlier place with its set changes and the last part's looks, so the reference pictures have the same names, and `stills._from_earlier` copies them instead of drawing them. Titles end with "(Part N)", and once the part before is on YouTube, the description opens with a link back to it. Every outline now leaves one question open, so any video can get a next part.
 - Not done: no button to redraw a place or cast member whose reference came out wrong. For now, delete its file from `media/<video>/sets/` and flag that place's scenes.
 
 ## How puppets work (phase 1: the look test)
@@ -502,23 +589,30 @@ about $1).
 - Phase 9: plan.md's "scenario sub-family" is a `family` tag Claude gives each idea (`topics.family`), reused across rounds; typed ideas have none. Holds live in `family_holds`; swaps in `swaps`. New columns: metrics `verdict`, `median_avd_pct`, `median_ctr`, `median_n`; channels `signin_checked_at`, `signin_error`.
 - Phase 9: follow-ups post as a topics card ("Follow-ups to winner #N"), not outline cards, with `source: own_analytics`. The surge and the swap card are automatic; applying a swap is a card button (like Publish); the agent's `update_video` posts the card and changes nothing itself. `topic.md` has two named turns (`competitors`, `winner`).
 - Phase 9: the daily token check is a 1-unit `channels.list(mine)`, not the full `channel_overview` (3 units); `youtube.signin_check` turns it off. Card status `kept` (Keep as is). Stub CTRs now vary by video so medians mean something in stub mode. No new packages.
+- Phases 17–18: plan.md's interface, harness and review rows now say the Claude Code chat over MCP replaced the browser UI and the Agent SDK chat agent, and that gate actions go through Claude Code's permission prompt instead of buttons. plan.md's longer sections on the UI, the agent and its tools (`create_sdk_mcp_server`, confirm cards, gate comments, notifications) describe the old design; How the chat runs the fleet is current. New column: messages `seen_at`. Packages: `claude-agent-sdk` removed, `mcp` 2.3.0 added (it came with the SDK before).
+
+- Phase 19: the outline and script stages save their draft before the review only when Stop comes during it, so a stage re-run for the session asks for the same thing. Scene stages with `limit=1` claim in order. The viral-hooks skill came in phase 19 rather than 21. New columns: claude_jobs `parts_json` and `resume_json`. No new packages.
 
 The Starlette `httpx2` deprecation warning from phase 2 no longer appears after the phase 3 dependency update.
 
-## Phase 10 spec: YouTube tools for the agent, and channels 2–5
+## Phase 10 spec: YouTube tools for the chat, and channels 2–5
 
-Goal: the YouTube read and write tools plan.md lists for the agent, each write behind a confirm card, plus making a new channel a one-command job. Done when the agent can answer "how's the channel doing" and "what are people saying on #12" from real data, and every change it proposes on YouTube waits for a click.
+Goal: the YouTube read and write tools plan.md lists for the agent, now in `server/tools.py` for the chat, each write in `ASK` and `claude-settings.json` so Claude Code asks the owner first (as for `publish` since phase 18), plus making a new channel a one-command job. Done when the chat can answer "how's the channel doing" and "what are people saying on #12" from real data, and every change on YouTube waits for the owner's yes.
 
 Before writing code, read the Data API pages for `commentThreads.list`, `comments.insert` (replies), `videos.update` (description and tags; the same whole-snippet rule as titles), `videos.update` with `status.privacyStatus`, and `channels.update` (`brandingSettings`) plus `channelBanners.insert`: the fields, the quota (comment reads 1, writes 50; `channels.update` 50; banners 50), and what each clears when omitted. Ask before adding packages.
 
 - **Read tools** (no card): `channel_overview` (subscribers, recent uploads, quota used today, sign-in health), `video_stats` (the metrics rows and the latest public counts), `list_comments` (top-level comments on one of our videos, newest or most liked).
-- **Write tools, each a confirm card** with the exact change and an Apply button, like the swap card: `reply_comment` (the agent drafts, you edit and send), `update_video` grows description and tags (from the current snippet, sent back whole), `set_privacy` (public / unlisted / private; never delete), `update_branding` (channel description and keywords; banner from an image file). Every write books quota first and records what it changed. `set_privacy` should come with a **Publish now** button on a scheduled video: video 3 (Nov 1, 2026) was published scheduled and the owner wanted it public at once, which was done by hand with `videos.update(part="status")`, sending the current writable status fields back with `privacyStatus: public` and no `publishAt` (leaving it out removes the schedule; `uploadStatus` and `madeForKids` are read-only and must not be sent), then setting `videos.publish_at` to now so the readings line up.
-- **New channels**: `run.py new-channel <id>` writes `channels/<id>.yaml` from the zombie one with placeholders, makes `channels/<id>/` for the character picture, and prints plan.md's per-channel checklist. The sidebar shows a channel's missing pieces (no voice id, no character picture, not connected, no competitors).
-- **Tests**: each tool against the fake service, every write refused without its card's click, the whole-snippet rule for description and tags, quota, the new-channel scaffold.
+- **Write tools, each in the ask list**, whose description and arguments show the exact change: `reply_comment` (the agent drafts, you edit and send), `update_video` grows description and tags (from the current snippet, sent back whole), `set_privacy` (public / unlisted / private; never delete), `update_branding` (channel description and keywords; banner from an image file). Every write books quota first and records what it changed. `set_privacy` should come with a **publish now** choice for a scheduled video: video 3 (Nov 1, 2026) was published scheduled and the owner wanted it public at once, which was done by hand with `videos.update(part="status")`, sending the current writable status fields back with `privacyStatus: public` and no `publishAt` (leaving it out removes the schedule; `uploadStatus` and `madeForKids` are read-only and must not be sent), then setting `videos.publish_at` to now so the readings line up.
+- **New channels**: `run.py new-channel <id>` writes `channels/<id>.yaml` from the zombie one with placeholders, makes `channels/<id>/` for the character picture, and prints plan.md's per-channel checklist. `status` shows a channel's missing pieces (no voice id, no character picture, not connected, no competitors).
+- **Tests**: each tool against the fake service, every write in the ask list, the whole-snippet rule for description and tags, quota, the new-channel scaffold.
 
-## Phases 17–20 spec: every Claude call moves into the Claude Code session
+## Phases 17–21 spec: the Claude Code chat runs everything, with no browser and no API key
 
-Goal: no `ANTHROPIC_API_KEY` spend. Every place the app calls Claude becomes a job that the Claude Code session opened in this repo does through MCP tools, on the owner's Claude plan. The app keeps everything else: ElevenLabs, fal, the puppet painter and animator, ffmpeg and Remotion, YouTube, the browser UI. Decided Nov 2, 2026, when the owner said "move anything involving claude api onto this session, so we dont waste api key credits".
+Goal: no `ANTHROPIC_API_KEY` spend, and no browser. Every place the app calls Claude becomes a job that the Claude Code session opened in this repo does through MCP tools, on the owner's Claude plan. Every card is reviewed and acted on in that chat. The app keeps everything else: ElevenLabs, fal, the puppet painter and animator, ffmpeg and Remotion, YouTube.
+
+Decided Nov 2, 2026:
+- The owner first said "move anything involving claude api onto this session, so we dont waste api key credits".
+- After phase 17 they added "i want to approve in this chat, i want to retire the browser, i dont need card comments" and "we are gonna retire browser and claude api completely".
 
 Where Claude is called today. All but the last row go through the `LLM` protocol in `providers/llm.py`, which `ClaudeLLM` in `providers/claude.py` implements:
 
@@ -555,9 +649,9 @@ Design:
   - A worker agent for long runs of looking jobs (scene sheets, picture checks), so the pictures don't fill the main chat. Subagents run on the same plan.
   - `.claude/settings.json`: allows the free tools without asking. Gate approvals, flags, regenerations and publishing ask every time.
 - **Turned off.**
-  - The in-app chat agent and gate comments. The browser keeps its buttons, and the home composer's "Start video" already works without the agent.
-  - `ClaudeLLM`: it stays in the code, but nothing selects it. `ANTHROPIC_API_KEY` comes out of `.env` after phase 19.
-  - The `pytest -m live` Claude tests are removed.
+  - The browser, the in-app chat agent and gate comments are deleted in phase 18.
+  - `ClaudeLLM` stays until phase 20, but nothing selects it. Phase 20 deletes its API half, and `ANTHROPIC_API_KEY` comes out of `.env`.
+  - The `pytest -m live` Claude tests are removed in phase 20.
 - **What the owner sees change.** Nothing that needs Claude runs while no chat is open: a video waits at each Claude step until the session picks it up. The competitor check (YouTube API, free) still runs every `topics.poll_every_h`, and its ideas wait for the chat. Claude work counts against the plan's usage limits instead of the API key.
 
 Phases:
@@ -570,16 +664,35 @@ Phases:
   - Large answers: `answer_job` takes one whole reply. The script needs parts.
   - A new request supersedes the pending job with the same video, scene, kind and channel. Two jobs of one kind for one video at once (two flagged scenes' rewrites) therefore need their scene ids, or the second replaces the first.
   - Tests: an MCP client against the app, and a stub video that parks at titles, is answered, and finishes.
-  - Done when a session in VS Code answers a stub video's titles job and sees the publish card arrive in the browser.
-- **18. Writing.**
-  - The work: outline; script, in parts with each beat checked; the reviewer through the critic agent; flagged-scene rewrites; titles; topic ideas.
-  - The skill and agent files.
-  - The in-app agent and gate comments turned off.
-- **19. Looking.**
+  - Done when a session in VS Code answers a stub video's titles job and the video reaches its render card.
+- **18. The chat replaces the browser.** Done (Nov 2, 2026); see How the chat runs the fleet. Not yet tried from a real Claude Code session (MCP servers load when a session starts), and the owner copies `claude-settings.json` into `.claude/settings.json` by hand.
+  - **Tools.** The fleet tools move out of `agent/tools.py` into `server/tools.py`. They no longer need the Agent SDK or a thread: a video tool takes `video_id`, and a channel tool takes `channel` when there's more than one channel. `show` goes; these come in:
+    - `approve(video_id, gate)` for the outline, script or render card.
+    - `publish(video_id)`.
+    - `apply_swap` and `keep_swap` for the swap card.
+    - `connect_youtube(channel)`: Google's sign-in page still opens in the browser, because Google requires it.
+    - `review(video_id)`: the waiting card in full. The outline is given whole. The script goes to a Markdown file under `data/review/`, which the session reads and VS Code opens. The render card gives the MP4 and highlight-reel paths (VS Code plays them), the numbered title options, and the thumbnails as images with their paths. The publish card gives every field, the go-public time and the YouTube connection. The error card gives the error and any blocked scenes. Topic and swap cards give their options.
+    - `news`: the system lines and cards posted since the last call (sign-in failures, metrics verdicts, topic ideas, swap suggestions, published, went live). A `seen_at` column on `messages` marks them.
+    - `status` with no video lists each channel's YouTube connection along with the videos and jobs.
+    - `update_publish` gains `ai_disclosure`.
+    - `wait` also wakes on topic ideas, swap suggestions, blocked videos, published and went live.
+  - **Permission prompts.** `.claude/settings.json` (one copy here, one in the workspace folder above) allows `mcp__stickfleet__*`. It asks every time for `approve`, `flag_scenes`, `edit_scene`, `retry`, `publish` and `apply_swap`, which spend money or change YouTube. Claude Code's docs say an ask rule prompts even in auto mode (not in bypassPermissions), so the owner clicks Yes on each and the session can't pass a gate by itself. The MCP instructions also say to do these only when the owner asks in the chat.
+  - **Deleted.**
+    - `server/web/` (the React UI).
+    - The REST endpoints, `/ws` and the `Hub`, and the `/media` and UI static mounts. `server/app.py` keeps the engine, the local-only check and `/mcp`.
+    - `agent/`: the harness, the per-thread SDK clients, confirm cards, gate comments and `system.md`.
+    - The `agent:` config section and `models.agent`.
+    - The `claude-agent-sdk` package.
+    - The tests for those.
+  - **Kept.** `core/cards.py` and the `threads` and `messages` tables are now the inbox that `review`, `news` and `status` read. Card payloads still hold `/media/...` paths, which the tools turn into local file paths.
+  - **Tests.**
+    - Every tool through the MCP client on a stub video: approve each gate, flag, pick, publish, swap, review each card kind with its files, and news marked as seen.
+    - The settings file's ask list against the tool names.
+    - The local-only check on `/mcp`.
+  - **Done when** a stub video goes from idea to scheduled using only MCP tools.
+- **19. Writing.** Done (Nov 2, 2026); see How the session writes. The hooks half of phase 21 came with it, since it changes the outline prompt.
+- **20. Looking, and the API gone.**
   - The work: puppet assets (inventory, maps, part names), scene sheets in order, and picture checks for generative pictures, all through the worker agent.
   - Re-run tests for every stage that parks.
-  - Afterwards no code path calls the API, and the key is deleted.
-- **20. Hooks and the shorts look** (optional).
-  - The viral-hooks skill from `vyralcontent/content-skills` goes into `.claude/skills/viral-hooks/` with its 5 reference files. The "Mentioning Vyral" section and the header banner are removed, and their MIT `LICENSE` is kept in the folder.
-  - Its checklist goes into the shared outline prompt.
-  - Remotion's agent skills, plus label and arrow overlays, for vertical explainer shorts like the .mov reels in the folder above this repo.
+  - Afterwards no code path calls the API. The API half of `providers/claude.py`, the `anthropic` package, the `claude:` config section, the live Claude tests and `ANTHROPIC_API_KEY` are deleted.
+- **21. The shorts look** (optional). Remotion's agent skills, plus label and arrow overlays, for vertical explainer shorts like the .mov reels in the folder above this repo. (The viral-hooks skill and its checklist came in phase 19.)

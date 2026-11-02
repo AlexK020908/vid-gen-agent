@@ -135,7 +135,7 @@ def ctx(tmp_path, monkeypatch):
                    overrides={"mode": "live", "providers": {"llm": "stub", "tts": "elevenlabs", "images": "fal",
                                                             "video": "stub"},
                               "stub": {"scenes": 6}, "engine": {"retry_backoff_s": 0},
-                              "agent": {"comment_on_gates": False}, "render": {"engine": "ffmpeg"}, "topics": {"competitors": "off"}})
+                              "render": {"engine": "ffmpeg"}, "topics": {"competitors": "off"}})
     ctx.channel("zombie").voice_id = "voice123"
     return ctx
 

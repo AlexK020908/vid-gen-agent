@@ -1,4 +1,4 @@
-"""Errors shown to the person (card buttons, agent tools, CLI)."""
+"""Errors shown to the owner (the chat's tools, CLI)."""
 
 
 class ActionError(Exception):
@@ -17,4 +17,4 @@ class FinalError(Exception):
 
 
 class Stopped(Exception):
-    """The person stopped a Claude call partway (the Stop button): go back to the card, not to an error."""
+    """The person stopped a Claude call partway (stop_writing): go back to the card, not to an error."""

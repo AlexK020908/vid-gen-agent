@@ -33,7 +33,7 @@ STUB_PLACES = [
 
 
 class Meter(Protocol):
-    """`stopped` and `writing(close)` let the Stop button cut a streaming call off (core.context.Meter)."""
+    """`stopped` and `writing(close)` let stop_writing cut a streaming call off (core.context.Meter)."""
     stopped: bool
     def check(self, usd: float) -> None: ...
     def spend(self, usd: float, detail: dict | None = None) -> None: ...

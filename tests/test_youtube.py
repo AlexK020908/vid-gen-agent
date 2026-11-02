@@ -12,19 +12,17 @@ import keyring
 import keyring.backend
 import pytest
 import yaml
-from fastapi.testclient import TestClient
 from google.auth.exceptions import RefreshError
 from google.oauth2.credentials import Credentials
 from googleapiclient.errors import HttpError
 
-from agent.harness import AgentHub
-from core import actions, db
+from core import actions, cards, db
 from core.config import ROOT
 from core.context import make_ctx
 from core.errors import ActionError
 from render import ffmpeg, remotion_render
-from server.app import create_app
 from test_pipeline import run, to_render_review
+from test_tools import call
 from youtube import auth, quota
 
 TOKEN = {"refresh_token": "rt-1", "scopes": auth.SCOPES, "youtube_channel_id": "UCfake", "title": "Fake Zombie"}
@@ -346,18 +344,19 @@ def test_set_channel_id_keeps_comments(tmp_path):
     assert yaml.safe_load(path.read_text(encoding="utf-8"))["youtube"]["channel_id"] == "UCxyz"
 
 
-def test_connect_endpoint_and_channel_status(ctx, monkeypatch):
+def test_connect_tool_and_channel_status(ctx, monkeypatch):
     monkeypatch.setattr(auth, "connect", lambda ctx, channel_id: (
         connect(ctx), {"channel_id": channel_id, "youtube_channel_id": "UCfake", "title": "Fake Zombie"})[1])
-    app = create_app(ctx, run_engine=False, agents=AgentHub(ctx, online=False))
-    with TestClient(app, base_url="http://localhost") as client:
-        yt = client.get("/api/channels").json()[0]["youtube"]
-        assert yt["mode"] == "live" and yt["client_secret"] and not yt["connected"]
-        assert client.post("/api/channels/zombie/connect").json()["title"] == "Fake Zombie"
-        yt = client.get("/api/channels").json()[0]["youtube"]
-        assert yt["connected"] and yt["title"] == "Fake Zombie"
-        home = client.get("/api/channels").json()[0]["home_thread_id"]
-        assert client.get(f"/api/threads/{home}/messages").json()[-1]["text"].startswith("Connected to YouTube channel")
+    yt = json.loads(call(ctx, "status")[0])["channels"][0]["youtube"]
+    assert yt["mode"] == "live" and yt["client_secret"] and not yt["connected"]
+    said, err = call(ctx, "connect_youtube")
+    assert not err and said == "Connected zombie to the YouTube channel Fake Zombie (UCfake)."
+    yt = json.loads(call(ctx, "status")[0])["channels"][0]["youtube"]
+    assert yt["connected"] and yt["signed_in_as"] == "Fake Zombie"
+    with ctx.connect() as conn:
+        last = conn.execute("SELECT text FROM messages WHERE thread_id = ? ORDER BY id DESC LIMIT 1",
+                            (cards.home_thread_id(conn, "zombie"),)).fetchone()["text"]
+    assert last.startswith("Connected to YouTube channel")
 
 
 def test_no_delete_calls_in_the_youtube_package():

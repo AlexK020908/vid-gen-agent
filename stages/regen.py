@@ -1,4 +1,7 @@
-"""Flagged scenes from Gate 2. Visual: new still/clip with a prompt tweak. Narration: rewrite + re-voice."""
+"""Flagged scenes from Gate 2. Visual: new still/clip with a prompt tweak. Narration: rewrite + re-voice.
+
+With the Claude Code session writing, each flagged scene's rewrite is its own job (its scene id keeps two scenes'
+jobs apart), and the scene waits for it while the others carry on."""
 import json
 
 from core import db
@@ -15,7 +18,7 @@ def _work(ctx, conn, video, scene) -> tuple[dict, str]:
     channel = ctx.channel(video["channel_id"])
     note = scene["flag_note"]
     fields = {"regen_count": scene["regen_count"] + 1, "flag_kind": None, "flag_note": None}
-    meter = ctx.meter(conn, video, NAME, f"the fix for scene {scene['idx']}")
+    meter = ctx.meter(conn, video, NAME, f"the fix for scene {scene['idx']}", scene["id"])
     if scene["flag_kind"] == "narration":
         if note:  # no note = the line was edited by hand; use it as written
             fields["narration"] = ctx.llm.rewrite_line(channel, _with_context(conn, video, scene), note, meter)

@@ -5,7 +5,7 @@
   python run.py costs <video>        every logged cost for one video (Claude calls with tokens and the guard's estimate)
   python run.py stage <name>         run one stage once (debugging, prompt iteration)
   python run.py bench-render         time a full-length (120-scene) render; --engine remotion|ffmpeg
-  python run.py serve                chat UI + engine + chat agent on http://localhost:8000
+  python run.py serve                engine + the MCP endpoint Claude Code connects to (http://localhost:8000/mcp)
   python run.py voice-test <ch>      one line in the channel's ElevenLabs voice (under a cent), to pick a voice
   python run.py still-test <ch>      one picture from fal with the channel's character reference (~$0.04)
   python run.py clip-test <ch>       animate that picture with the clip model (models.clip; ~$0.90 for 8 s of Kling Pro)
@@ -13,9 +13,9 @@
   python run.py connect <channel>    sign in to YouTube for one channel (opens Google's consent screen)
   python run.py youtube-test <ch>    day-1 check: upload a 20-second unlisted clip, see if it stays unlisted
 
-Secrets come from .env (gitignored): ANTHROPIC_API_KEY turns the chat agent on, and Claude writes the outline
-and script when stickfleet.yaml has mode: live with providers.llm: claude. ELEVENLABS_API_KEY and FAL_KEY do
-the same for providers.tts: elevenlabs and providers.images / providers.video: fal.
+Secrets come from .env (gitignored): ANTHROPIC_API_KEY is only for providers.llm: claude (the API, until
+phase 20 removes it); with providers.llm: session the Claude Code chat does Claude's work.
+ELEVENLABS_API_KEY and FAL_KEY are for providers.tts: elevenlabs and providers.images / providers.video: fal.
 YOUTUBE_API_KEY reads competitors' videos for topic ideas (topics.competitors: youtube).
 YouTube needs secrets/client_secret.json (gitignored); tokens go to the OS keychain.
 """
@@ -248,27 +248,18 @@ def cmd_youtube_test(args) -> None:
 
 
 def cmd_serve(args) -> None:
-    import threading
-    import webbrowser
-
     import uvicorn
 
-    from server.app import WEB_DIST, create_app
+    from server.app import create_app
 
-    if not WEB_DIST.is_dir():
-        print("The UI isn't built yet: cd server/web && npm install && npm run build")
     app = create_app()
-    url = f"http://localhost:{args.port}"
-    print(f"Stick Fleet on {url}  (Ctrl+C to stop)")
-    if not app.state.agents.online:
-        print("Chat agent offline: put ANTHROPIC_API_KEY in .env to turn it on. The card buttons work without it.")
-    if not args.no_browser:
-        threading.Timer(1.5, webbrowser.open, (url,)).start()
+    print(f"Stick Fleet: engine running, MCP for Claude Code at http://localhost:{args.port}/mcp  (Ctrl+C to stop)")
+    print("Open Claude Code in this folder (or the one above) and ask it what's waiting.")
     uvicorn.run(app, host="127.0.0.1", port=args.port, log_level="warning")
 
 
 def main() -> None:
-    load_dotenv(ROOT / ".env")  # ANTHROPIC_API_KEY for the chat agent
+    load_dotenv(ROOT / ".env")
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
     parser = argparse.ArgumentParser(prog="run.py", description="Stick Fleet")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -299,9 +290,8 @@ def main() -> None:
     p.add_argument("--x264-preset", default=None, help="Remotion's x264 preset (veryfast, faster, medium, ...)")
     p.set_defaults(fn=cmd_bench_render)
 
-    p = sub.add_parser("serve", help="chat UI + engine")
+    p = sub.add_parser("serve", help="engine + MCP endpoint for Claude Code")
     p.add_argument("--port", type=int, default=8000)
-    p.add_argument("--no-browser", action="store_true")
     p.set_defaults(fn=cmd_serve)
 
     p = sub.add_parser("voice-test", help="one line in the channel's ElevenLabs voice")

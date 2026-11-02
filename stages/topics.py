@@ -14,12 +14,16 @@ winner's follow-ups come through follow_ups() here.
 The cadence: a channel that has published before, with nothing in progress, starts its top-ranked queued topic
 topics.lead_days before its next slot (last go-public time + baseline_cadence_days). It stops at the outline
 gate like any video.
+
+With the Claude Code session writing, a round of ideas is a job no stage is parked on: the round marks its job
+with what to run (core/jobs.py resume_with), and once the session has answered, this stage runs the round again,
+which finds the answer and posts the ideas.
 """
 import json
 import logging
 import time
 
-from core import actions, cards, db, performance
+from core import actions, cards, db, jobs, performance
 from core.errors import ActionError
 from youtube import competitors
 
@@ -33,7 +37,7 @@ log = logging.getLogger("stickfleet.topics")
 
 def run_once(ctx) -> bool:
     now = time.time()
-    did = False
+    did = _resume(ctx)
     for channel in ctx.config.channels.values():
         did = _poll_if_due(ctx, channel, now) or did
         did = _cadence(ctx, channel, now) or did
@@ -73,6 +77,8 @@ def _poll_if_due(ctx, channel, now: float) -> bool:
         count = int(_setting(ctx, "propose", 3))
         if queued < count:
             propose(ctx, channel, count)
+    except jobs.NeedsClaude:  # the ideas are a job for the session now; _resume posts them once it's answered
+        pass
     except Exception as e:  # ActionError, FinalError, BudgetExceeded, or a bug: say so once, try again later
         log.exception("topics for %s failed", channel.id)
         message = str(e) or type(e).__name__
@@ -142,8 +148,13 @@ def propose(ctx, channel, count: int | None = None) -> list[int]:
                                   "look again (competitors in the channel YAML, topics.recent_days)")
     with ctx.connect() as conn:
         taken, families, held = _known(conn, channel)
-        meter = ctx.channel_meter(conn, NAME, f"Topic ideas for {channel.name}", float(_setting(ctx, "max_usd", 1)))
-        ideas = ctx.llm.topics(channel, hits, taken, count, meter, families, held)
+        meter = ctx.channel_meter(conn, NAME, f"Topic ideas for {channel.name}", float(_setting(ctx, "max_usd", 1)),
+                                  channel.id)
+        try:
+            ideas = ctx.llm.topics(channel, hits, taken, count, meter, families, held)
+        except jobs.NeedsClaude as e:
+            jobs.resume_with(conn, e.job_id, {"round": "competitors", "channel": channel.id, "count": count})
+            raise
     ids = []
     with ctx.connect() as conn, db.tx(conn):
         for idea in ideas:
@@ -166,8 +177,13 @@ def follow_ups(ctx, channel, video, reading, med: dict) -> list[int]:
         winner = {"title": title, "family": topic["family"], "views": reading["views"] or 0,
                   "avd_pct": reading["avd_pct"], "median_avd_pct": med["avd_pct"], "ctr": reading["ctr"],
                   "median_ctr": med["ctr"]}
-        meter = ctx.channel_meter(conn, NAME, f"Follow-ups to #{video['id']}", float(_setting(ctx, "max_usd", 1)))
-        ideas = ctx.llm.topics(channel, [hit], taken, performance.FOLLOW_UPS, meter, families, held, winner)
+        meter = ctx.channel_meter(conn, NAME, f"Follow-ups to #{video['id']}", float(_setting(ctx, "max_usd", 1)),
+                                  channel.id, video["id"])
+        try:
+            ideas = ctx.llm.topics(channel, [hit], taken, performance.FOLLOW_UPS, meter, families, held, winner)
+        except jobs.NeedsClaude as e:
+            jobs.resume_with(conn, e.job_id, {"round": "winner", "channel": channel.id, "video_id": video["id"]})
+            raise
         top = max((t["rank"] for t in performance.ranked_topics(conn, channel.id)), default=0)
     with ctx.connect() as conn, db.tx(conn):
         ids = [_queue(conn, channel, idea, top + 1, "own_analytics", performance.based_on_video(video["id"]))
@@ -175,6 +191,42 @@ def follow_ups(ctx, channel, video, reading, med: dict) -> list[int]:
     ctx.events.emit("topics_proposed", None, channel_id=channel.id, topic_ids=ids, simulated=bool(reading["simulated"]),
                     winner_video_id=video["id"])
     return ids
+
+
+def _resume(ctx) -> bool:
+    """Rounds of ideas whose job the session has answered: run each again, which finds the answer and posts them.
+    The mark is cleared first, so a round that fails says so once instead of every loop."""
+    with ctx.connect() as conn:
+        answered = jobs.to_resume(conn)
+    for job in answered:
+        what = json.loads(job["resume_json"])
+        with ctx.connect() as conn:
+            jobs.resumed(conn, job["id"])
+        channel = ctx.config.channels.get(what["channel"])
+        if channel is None:
+            continue
+        try:
+            if what["round"] == "winner":
+                _follow_ups_again(ctx, channel, what["video_id"])
+            else:
+                propose(ctx, channel, what["count"])
+        except jobs.NeedsClaude:  # the request changed since (new hits, new topics): a new job, marked again
+            pass
+        except Exception as e:
+            log.exception("topic ideas from job %s failed", job["id"])
+            with ctx.connect() as conn:
+                cards.post(ctx, conn, cards.home_thread_id(conn, channel.id), "system",
+                           text=f"Couldn't post the topic ideas from job {job['id']}: {e}. Ask for them again with "
+                                "suggest_topics.")
+    return bool(answered)
+
+
+def _follow_ups_again(ctx, channel, video_id: int) -> None:
+    """A winner's follow-ups, from the reading and the medians it was judged against (core/performance.py)."""
+    with ctx.connect() as conn:
+        video = db.get_video(conn, video_id)
+        reading = conn.execute("SELECT * FROM metrics WHERE video_id = ? AND after_h = 48", (video_id,)).fetchone()
+    follow_ups(ctx, channel, video, reading, {"avd_pct": reading["median_avd_pct"], "ctr": reading["median_ctr"]})
 
 
 def _known(conn, channel) -> tuple[list[str], list[str], list[str]]:

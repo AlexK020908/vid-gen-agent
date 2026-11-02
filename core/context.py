@@ -113,11 +113,13 @@ class Ctx:
         with self._held_lock:
             self._stops.discard(video_id)
 
-    def meter(self, conn: sqlite3.Connection, video: sqlite3.Row, stage: str, what: str) -> "Meter":
-        return Meter(self, conn, video, stage, what)
+    def meter(self, conn: sqlite3.Connection, video: sqlite3.Row, stage: str, what: str,
+              scene_id: int | None = None) -> "Meter":
+        return Meter(self, conn, video, stage, what, scene_id)
 
-    def channel_meter(self, conn: sqlite3.Connection, stage: str, what: str, cap_usd: float) -> "ChannelMeter":
-        return ChannelMeter(self, conn, stage, what, cap_usd)
+    def channel_meter(self, conn: sqlite3.Connection, stage: str, what: str, cap_usd: float, channel_id: str,
+                      video_id: int | None = None) -> "ChannelMeter":
+        return ChannelMeter(self, conn, stage, what, cap_usd, channel_id, video_id)
 
     # --- engine settings -------------------------------------------------------
 
@@ -143,13 +145,15 @@ class Meter:
     """Budget guard and cost log for one stage's LLM calls on one video.
 
     A Claude stage can make more than one API call (a retry after failed checks), and a call
-    that fails still costs money, so the provider reports each call here as it happens.
+    that fails still costs money, so the provider reports each call here as it happens. `scene_id` is the scene a
+    scene stage's call is for, so a Claude Code job waiting on it wakes that scene (core/jobs.py).
     """
     ctx: Ctx
     conn: sqlite3.Connection
     video: sqlite3.Row
     stage: str
     what: str
+    scene_id: int | None = None
 
     def check(self, usd: float) -> None:
         """Raises BudgetExceeded if a call costing up to `usd` would take the video over budget, and Stopped if
@@ -180,12 +184,16 @@ class Meter:
 @dataclass
 class ChannelMeter:
     """Like Meter, for an LLM call that belongs to a channel rather than a video (topic ideas). There's no
-    video budget to count against, so each call is capped instead; costs are logged with no video."""
+    video budget to count against, so each call is capped instead; costs are logged with no video. `video_id` is a
+    video the call is about (a winner's follow-ups), so its Claude Code job is told apart from the channel's other
+    topic ideas."""
     ctx: Ctx
     conn: sqlite3.Connection
     stage: str
     what: str
     cap_usd: float
+    channel_id: str
+    video_id: int | None = None
 
     def check(self, usd: float) -> None:
         if self.ctx._counts("llm") and usd > self.cap_usd + 1e-9:
@@ -199,7 +207,7 @@ class ChannelMeter:
 
     @contextmanager
     def writing(self, close: Callable[[], None]) -> Iterator[None]:
-        yield  # topic ideas have no Stop button
+        yield  # topic ideas can't be stopped
 
 
 def make_ctx(root: Path | None = None, data_dir: Path | None = None, overrides: dict | None = None) -> Ctx:

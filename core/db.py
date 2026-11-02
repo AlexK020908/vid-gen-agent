@@ -205,7 +205,7 @@ CREATE TABLE IF NOT EXISTS claude_jobs (  -- a Claude call waiting for the Claud
   system TEXT NOT NULL,
   messages_json TEXT NOT NULL,
   schema_json TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'pending',  -- pending, answered, superseded
+  status TEXT NOT NULL DEFAULT 'pending',  -- pending, answered, superseded (a newer request, or Stop)
   answer TEXT,
   created_at REAL NOT NULL,
   taken_at REAL,
@@ -248,7 +248,11 @@ MIGRATIONS = (
     ("videos", "assets_json", "TEXT"),         # puppet pictures: the stage maps, puppets and props made for it
     ("scenes", "sheet_json", "TEXT"),          # puppet pictures: the scene sheet Claude wrote (puppet/sheet.py)
     ("scenes", "set_json", "TEXT"),            # puppet pictures: what stands in each place after this scene
-)
+    ("messages", "seen_at", "REAL",            # when the chat's `news` showed it (server/tools.py); what was
+     "UPDATE messages SET seen_at = created_at"),  # posted before the chat took over counts as seen
+    ("claude_jobs", "parts_json", "TEXT"),     # a long answer sent in parts: the parts accepted so far (core/jobs.py)
+    ("claude_jobs", "resume_json", "TEXT"),    # a job no parked stage waits on (topic ideas): what to run once it's
+)                                              # answered, cleared when that has run (stages/topics.py)
 
 VIDEO_COLUMNS = {
     "outline_json", "script_json", "thumbs_json", "title", "thumb_idx", "publish_at", "publish_json",
@@ -292,9 +296,11 @@ def init(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with closing(connect(path)) as conn:
         conn.executescript(SCHEMA)
-        for table, column, decl in MIGRATIONS:
+        for table, column, decl, *fill in MIGRATIONS:  # fill: SQL run once, when the column is added
             if column not in {r["name"] for r in conn.execute(f"PRAGMA table_info({table})")}:
                 conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {decl}")
+                for sql in fill:
+                    conn.execute(sql)
 
 
 def sync_channels(conn: sqlite3.Connection, channels: dict) -> None:
@@ -420,15 +426,18 @@ def claim_video(conn: sqlite3.Connection, state: str, lease_s: float, where: str
 
 
 def claim_scenes(conn: sqlite3.Connection, state: str, limit: int, lease_s: float, max_attempts: int,
-                 where: str = "") -> list[sqlite3.Row]:
+                 where: str = "", in_order: bool = False) -> list[sqlite3.Row]:
     """Lease up to `limit` scenes in `state` belonging to videos that are generating (and match `where`, an extra
-    SQL condition on the video as `v`)."""
+    SQL condition on the video as `v`). `in_order`: only a video's first scene in `state`, so one that's leased
+    (being worked on, waiting for Claude Code, or backing off to try again) holds the rest back."""
     now = time.time()
+    first = ("AND NOT EXISTS (SELECT 1 FROM scenes e WHERE e.video_id = s.video_id AND e.state = s.state "
+             "AND e.idx < s.idx)") if in_order else ""
     rows = conn.execute(
         f"""UPDATE scenes SET lease_until = ? WHERE id IN (
              SELECT s.id FROM scenes s JOIN videos v ON v.id = s.video_id
              WHERE v.state = 'generating' AND s.state = ? AND s.attempts < ?
-               AND (s.lease_until IS NULL OR s.lease_until < ?) {where}
+               AND (s.lease_until IS NULL OR s.lease_until < ?) {first} {where}
              ORDER BY s.video_id, s.idx LIMIT ?)
            RETURNING *""",
         (now + lease_s, state, max_attempts, now, limit),

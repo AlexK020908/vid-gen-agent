@@ -17,7 +17,6 @@ models:
   check: claude-sonnet-5-5 # looks at each drawn picture against its scene and says what's wrong (stages/stills.py)
   critic: claude-opus-5-5  # reads each outline and script as the toughest viewer and sends it back once with fixes
                            # (prompts/critic.md, core/review.py); off to skip
-  agent: claude-opus-5-5
   voice: eleven_multilingual_v2            # steadiest over long narration; eleven_v4 is the newer, more expressive one
   still: google/nano-banana-2.1/edit       # fal image-edit model; takes the character reference as image_urls
   clip: fal-ai/kling-video/v3/pro/image-to-video   # image-to-video; one of fal.clips.models below
@@ -94,10 +93,6 @@ render:
 stub:
   scenes: 12          # scenes per placeholder script (120 = full length)
   simulate_costs: true  # stub providers log what the real one would cost (marked simulated)
-
-agent:
-  budget_usd_per_session: 5   # per thread, all turns together; read at startup
-  comment_on_gates: false   # was true; off since Nov 2, 2026, because it calls the API on every card (BUILD.md phase 17)
 
 youtube:
   mode: live          # stub: writes what it would send. live: uploads (needs secrets/client_secret.json + Connect)

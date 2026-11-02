@@ -9,20 +9,16 @@ import shutil
 import time
 
 import pytest
-from fastapi.testclient import TestClient
 from PIL import Image
 
-from agent.harness import AgentHub
-from agent.tools import build_tools, load_thread
 from core import actions, cards, db, performance
 from core.config import ROOT
 from core.context import make_ctx
 from core.engine import Engine
 from providers.claude import ClaudeLLM
-from server.app import create_app
 from stages import topics
-from test_agent import call
 from test_claude import FakeAnthropic, user_text
+from test_tools import call
 from test_topics import Req, Resource, home_messages, http_error, topic_cards
 from youtube import auth, quota
 
@@ -38,7 +34,7 @@ def ctx(tmp_path):
         shutil.copytree(ROOT / name, root / name)
     ctx = make_ctx(root=root, data_dir=tmp_path / "data",
                    overrides={"mode": "stub", "stub": {"scenes": 6}, "engine": {"retry_backoff_s": 0},
-                              "agent": {"comment_on_gates": False}, "render": {"engine": "ffmpeg"},
+                              "render": {"engine": "ffmpeg"},
                               "topics": {"competitors": "stub", "cadence": False},
                               "youtube": {"reach": False, "signin_check": False}})
     ctx.channel("zombie").competitors = ["UCaaaaaaaaaaaaaaaaaaaaaa"]
@@ -171,13 +167,11 @@ def test_low_click_through_suggests_a_swap_applied_in_stub_mode(ctx):
     assert msg["card_status"] == "active" and not card["live"] and card["thumb_idx"] == 0 and len(card["thumbs"]) == 3
     assert "Click-through at 48 hours is 3.0%, below this channel's median of 5.0%." in msg["text"]
 
-    app = create_app(ctx, run_engine=False, agents=AgentHub(ctx, online=False))
-    with TestClient(app, base_url="http://localhost") as http:
-        r = http.post(f"/api/videos/{vid}/swap", json={"thumb_idx": 2, "title_idx": 1})
-        assert r.json()["changed"] == {"title": card["titles"][1], "thumb_idx": 2}
-        again = http.post(f"/api/videos/{vid}/swap", json={"thumb_idx": 2, "title_idx": 1})
-        assert again.status_code == 409 and "different from the current one" in again.json()["detail"]
-        assert http.post(f"/api/videos/{vid}/keep").status_code == 409  # nothing waiting now
+    changed, err = call(ctx, "apply_swap", {"video_id": vid, "thumb_idx": 3, "title_idx": 2})
+    assert not err and changed == f"Changed the title to \"{card['titles'][1]}\" and the thumbnail to option 3."
+    again, err = call(ctx, "apply_swap", {"video_id": vid, "thumb_idx": 3, "title_idx": 2})
+    assert err and "different from the current one" in again
+    assert call(ctx, "keep_swap", {"video_id": vid})[1]  # nothing waiting now
     request = json.loads((ctx.media(vid) / "swap_request.json").read_text(encoding="utf-8"))
     assert request["videos.update"]["snippet"]["title"] == card["titles"][1] and "thumbnails.set" in request
     with ctx.connect() as conn:
@@ -199,10 +193,8 @@ def test_low_click_through_suggests_a_swap_applied_in_stub_mode(ctx):
             (vid,)).fetchone())["card"]
     assert week["after_h"] == 168 and week["swap"]["ctr_before"] == 3.0 and week["swap"]["thumb"] == 2
 
-    # the agent can post the card again, but only a person applies it
-    with ctx.connect() as conn:
-        thread = load_thread(ctx, cards.thread_id(conn, vid))
-    text, err = call(build_tools(ctx, thread), "update_video", {"reason": "Try the scarier one."})
+    # the session can post the card again; applying it asks the owner first (claude-settings.json)
+    text, err = call(ctx, "suggest_swap", {"video_id": vid, "reason": "Try the scarier one."})
     assert not err and "Nothing changes on YouTube" in text
     assert [m["card_status"] for m in swap_cards(ctx, vid)] == ["approved", "active"]
     actions.keep_swap(ctx, vid)
@@ -316,9 +308,7 @@ def test_daily_sign_in_check(ctx, monkeypatch):
     run(ctx)
     run(ctx)  # not due again
     assert len(said("the stored sign-in is for YouTube channel UCother, not UCmine")) == 1
-    app = create_app(ctx, run_engine=False, agents=AgentHub(ctx, online=False))
-    with TestClient(app, base_url="http://localhost") as http:
-        assert "UCother" in http.get("/api/channels").json()[0]["youtube"]["signin_error"]
+    assert "UCother" in json.loads(call(ctx, "status")[0])["channels"][0]["youtube"]["signin_error"]
 
     error["value"] = http_error(401, "authError")
     check_now()

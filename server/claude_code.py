@@ -1,9 +1,8 @@
 """The MCP endpoint the Claude Code session connects to: http://localhost:8000/mcp (.mcp.json), served by run.py serve.
 
-It serves the chat agent's tools (agent/tools.py), as they work in a channel's home thread: tools that act on a
-video take its video_id, and with more than one channel the others take `channel`. On top of those, the tools
-for Claude's work (core/jobs.py): `jobs`, `take_job`, `answer_job`, `wait`, and `contact_sheet` to look at a
-video's pictures. There's no approve or publish tool, as for the chat agent: those stay buttons in the browser.
+The chat is how the owner runs the fleet, so this serves the fleet tools (server/tools.py: status, review, news,
+approve, publish and the rest), and the tools for Claude's work (core/jobs.py): `jobs`, `take_job`, `answer_job`,
+`wait`, and `contact_sheet` to look at a video's pictures.
 """
 from __future__ import annotations
 
@@ -21,24 +20,42 @@ from mcp.server.streamable_http_manager import StreamableHTTPASGIApp, Streamable
 from mcp.server.transport_security import TransportSecuritySettings
 from PIL import Image, ImageDraw
 
-from agent.tools import STATE_TEXT, build_tools, load_thread, waiting_card
 from core import jobs
 from core.errors import ActionError
 from providers.images import preview_path
+from server.tools import STATE_TEXT, make_tools, waiting_card
 
 log = logging.getLogger("stickfleet.claude_code")
 
 INSTRUCTIONS = """Stick Fleet makes narrated YouTube videos. The app does the voice, pictures, rendering and \
-uploading; you do Claude's part of the work, so no API key is spent on it.
+uploading. This chat is how the owner runs it (there's no browser app), and you do Claude's part of the work, so \
+no API key is spent on it.
 
-Claude's work waits as jobs. `jobs` lists them; `take_job` gives one's instructions (the prompt, any pictures, \
-and the JSON shape to reply with); `answer_job` sends your JSON reply. It's checked at once by the same code \
-checks the pipeline uses: fix what they say and answer again. Once it passes, the video carries on. `wait` \
-holds until a job or a card arrives. Approving a card and publishing stay buttons in the browser \
-(http://localhost:8000): tell the person when a card is waiting for them."""
+Running the channels: `status` lists the channels, their videos and which card waits on the owner. `review` gives \
+a waiting card in full: show the owner what they decide on (the outline, the script file to open, the video file \
+to watch, the title and thumbnail options). `news` gives what the app posted since the last look. Then do what \
+the owner says: `approve`, `revise` with their note, `edit_outline`, `flag_scenes`, `pick`, `update_publish`, \
+`publish`. Approve, flag, edit a scene, retry, publish or swap only when the owner asks for it in this chat: those \
+spend money or change YouTube, and Claude Code asks the owner to confirm each one.
 
-WAKE = {"claude_job", "gate_reached", "stage_failed"}
+Claude's work waits as jobs: the outline, the script, the reviewer's read of each, rewrites of flagged scenes, \
+titles and topic ideas. `jobs` lists them; `take_job` gives one's instructions (the prompt, any pictures, and the \
+JSON shape to reply with; a long one comes as a file to read whole); `answer_job` sends your JSON reply. It's \
+checked at once by the same code checks the pipeline uses: fix what they say and answer again. Once it passes, \
+the video carries on. A script goes in parts, whole beats at a time in order (`part` 1, 2, ..., and `last` on the \
+final one), each checked as it arrives. A review job (kind `critic`) goes to the `critic` agent with just its job \
+id, so a fresh reader judges the draft rather than the one who wrote it. `wait` holds until a job arrives, a card \
+waits on the owner, or something needs them. The `stickfleet` skill has the rest."""
+
+WAKE = {"claude_job", "gate_reached", "stage_failed", "blocked", "topics_proposed", "swap_suggested", "metrics",
+        "published", "went_live"}
 SHEET_COLS, SHEET_TILE, SHEET_MAX = 4, 320, 24  # contact sheet: 4 across, 320 px each, 24 scenes a sheet
+BRIEF_MAX = 30_000  # characters; a longer brief (a script's review or rewrite) goes to a file, under MCP's output cap
+PARTS = {"script": "This reply is long, so send it in parts: answer_job with part=1, 2, ... in order, each part one "
+                   "or more whole beats (their `scenes`), the final one with last=true. Part 1 carries `places`; a "
+                   "place first used later can come in that part's own `places`. Each part is checked as it arrives "
+                   "against the script so far, and the last against the whole script. To fix an accepted part, send "
+                   "it again with its number."}
 
 
 def _text(text: str, error: bool = False) -> types.CallToolResult:
@@ -59,10 +76,18 @@ JOB_TOOLS = [
                                             "took it in the last 15 minutes (that worker is gone)."}}, ("job_id",))),
     types.Tool(name="answer_job", description="Send your reply to a job. It's checked at once; if anything's wrong "
                "you get the list and the job stays waiting, so fix it and answer again. Once it passes, the video "
-               "carries on.",
+               "carries on. A long reply (a script) goes in parts: part 1, 2, ..., last=true on the final one.",
                input_schema=_obj({"job_id": {"type": "integer"},
                                   "answer": {"type": ["object", "string"],
-                                             "description": "The reply: JSON in the shape take_job gave."}},
+                                             "description": "The reply: JSON in the shape take_job gave (or one "
+                                                            "part of it)."},
+                                  "part": {"type": "integer", "minimum": 1,
+                                           "description": "This is part N of the reply; leave out for a whole "
+                                                          "reply. Sending an accepted part's number again replaces "
+                                                          "it."},
+                                  "last": {"type": "boolean",
+                                           "description": "With part: this is the final part, so check the "
+                                                          "parts together as the whole reply."}},
                                  ("job_id", "answer"))),
     types.Tool(name="wait", description="Wait until a job arrives, a card is waiting for the person, or a video "
                "fails (or the time is up), then say what's waiting. Returns at once if a job is already waiting.",
@@ -77,45 +102,13 @@ JOB_TOOLS = [
 
 
 def make_server(ctx) -> Server:
-    channels = sorted(ctx.config.channels)
-
-    def home(channel_id: str):
-        with ctx.connect() as conn:
-            row = conn.execute("SELECT id FROM threads WHERE channel_id = ? AND video_id IS NULL",
-                               (channel_id,)).fetchone()
-        if row is None:
-            raise ActionError(f"there's no channel {channel_id!r}; the channels are {', '.join(channels)}")
-        return load_thread(ctx, row["id"])
-
-    fleet = {t.name: t for t in build_tools(ctx, home(channels[0]))}
-    fleet_tools = []
-    for t in fleet.values():
-        schema = json.loads(json.dumps(t.input_schema))
-        if len(channels) > 1:
-            schema["properties"]["channel"] = {"type": "string", "enum": channels,
-                                               "description": "Which channel, for a tool without a video_id."}
-        fleet_tools.append(types.Tool(name=t.name, description=t.description, input_schema=schema))
+    fleet = make_tools(ctx)
+    fleet_tools = [tool for tool, _ in fleet.values()]
     schemas = {t.name: t.input_schema for t in [*fleet_tools, *JOB_TOOLS]}
 
-    def channel_for(args: dict) -> str:
-        if args.get("channel"):
-            return args.pop("channel")
-        if args.get("video_id") is not None:
-            with ctx.connect() as conn:
-                row = conn.execute("SELECT channel_id FROM videos WHERE id = ?", (args["video_id"],)).fetchone()
-            if row is None:
-                raise ActionError(f"there's no video #{args['video_id']}")
-            return row["channel_id"]
-        if len(channels) == 1:
-            return channels[0]
-        raise ActionError(f"say which channel ({', '.join(channels)})")
-
     async def call_fleet(name: str, args: dict) -> types.CallToolResult:
-        args = dict(args)
-        thread = await asyncio.to_thread(home, channel_for(args))
-        tool = {t.name: t for t in build_tools(ctx, thread)}[name]
-        result = await tool.handler(args)
-        return _text("\n".join(c["text"] for c in result["content"]), bool(result.get("is_error")))
+        out = await asyncio.to_thread(fleet[name][1], args)  # the actions block on SQLite; keep the loop free
+        return out if isinstance(out, types.CallToolResult) else _text(out)
 
     # --- jobs ---
 
@@ -125,15 +118,22 @@ def make_server(ctx) -> Server:
             rows = jobs.pending(conn)
         return [{"job_id": r["id"], "what": r["what"], "kind": r["kind"], "video_id": r["video_id"],
                  "scene": r["scene_idx"], "waiting_min": int((now - r["created_at"]) // 60),
-                 "taken_min_ago": None if r["taken_at"] is None else int((now - r["taken_at"]) // 60)}
+                 "taken_min_ago": None if r["taken_at"] is None else int((now - r["taken_at"]) // 60),
+                 **({"parts": jobs.parts_so_far(r)} if r["parts_json"] else {})}
                 for r in rows]
 
     def take_job(args: dict) -> types.CallToolResult:
         with ctx.connect() as conn:
             row = jobs.take(conn, args["job_id"], bool(args.get("again")))
         where = f" for video #{row['video_id']}" if row["video_id"] else ""
-        parts = [f"Job {row['id']}: {row['what']}{where}. Reply with answer_job(job_id={row['id']}, answer=<JSON>).",
-                 "## Instructions\n" + row["system"]]
+        head = [f"Job {row['id']}: {row['what']}{where}. Reply with answer_job(job_id={row['id']}, answer=<JSON>)."]
+        if row["kind"] in PARTS:
+            head.append(PARTS[row["kind"]])
+        if row["parts_json"]:
+            head.append(f"So far: {jobs.parts_so_far(row)}. Carry on with the next part.")
+        if row["kind"] == "critic":
+            head.append("This is a review: if you wrote the draft, hand the job to the critic agent instead.")
+        parts = ["## Instructions\n" + row["system"]]
         images: list[types.ImageContent] = []
         heading = {"user": "## The request", "assistant": "## Your earlier reply"}
         for n, m in enumerate(json.loads(row["messages_json"])):
@@ -151,20 +151,39 @@ def make_server(ctx) -> Server:
                 else:
                     texts.append(b.get("text") or "")
             parts.append(title + "\n" + "\n".join(texts))
-        parts.append("## Reply with JSON in this shape\n" + json.dumps(json.loads(row["schema_json"]), indent=1))
-        return types.CallToolResult(content=[types.TextContent(type="text", text="\n\n".join(parts)), *images])
+        shape = "## Reply with JSON in this shape\n" + json.dumps(json.loads(row["schema_json"]), indent=1)
+        brief = "\n\n".join(parts)
+        if len(brief) > BRIEF_MAX:
+            path = ctx.config.data_dir / "jobs" / f"job-{row['id']}.md"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(brief + "\n\n" + shape + "\n", encoding="utf-8")
+            head.append(f"The brief is long ({len(brief):,} characters), so it's in {path}: read all of it before "
+                        "answering.")
+            brief = ""
+        text = "\n\n".join(p for p in ["\n".join(head), brief, shape] if p)
+        return types.CallToolResult(content=[types.TextContent(type="text", text=text), *images])
 
     def answer_job(args: dict) -> types.CallToolResult:
-        answer = args["answer"]
+        answer, part, last = args["answer"], args.get("part"), bool(args.get("last"))
         text = answer if isinstance(answer, str) else json.dumps(answer)
         with ctx.connect() as conn:
+            problems = jobs.answer(conn, args["job_id"], text, part, last)
             row = jobs.get(conn, args["job_id"])
-            problems = jobs.answer(conn, args["job_id"], text)
+        listed = "\n".join(f"- {p}" for p in problems)
+        if problems and part is not None and not last:
+            return _text(f"Part {part} not accepted (the parts before it are kept). Fix these and send it "
+                         f"again:\n{listed}", error=True)
         if problems:
-            return _text("Not accepted; the job is still waiting. Fix these and answer again:\n"
-                         + "\n".join(f"- {p}" for p in problems), error=True)
+            kept = (f" The parts are kept ({jobs.parts_so_far(row)}): send the ones that need fixing again by "
+                    "number, the final one with last=true." if part is not None else "")
+            return _text(f"Not accepted; the job is still waiting.{kept} Fix these and answer again:\n{listed}",
+                         error=True)
+        if part is not None and not last:
+            return _text(f"Part {part} accepted: {jobs.parts_so_far(row)}. Send part {part + 1}, with last=true "
+                         "on the final part.")
         ctx.events.emit("claude_answered", row["video_id"], job_id=row["id"])
-        return _text(f"Accepted: {row['what']}. The video carries on.")
+        on = "The video carries on." if row["video_id"] and row["kind"] != "topic" else "The ideas post within seconds."
+        return _text(f"Accepted: {row['what']}. {on}")
 
     def summary() -> str:
         with ctx.connect() as conn:
@@ -174,8 +193,10 @@ def make_server(ctx) -> Server:
             for r in rows:
                 card = waiting_card(conn, r["id"])
                 videos.append({"video_id": r["id"], "state": STATE_TEXT[r["state"]],
-                               "card_waiting_for_the_person": card["kind"] if card else None})
-        return json.dumps({"jobs_waiting": list_jobs(), "videos": videos})
+                               "waiting_on_the_owner": card["kind"] if card else None})
+            unseen = conn.execute("""SELECT COUNT(*) FROM messages WHERE seen_at IS NULL
+                                     AND role IN ('system', 'card')""").fetchone()[0]
+        return json.dumps({"jobs_waiting": list_jobs(), "videos": videos, "news_unseen": unseen})
 
     async def wait(args: dict) -> types.CallToolResult:
         seconds = min(max(int(args.get("seconds") or 120), 1), 600)
@@ -245,6 +266,8 @@ def make_server(ctx) -> Server:
             if name == "contact_sheet":
                 return await asyncio.to_thread(contact_sheet, args)
             return _text(f"there's no tool {name!r}", error=True)
+        except KeyError as e:
+            return _text(f"missing field {e}", error=True)
         except (ActionError, ValueError, LookupError) as e:
             return _text(str(e), error=True)
         except Exception as e:  # a crash reads as a failed call, not a dropped connection

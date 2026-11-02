@@ -232,7 +232,9 @@ class ClaudeLLM:
                   "earlier_places": earlier_places or "(none: this is the first part)"}
         data = self._ask("script", "script.md", "revise" if previous else "new", channel, values, SCRIPT,
                          lambda d: checks.script(d["scenes"], outline, channel.clips_per_video, d["places"]), meter,
-                         _SceneCounter(progress) if progress else None)
+                         _SceneCounter(progress) if progress else None,
+                         part_check=lambda d: checks.script(d.get("scenes") or [], outline, channel.clips_per_video,
+                                                            d.get("places") or [], partial=True))
         named = {c["name"].lower(): c["name"] for c in outline.get("cast") or []}
         items = {t["item"].lower(): t["item"] for t in outline.get("tracker") or []}
         places = [{k: p[k].strip() for k in ("id", "name", "look")} for p in data["places"]]
@@ -332,7 +334,9 @@ class ClaudeLLM:
 
     def _ask(self, kind: str, file: str, turn: str, channel, values: dict, schema: dict,
              check: Callable[[dict], list[str]], meter: Meter, on_text: _SceneCounter | None = None,
-             images: list[Path] = ()) -> dict:
+             images: list[Path] = (), part_check: Callable[[dict], list[str]] | None = None) -> dict:
+        """`part_check` is for a reply long enough to come in parts from the Claude Code session (the script):
+        what's wrong with the reply so far (providers/session.py, core/jobs.py)."""
         system, user = prompts.render(self.config.root, file, turn, channel, values)
         content = [*(_image_block(p) for p in images), {"type": "text", "text": user}] if images else user
         messages: list[dict] = [{"role": "user", "content": content}]
@@ -340,7 +344,8 @@ class ClaudeLLM:
             if on_text:
                 on_text.reset()
             message = self._call(kind, system, messages, schema, meter, on_text,
-                                 lambda text: _checked(text, check)[1])
+                                 lambda text: _checked(text, check)[1],
+                                 (lambda text: _checked(text, part_check)[1]) if part_check else None)
             data, problems = _checked(_text(message.content), check)
             if not problems:
                 return data
@@ -366,9 +371,11 @@ class ClaudeLLM:
         return price
 
     def _call(self, kind: str, system: str, messages: list[dict], schema: dict, meter: Meter,
-              on_text: _SceneCounter | None, verify: Callable[[str], list[str]] | None = None):
-        """One request. `verify` says what's wrong with a reply's text; the API path checks after the call returns
-        (in _ask), so it's for providers/session.py, which checks the session's answer as it arrives."""
+              on_text: _SceneCounter | None, verify: Callable[[str], list[str]] | None = None,
+              verify_part: Callable[[str], list[str]] | None = None):
+        """One request. `verify` says what's wrong with a reply's text, and `verify_part` with the parts of one so
+        far; the API path checks after the call returns (in _ask), so they're for providers/session.py, which
+        checks the session's answer as it arrives."""
         model = self.config.models.get(kind) or self.config.models["script"]
         price = self._price(model)
         max_tokens = int(self._setting("max_tokens", kind))

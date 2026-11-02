@@ -2,11 +2,13 @@
 
 Like the outline, a script sent back with a note is revised from its last draft; `regenerate`
 clears the draft for a fresh one. While it streams, the thread shows how many scenes are written.
-The scenes go in script_json and the places they're drawn in go in places_json.
+The scenes go in script_json and the places they're drawn in go in places_json. As with the outline, the draft
+is only saved before the reviewer's pass when Stop comes during it.
 """
 import json
 
 from core import actions, db, review, series
+from core.errors import Stopped
 from core.stage import run_video_stage
 from providers import checks, prompts
 
@@ -30,12 +32,16 @@ def _work(ctx, conn, video) -> None:
     notes, earlier = db.notes(conn, video["id"], "script"), series.places_text(series.earlier_places(conn, video))
     script = ctx.llm.script(channel, outline, notes, previous, ctx.meter(conn, video, NAME, "the script"), progress,
                             earlier)
-    db.update_video(conn, video["id"], script_json=json.dumps(script["scenes"]), places_json=json.dumps(script["places"]))
-    script = review.reviewed(ctx, conn, video, channel, "script",
-                             {"outline": prompts.outline_text(outline), "script": prompts.script_text(script)}, script,
-                             lambda found: ctx.llm.script(channel, outline, notes + found, script,
-                                                          ctx.meter(conn, video, NAME, "the script, revised"), progress,
-                                                          earlier))
+    try:
+        script = review.reviewed(ctx, conn, video, channel, "script",
+                                 {"outline": prompts.outline_text(outline), "script": prompts.script_text(script)},
+                                 script, lambda found: ctx.llm.script(
+                                     channel, outline, notes + found, script,
+                                     ctx.meter(conn, video, NAME, "the script, revised"), progress, earlier))
+    except Stopped:  # back to the draft the reviewer was reading
+        db.update_video(conn, video["id"], script_json=json.dumps(script["scenes"]),
+                        places_json=json.dumps(script["places"]))
+        raise
     with db.tx(conn):
         db.transition(conn, video["id"], "outline_approved", "scripted", script_json=json.dumps(script["scenes"]),
                       places_json=json.dumps(script["places"]))

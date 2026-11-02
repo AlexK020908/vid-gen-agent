@@ -2,10 +2,14 @@
 
 A video sent back with a note still has its last outline, and that draft is revised; `regenerate`
 clears it, so a fresh outline is written with the current prompts (and every note so far).
+
+The draft is only saved before the reviewer's pass when Stop comes during it (back to that draft): a stage waiting
+for the Claude Code session runs again from the top, and must ask for the same outline it asked for before.
 """
 import json
 
 from core import db, review, series
+from core.errors import Stopped
 from core.stage import run_video_stage
 from providers import prompts
 
@@ -27,10 +31,14 @@ def _work(ctx, conn, video) -> None:
             topic = "(nothing: carry the story on the way the last part set it up)"
     notes = db.notes(conn, video["id"], "outline")
     outline = ctx.llm.outline(channel, topic, notes, previous, ctx.meter(conn, video, NAME, "the outline"), sequel)
-    db.update_video(conn, video["id"], outline_json=json.dumps(outline))
-    outline = review.reviewed(ctx, conn, video, channel, "outline", {"outline": prompts.outline_text(outline)}, outline,
-                              lambda found: ctx.llm.outline(channel, topic, notes + found, outline,
-                                                            ctx.meter(conn, video, NAME, "the outline, revised"), sequel))
+    try:
+        outline = review.reviewed(ctx, conn, video, channel, "outline", {"outline": prompts.outline_text(outline)},
+                                  outline, lambda found: ctx.llm.outline(
+                                      channel, topic, notes + found, outline,
+                                      ctx.meter(conn, video, NAME, "the outline, revised"), sequel))
+    except Stopped:  # back to the draft the reviewer was reading (core/stage.py back_to_review)
+        db.update_video(conn, video["id"], outline_json=json.dumps(outline))
+        raise
     if sequel:
         series.keep_looks(conn, video, outline)
         thread = conn.execute("SELECT title FROM threads WHERE video_id = ?", (video["id"],)).fetchone()

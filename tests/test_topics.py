@@ -13,11 +13,9 @@ from datetime import datetime, timezone
 
 import pytest
 from dotenv import load_dotenv
-from fastapi.testclient import TestClient
 from googleapiclient.errors import HttpError
 from httplib2 import Response
 
-from agent.harness import AgentHub
 from core import actions, cards, db
 from core.config import ROOT
 from core.context import make_ctx
@@ -25,7 +23,6 @@ from core.engine import Engine
 from core.costs import BudgetExceeded
 from core.errors import ActionError
 from providers.claude import ClaudeLLM
-from server.app import create_app
 from stages import analytics, topics
 from test_claude import FakeAnthropic, user_text
 from youtube import auth, client, competitors, quota, reporting
@@ -147,7 +144,7 @@ def ctx(tmp_path):
         shutil.copytree(ROOT / name, root / name)
     ctx = make_ctx(root=root, data_dir=tmp_path / "data",
                    overrides={"mode": "stub", "stub": {"scenes": 6}, "engine": {"retry_backoff_s": 0},
-                              "agent": {"comment_on_gates": False}, "render": {"engine": "ffmpeg"},
+                              "render": {"engine": "ffmpeg"},
                               "topics": {"competitors": "stub"}})
     ctx.channel("zombie").competitors = ["UCaaaaaaaaaaaaaaaaaaaaaa", "UCbbbbbbbbbbbbbbbbbbbbbb"]
     return ctx
@@ -239,18 +236,18 @@ def test_ideas_card_start_and_dismiss(ctx):
         cost = conn.execute("SELECT * FROM costs WHERE stage = 'topics'").fetchone()
     assert cost["video_id"] is None and cost["provider"] == "llm" and cost["simulated"] == 1
 
-    app = create_app(ctx, run_engine=False, agents=AgentHub(ctx, online=False))
-    with TestClient(app, base_url="http://localhost") as http:
-        started = http.post(f"/api/topics/{first['id']}/start").json()
-        assert http.post(f"/api/topics/{card['topics'][1]['id']}/dismiss").json() == {"ok": True}
-        again = http.post(f"/api/topics/{first['id']}/start")
-        assert again.status_code == 409 and "already started" in again.json()["detail"]
+    from test_tools import call
+    started, err = call(ctx, "start_topic", {"topic_id": first["id"]})
+    vid = int(started.split("#")[1].split()[0])
+    assert not err and started == f"Started video #{vid} from topic {first['id']}. It's writing the outline."
+    assert call(ctx, "dismiss_topic", {"topic_id": card["topics"][1]["id"]})[1] is False
+    again, err = call(ctx, "start_topic", {"topic_id": first["id"]})
+    assert err and "already started" in again
     with ctx.connect() as conn:
-        video = db.get_video(conn, started["video_id"])
-        assert video["topic_id"] == first["id"] and cards.thread_id(conn, video["id"]) == started["thread_id"]
+        assert db.get_video(conn, vid)["topic_id"] == first["id"]
     [msg] = topic_cards(ctx)
     assert [t["status"] for t in msg["card"]["topics"]] == ["used", "dismissed", "queued"]
-    assert msg["card"]["topics"][0]["video_id"] == started["video_id"] and msg["card_status"] == "active"
+    assert msg["card"]["topics"][0]["video_id"] == vid and msg["card_status"] == "active"
 
     actions.dismiss_topic(ctx, card["topics"][2]["id"])
     assert topic_cards(ctx)[0]["card_status"] == "done"  # nothing left to decide
@@ -277,7 +274,7 @@ def test_claude_writes_ideas_from_the_ranked_hits(ctx):
         conn.execute("UPDATE videos SET state = 'outlined'")
     assert topics.run_once(ctx) is False and not fake.requests  # made-up hits never go to Claude on their own
     topics.poll(ctx, ctx.channel("zombie"))
-    topics.propose(ctx, ctx.channel("zombie"))  # asked for (run.py topics --propose, the agent's suggest_topics)
+    topics.propose(ctx, ctx.channel("zombie"))  # asked for (run.py topics --propose, the chat's suggest_topics)
 
     first = user_text(fake.requests[0])
     hits = topics.ranked(ctx, ctx.channel("zombie"))

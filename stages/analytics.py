@@ -209,14 +209,14 @@ def _signin_once(ctx) -> bool:
         try:
             if not auth.stored(channel.id):
                 continue
-        except Exception:  # the keychain itself is unavailable; the sidebar already says so
+        except Exception:  # the keychain itself is unavailable; `status` already says so
             continue
         checked_at, error = now, None
         try:
             seen = client.Client(ctx, channel.id).whoami()
             expected = channel.youtube.get("channel_id")
             if expected and seen != expected:
-                error = (f"the stored sign-in is for YouTube channel {seen}, not {expected}; click Reconnect and pick "
+                error = (f"the stored sign-in is for YouTube channel {seen}, not {expected}; connect again (connect_youtube) and pick "
                          "the right brand channel")
         except ActionError as e:
             if getattr(e, "retriable", False):  # YouTube had a moment; look again in an hour

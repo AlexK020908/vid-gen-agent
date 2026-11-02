@@ -68,7 +68,8 @@ def run_video_stage(ctx, name: str, state: str, work: VideoWork, where: str = ""
 
 def back_to_review(ctx, conn: sqlite3.Connection, video_id: int, stage: str) -> None:
     """Stop pressed while Claude wrote: go back to the card it came from. A revision returns to its draft with the
-    note that started it taken back into the note box; a first script returns to the outline it was written from."""
+    note that started it taken back as the card's draft note; a first script returns to the outline it was written
+    from."""
     video = db.get_video(conn, video_id)
     to, gate = None, None
     if stage == "outline" and video["outline_json"]:
@@ -91,8 +92,9 @@ def back_to_review(ctx, conn: sqlite3.Connection, video_id: int, stage: str) -> 
                 note = row["note"]
                 conn.execute("DELETE FROM feedback WHERE id = ?", (row["id"],))
         db.transition(conn, video_id, video["state"], to, draft_note=note)
-    ctx.events.emit("notice", video_id, text="Stopped. " + ("Your note is back in the box below: change it and send "
-                                                            "it again." if note else "Back to the card."))
+    ctx.events.emit("notice", video_id, text="Stopped. " + (f"Back to the card, with your note kept as its draft "
+                                                            f"note to change and send again with revise: {note}"
+                                                            if note else "Back to the card."))
     ctx.events.emit("gate_reached", video_id, gate=gate)
 
 
@@ -103,10 +105,12 @@ def run_scene_stage(ctx, name: str, state: str, work: SceneWork, done_sql: str, 
     `work` returns (fields to update, next scene state). `done_sql` is a scene-level SQL
     condition used for the progress line ("voice 40/120"). `limit` is how many scenes to claim at once
     (two per parallel call when None); 1 runs the scenes one at a time in order, for work where each
-    scene builds on the one before it.
+    scene builds on the one before it: a scene waiting (on Claude Code, or to try again) holds its place.
+    A scene whose work needs Claude Code waits for it (NeedsClaude) without counting a failed attempt.
     """
     with ctx.connect() as conn:
-        scenes = db.claim_scenes(conn, state, limit or ctx.parallel_calls * 2, ctx.lease_s, ctx.max_attempts, where)
+        scenes = db.claim_scenes(conn, state, limit or ctx.parallel_calls * 2, ctx.lease_s, ctx.max_attempts, where,
+                                 in_order=limit == 1)
     if not scenes:
         return False
 
@@ -119,6 +123,8 @@ def run_scene_stage(ctx, name: str, state: str, work: SceneWork, done_sql: str, 
             try:
                 fields, next_state = work(ctx, c, video, scene)
                 db.update_scene(c, scene["id"], state=next_state, attempts=0, lease_until=None, **fields)
+            except NeedsClaude:  # parked until the session answers, which clears the lease (core/jobs.py)
+                db.update_scene(c, scene["id"], lease_until=time.time() + PARK_S)
             except (BudgetExceeded, FinalError) as e:
                 db.update_scene(c, scene["id"], lease_until=None)
                 fail(ctx, c, video["id"], name, str(e), final=True)

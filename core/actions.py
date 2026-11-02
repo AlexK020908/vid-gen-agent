@@ -1,7 +1,8 @@
-"""Everything a person (card button) or the agent can do to a video.
+"""Everything the owner can do to a video, through the Claude Code chat's tools (server/tools.py) or the CLI.
 
-Every verb checks state in code, so neither a stale card nor a confused agent can skip a gate.
-Approving and publishing are only wired to card buttons; the agent never gets those verbs.
+Every verb checks state in code, so neither a stale card nor a confused session can skip a gate.
+Approving, flagging and publishing ask the owner first: .claude/settings.json puts those tools behind Claude
+Code's permission prompt (claude-settings.json).
 """
 from __future__ import annotations
 
@@ -9,12 +10,11 @@ import json
 import sqlite3
 import time
 
-from core import db, metadata, series
+from core import db, jobs, metadata, series
 from core.errors import ActionError
 
 FLAG_KINDS = ("visual", "narration")
 MAX_REGENS = 3
-CARD_STATES = {"outline": "outlined", "script": "scripted", "render": "assembled", "publish": "render_approved"}
 
 
 def _create_video(conn: sqlite3.Connection, channel_id: str, topic_id: int, title: str) -> int:
@@ -78,7 +78,7 @@ def _queued_topic(conn: sqlite3.Connection, topic_id: int, channel_id: str | Non
 
 
 def start_topic(ctx, topic_id: int, channel_id: str | None = None, note: str | None = None) -> int:
-    """Start a video from a queued topic (its card's Start button, the agent, or the cadence)."""
+    """Start a video from a queued topic (start_topic in the chat, or the cadence)."""
     with ctx.connect() as conn, db.tx(conn):
         topic = _queued_topic(conn, topic_id, channel_id)
         conn.execute("UPDATE topics SET status = 'used' WHERE id = ?", (topic_id,))
@@ -90,7 +90,7 @@ def start_topic(ctx, topic_id: int, channel_id: str | None = None, note: str | N
 
 def suggest_swap(ctx, video_id: int, reason: str | None = None) -> None:
     """Post a card offering a live video's other thumbnails and titles (from its render card). Nothing changes on
-    YouTube until the person clicks Apply."""
+    YouTube until the owner applies one (apply_swap)."""
     with ctx.connect() as conn:
         video = db.get_video(conn, video_id)
     if video["state"] != "live":
@@ -245,13 +245,17 @@ def revise(ctx, video_id: int, gate: str, note: str) -> None:
 
 
 def stop_writing(ctx, video_id: int) -> None:
-    """The Stop button while Claude writes an outline or script: cut the call off and go back to the card. A
-    revision's note comes back into the card's note box to change (core/stage.py back_to_review)."""
+    """Stop while Claude writes an outline or script: cut the call off and go back to the card. A
+    revision's note comes back as the card's draft note to change (core/stage.py back_to_review). When the
+    writing waits for the Claude Code session, its jobs are dropped and the stage woken, so it stops at once."""
     with ctx.connect() as conn:
         state = db.get_video(conn, video_id)["state"]
     if state not in ("new", "outline_approved"):
         raise ActionError("Claude isn't writing anything for this video right now")
     ctx.stop_writing(video_id)
+    with ctx.connect() as conn:
+        if jobs.supersede(conn, video_id, ("outline", "script", "critic")):
+            db.update_video(conn, video_id, lease_until=None)
     ctx.events.emit("notice", video_id, text="Stopping…")
 
 
@@ -428,7 +432,7 @@ def update_publish(ctx, video_id: int, **fields) -> None:
 
 
 def request_publish(ctx, video_id: int, **fields) -> None:
-    """The Publish button. Only the server's card endpoint calls this."""
+    """Publish (the `publish` tool, which asks the owner first)."""
     if fields:
         update_publish(ctx, video_id, **fields)
     with ctx.connect() as conn, db.tx(conn):
@@ -447,17 +451,6 @@ def request_publish(ctx, video_id: int, **fields) -> None:
                       publish_at=float(meta["publish_at"]), publish_json=json.dumps(meta))
     ctx.events.emit("gate_resolved", video_id, gate="publish", outcome="approved")
     ctx.events.emit("notice", video_id, text="Publishing…")
-
-
-def show(ctx, video_id: int, card: str) -> None:
-    """Post the waiting review card again at the bottom of the thread; the old copy is marked replaced."""
-    if card not in CARD_STATES:
-        raise ActionError(f"card must be one of {', '.join(CARD_STATES)}")
-    with ctx.connect() as conn:
-        video = db.get_video(conn, video_id)
-    if video["state"] != CARD_STATES[card]:
-        raise ActionError(f"no {card} card is waiting (video is {video['state']})")
-    ctx.events.emit("gate_reached", video_id, gate=card, repost=True)
 
 
 def retry(ctx, video_id: int) -> None:

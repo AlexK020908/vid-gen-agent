@@ -1,6 +1,6 @@
 """Stage 9: upload private with publishAt, then thumbnail, captions, playlist.
 
-Only runs after the Publish click. In youtube.mode=stub it writes what it would send and uploads nothing.
+Only runs after `publish`. In youtube.mode=stub it writes what it would send and uploads nothing.
 Live: each finished step is recorded in publish_json["steps"], so a Retry after a failure part-way through
 resumes instead of uploading twice.
 """

@@ -1,4 +1,5 @@
-"""Turns engine events into chat messages and review cards, stored in `messages`.
+"""Turns engine events into messages and review cards, stored in `messages`: the inbox the Claude Code chat reads
+(server/tools.py: status, review, news).
 
 A card is a snapshot of what needed review. `card_status` tracks its life:
 active → approved / revised / regenerated / flagged / superseded / retried / done.
@@ -247,7 +248,7 @@ INTRO = {
     "outline": "Outline ready for review.",
     "script": "Script ready for review.",
     "render": "Render ready: pick a thumbnail and title, flag anything that looks off, then approve.",
-    "publish": "Check the publish details, then click Publish.",
+    "publish": "Check the publish details, then publish.",
 }
 
 

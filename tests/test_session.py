@@ -1,4 +1,5 @@
-"""The Claude Code session doing Claude's work (BUILD.md phase 17): jobs, the MCP endpoint, titles end to end. $0."""
+"""The Claude Code session doing Claude's work (BUILD.md phase 17): jobs, the MCP endpoint, titles end to end. $0.
+The rest of the writing moved over in phase 19 (tests/test_writing.py); here it stays with the stub."""
 import asyncio
 import json
 import socket
@@ -9,15 +10,16 @@ import pytest
 import uvicorn
 from mcp import Client
 
-from agent.harness import AgentHub
 from core import actions, db, jobs
 from core.context import make_ctx
 from core.engine import Engine
 from core.errors import FinalError
+from providers import session
 from providers.session import SessionLLM
 from server import claude_code
 from server.app import create_app
 
+READY = set(session.READY)
 TITLES = {"titles": ["I Survived 100 Days on a Raft", "The Raft That Wouldn't Sink", "100 Days Adrift"],
           "thumb_texts": ["100 DAYS ADRIFT", "IT WON'T SINK", "NO LAND"],
           "description": "A stick figure wakes on a raft with no land in sight and twenty litres of water. Over a "
@@ -25,7 +27,8 @@ TITLES = {"titles": ["I Survived 100 Days on a Raft", "The Raft That Wouldn't Si
 
 
 @pytest.fixture
-def ctx(tmp_path):
+def ctx(tmp_path, monkeypatch):
+    monkeypatch.setattr(session, "READY", {"titles"})
     ctx = make_ctx(data_dir=tmp_path, overrides={"mode": "stub", "stub": {"scenes": 6}, "engine": {"retry_backoff_s": 0},
                                                  "render": {"engine": "ffmpeg", "pictures": "puppet", "puppet_fps": 4},
                                                  "topics": {"competitors": "off"}})
@@ -98,7 +101,7 @@ def test_titles_by_the_session(ctx):
     assert spent == 0
 
     status, sheet = call(server, ("status", {"video_id": vid}), ("contact_sheet", {"video_id": vid}))
-    assert json.loads(text(status))["waiting_on"]["card"] == "render"
+    assert json.loads(text(status))["waiting_on_the_owner"]["card"] == "render"
     assert "scenes 1–6 of 6" in text(sheet) and sheet.content[1].type == "image"
 
 
@@ -141,14 +144,15 @@ def test_jobs_take_and_supersede(ctx):
         assert jobs.answer(conn, b, "{}") == [] and jobs.answer_for(conn, "k2") == (b, "{}")
 
 
-def test_calls_not_moved_yet_never_reach_the_api(ctx):
+def test_calls_not_moved_yet_never_reach_the_api(ctx, monkeypatch):
+    monkeypatch.setattr(session, "READY", READY)  # as shipped, not the fixture's titles-only set
     llm = SessionLLM(ctx.config)
-    with pytest.raises(FinalError, match="doesn't do the outline yet"):
-        llm.outline(ctx.channel("zombie"), "an idea", [], None, None)
+    with pytest.raises(FinalError, match="doesn't do the picture check yet"):
+        llm.check_picture(ctx.channel("zombie"), "still", {}, [], None)
 
 
 def test_endpoint_over_http(ctx):
-    app = create_app(ctx, run_engine=False, agents=AgentHub(ctx, online=False))
+    app = create_app(ctx, run_engine=False)
     with socket.socket() as s:
         s.bind(("127.0.0.1", 0))
         port = s.getsockname()[1]
@@ -168,7 +172,7 @@ def test_endpoint_over_http(ctx):
     finally:
         server.should_exit = True
         thread.join(10)
-    assert {"jobs", "take_job", "answer_job", "wait", "contact_sheet", "status", "new_video", "flag_scenes"} <= tools
-    assert "approve" not in tools and "publish" not in tools
-    assert "no API key is spent" in instructions
+    assert {"jobs", "take_job", "answer_job", "wait", "contact_sheet", "status", "review", "news", "new_video",
+            "approve", "flag_scenes", "publish"} <= tools
+    assert "no API key is spent" in instructions and "there's no browser app" in instructions
     assert json.loads(text(listed)) == []

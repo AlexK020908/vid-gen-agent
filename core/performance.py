@@ -20,7 +20,7 @@ import logging
 import statistics
 import time
 
-from core import cards, db
+from core import cards, db, jobs
 
 MIN_VIDEOS = 3   # readings needed before a median means anything
 ROLLING = 10     # the medians use the channel's latest 10 readings at the same point
@@ -82,6 +82,8 @@ def _surge(ctx, channel, video, reading, med: dict) -> None:
     from stages import topics  # stages import core, not the other way round
     try:
         topics.follow_ups(ctx, channel, video, reading, med)
+    except jobs.NeedsClaude:  # a job for the Claude Code session; the topics stage posts the ideas once it's done
+        pass
     except Exception as e:  # a failed round shouldn't lose the judgment; say so where the ideas would have gone
         log.exception("follow-ups for video %s failed", video["id"])
         with ctx.connect() as conn:

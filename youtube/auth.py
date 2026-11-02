@@ -59,7 +59,7 @@ def stored(channel_id: str) -> dict | None:
 
 
 def status(ctx, channel_id: str) -> dict:
-    """For the sidebar: is there an OAuth client, is this channel signed in, and does the sign-in have every
+    """For `status`: is there an OAuth client, is this channel signed in, and does the sign-in have every
     scope (a sign-in from before a scope was added needs Connect again)."""
     try:
         token = stored(channel_id)
@@ -75,7 +75,7 @@ def require_connected(ctx, channel_id: str) -> None:
     _client(ctx)
     if not stored(channel_id):
         name = ctx.channel(channel_id).name
-        raise ActionError(f"connect {name} to YouTube first: the Connect button next to the channel in the sidebar")
+        raise ActionError(f"connect {name} to YouTube first (connect_youtube in the chat, or run.py connect)")
 
 
 def set_channel_id(path: Path, youtube_channel_id: str) -> None:
@@ -125,22 +125,22 @@ def connect(ctx, channel_id: str, open_browser: bool = True) -> dict:
             success_message="Stick Fleet is connected to YouTube. You can close this tab.",
         )
     except WSGITimeoutError:
-        raise ActionError("Google sign-in timed out after 5 minutes; click Connect again") from None
+        raise ActionError("Google sign-in timed out after 5 minutes; connect again") from None
     except Exception as e:  # cancelled on Google's screen, or the redirect was refused
         raise ActionError(f"Google sign-in didn't finish: {e}") from e
     granted = creds.granted_scopes or creds.scopes or []
     granted = set(granted.split() if isinstance(granted, str) else granted)
     if missing := [s.rsplit("/", 1)[-1] for s in SCOPES if s not in granted]:
-        raise ActionError(f"Google's screen left out {', '.join(missing)}; click Connect again and tick every box")
+        raise ActionError(f"Google's screen left out {', '.join(missing)}; connect again and tick every box")
     if not creds.refresh_token:
-        raise ActionError("Google returned no refresh token; click Connect again")
+        raise ActionError("Google returned no refresh token; connect again")
 
     service = build("youtube", "v3", credentials=creds, cache_discovery=False)
     with ctx.connect() as conn:
         quota.spend(conn, "channels.list")
     items = service.channels().list(part="id,snippet", mine=True).execute().get("items") or []
     if not items:
-        raise ActionError("the account you picked has no YouTube channel; click Connect again "
+        raise ActionError("the account you picked has no YouTube channel; connect again "
                           "and pick the brand channel on Google's screen")
     youtube_id, title = items[0]["id"], items[0]["snippet"]["title"]
     for other in ctx.config.channels.values():
