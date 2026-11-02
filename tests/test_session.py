@@ -27,7 +27,7 @@ TITLES = {"titles": ["I Survived 100 Days on a Raft", "The Raft That Wouldn't Si
 @pytest.fixture
 def ctx(tmp_path):
     ctx = make_ctx(data_dir=tmp_path, overrides={"mode": "stub", "stub": {"scenes": 6}, "engine": {"retry_backoff_s": 0},
-                                                 "render": {"engine": "ffmpeg", "puppet_fps": 4},
+                                                 "render": {"engine": "ffmpeg", "pictures": "puppet", "puppet_fps": 4},
                                                  "topics": {"competitors": "off"}})
     ctx.llm = SessionLLM(ctx.config, fallback=ctx.llm)  # titles from the session, the rest from the stub
     return ctx

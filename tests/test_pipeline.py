@@ -393,8 +393,8 @@ def test_a_reviewed_rewrite_that_fails_its_checks_keeps_the_draft(ctx):
     from core.errors import FinalError
 
     ctx.llm.critic_problems = [{"where": "beat 3", "what": "The ladder is never lashed.", "fix": "Lash it to the radiator."}]
-    heard = []
-    ctx.events.subscribe(lambda kind, video_id, **data: heard.append((kind, data)))
+    notices = []
+    ctx.events.subscribe(lambda e: notices.append(e.data["text"]) if e.kind == "notice" else None)
     vid = actions.new_video(ctx, "zombie", "Day 1 to Day 30 on a ferry")
     with ctx.connect() as conn:
         video_row = db.get_video(conn, vid)
@@ -405,5 +405,4 @@ def test_a_reviewed_rewrite_that_fails_its_checks_keeps_the_draft(ctx):
 
         kept = review.reviewed(ctx, conn, video_row, channel, "outline", {"outline": "x"}, {"hook": "the draft"}, rewrite)
     assert kept == {"hook": "the draft"}
-    notices = [d["text"] for k, d in heard if k == "notice"]
     assert len(notices) == 1 and "goes through as first written" in notices[0] and "radiator" in notices[0]

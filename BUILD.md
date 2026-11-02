@@ -37,7 +37,7 @@ cd server/web && npm install && npm run build && cd ../..   # once, and after UI
 cd render/remotion && npm install && cd ../..               # once; the first render also downloads Chrome Headless Shell
 copy .env.example .env           # then put your ANTHROPIC_API_KEY in it (no key = no chat agent, no Claude writing)
 uv run python run.py serve       # http://localhost:8000, engine + UI + agent in one process
-uv run pytest -q                 # 75 tests, ~100 s, real ffmpeg + Remotion; fake agent, Claude, ElevenLabs, fal, Google APIs; $0
+uv run pytest -q                 # 112 tests, ~5 min (the session and puppet ones are slowest), real ffmpeg + Remotion; fake agent, Claude, ElevenLabs, fal, Google APIs; $0
 uv run pytest -m live            # 6 tests against real APIs (Claude agent + outline, a voice line, a still, a 3 s clip ~$0.35, competitors' videos, free); skipped without keys
 uv run python run.py demo        # headless run through every gate
 uv run python run.py status

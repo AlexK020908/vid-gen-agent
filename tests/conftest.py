@@ -4,6 +4,8 @@ The tests copy the real stickfleet.yaml and channel files. Once youtube.mode was
 tests that reach the publish stage uploaded their placeholder videos to the real channel. Three locks stop that:
 an empty keychain (a real sign-in is never visible), youtube.mode: stub unless a test asks for live itself, and the
 channel settings the tests are written against (clips on, all three gates), whatever the real file says today.
+render.pictures is generative unless a test asks for puppet: the real file's puppet at 30 fps made every pipeline
+test draw its frames, and the suite ran for over an hour.
 """
 import keyring
 import keyring.backend
@@ -43,6 +45,7 @@ def no_real_youtube(monkeypatch):
     def load(root=config.ROOT, data_dir=None, overrides=None):
         overrides = dict(overrides or {})
         overrides["youtube"] = {"mode": "stub", **(overrides.get("youtube") or {})}
+        overrides["render"] = {"pictures": "generative", **(overrides.get("render") or {})}
         return real_load(root, data_dir, overrides)
 
     monkeypatch.setattr(config, "load", load)
