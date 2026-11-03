@@ -35,6 +35,7 @@ HERO_PARTS = {  # what the sheet asks for, by part; a channel's YAML `puppet:` o
     "cane": "the walking cane alone, upright, its handle at the top",
     "brace": "the knee brace alone, upright, with no leg inside it",
 }
+LOOK_PARTS = ("brace", "cane")  # painted with the puppet, drawn only while the person's look in the story has them
 
 
 @dataclass
@@ -61,6 +62,13 @@ class Puppet:
 
     def in_slot(self, slot: str) -> Part | None:
         return next((p for p in self.parts.values() if p.slot == slot), None)
+
+    def wearing(self, look: str) -> "Puppet":
+        """The puppet as the story has them in a scene: a brace or a cane only while their look names it, since
+        an injury belongs to one story, not to the character."""
+        kept = {name: p for name, p in self.parts.items()
+                if name not in LOOK_PARTS or re.search(rf"\b{name}\b", look, re.IGNORECASE)}
+        return Puppet(self.folder, kept, self.scale)
 
     @classmethod
     def load(cls, folder: Path) -> "Puppet":

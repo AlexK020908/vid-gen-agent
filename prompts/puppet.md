@@ -5,7 +5,7 @@ Image 1 is "{name}", a place in the cartoon, seen from the fixed camera every sc
 
 Give `seen` first: one sentence saying what the picture shows and where the camera is.
 
-Then `floor`: the walkable floor as 3 to 6 points along the main path across the picture, in the order a person would walk them, each with x, y (where the feet go) and `height`: how tall a standing adult would be at that point, as a percentage of the picture's height (nearer the camera is taller; judge it against the doors and furniture there). Points on a different level (a step up, a stair) belong to the floor only if people walk them.
+Then `floor`: the walkable floor as 3 to 6 points from the nearest place anyone stands to the farthest (a person's size is read off them by how far down the picture the feet are, so they should cover every spot's depth), in the order a person would walk them, each with x, y (where the feet go) and `height`: how tall a standing adult would be at that point, as a percentage of the picture's height (nearer the camera is taller; judge it against the doors and furniture there). Points on a different level (a step up, a stair) belong to the floor only if people walk them.
 
 Then `spots`: the places a person would stand at or things they would use, each named in a few lowercase words joined with underscores (door_left, stairs_top, window, table), with the x, y where feet go to be there and `what` it is in a few words. Include every door, the top and the bottom of every stairway that's in the picture, every window, and the main furniture.
 

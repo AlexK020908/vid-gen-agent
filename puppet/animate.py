@@ -51,18 +51,21 @@ def _xy(stage: Stage, where, side: str | None = None) -> tuple[float, float]:
     return (x, y)
 
 
-def _pose(action: dict, p: float, H: float, dist: float, before: rig.Pose, elapsed_ms: float) -> rig.Pose:
+def _pose(action: dict, p: float, H: float, dist: float, before: rig.Pose, elapsed_ms: float,
+          free: bool = False) -> rig.Pose:
+    """`free`: the figure has no cane, so the poses that hold one hang the right arm instead."""
     name = action["do"]
     ease = rig.smooth(elapsed_ms / TRANSITION_MS)
+    hand = rig.free_hand if free else (lambda pose: pose)
     if name in rig.CYCLES:
         length = action["to_ms"] - action["from_ms"]
         cycles = max(1, round(dist / (rig.STRIDE * H))) if dist > 1 else max(1, round(length / 700))
-        now = rig.cycle(rig.CYCLES[name], p * cycles)
+        now = hand(rig.cycle(rig.CYCLES[name], p * cycles))
         return rig.blend(before, now, ease) if ease < 1 else now
     if name not in rig.POSES:
         raise ValueError(f"no pose or cycle called {name!r} (poses: {', '.join(rig.POSES)}; "
                          f"cycles: {', '.join(rig.CYCLES)})")
-    return rig.blend(before, rig.POSES[name], ease)
+    return rig.blend(before, hand(rig.POSES[name]), ease)
 
 
 def figure_at(stage: Stage, puppet, actions: list[dict], t_ms: float, seed: int = 0,
@@ -74,7 +77,8 @@ def figure_at(stage: Stage, puppet, actions: list[dict], t_ms: float, seed: int 
         return None
     first = actions[0]
     pos = _xy(stage, first.get("start") or first.get("at") or next(iter(stage.spots.values())), first.get("side"))
-    facing, before = 1, rig.STAND
+    free = not any(p.slot == "cane" for p in getattr(puppet, "parts", {}).values())
+    facing, before = 1, rig.free_hand(rig.STAND) if free else rig.STAND
     for i, a in enumerate(actions):
         if a.get("start") or a.get("at"):
             pos = _xy(stage, a.get("start") or a.get("at"), a.get("side"))
@@ -91,12 +95,12 @@ def figure_at(stage: Stage, puppet, actions: list[dict], t_ms: float, seed: int 
             p = min(1.0, max(0.0, (t_ms - a["from_ms"]) / length))
             now = (pos[0] + (target[0] - pos[0]) * p, pos[1] + (target[1] - pos[1]) * p) if target else pos
             H = stage.height_at(*now) * scale
-            pose = _pose(a, p, H, dist, before, t_ms - a["from_ms"])
+            pose = _pose(a, p, H, dist, before, t_ms - a["from_ms"], free)
             return draw.Figure(puppet, pose, now, H, facing, WOBBLE, seed, dict(attached or {}),
                                str(a.get("look", "")).lower() == "camera")
         if target:
             pos = target
-        before = _pose(a, 1.0, stage.height_at(*pos) * scale, dist, before, length)
+        before = _pose(a, 1.0, stage.height_at(*pos) * scale, dist, before, length, free)
     return None
 
 
@@ -198,7 +202,14 @@ class Scene:
         placed = {f["who"]: fig for f, fig in zip(self.sheet.get("figures", []), figures) if fig}
 
         def locate(key: str, _t: float):
+            """Where the camera finds a person; one who hasn't come on yet is looked for where they first stand,
+            so a camera can move to them as they arrive."""
             fig = placed.get(key)
+            if fig is None:
+                f = next((f for f in self.sheet.get("figures", []) if f["who"] == key and f["actions"]), None)
+                if f:
+                    fig = figure_at(self.stage, self.sheet["puppets"][key], f["actions"],
+                                    min(a["from_ms"] for a in f["actions"]))
             return (fig.feet[0], fig.feet[1] - LOOK_AT * fig.height) if fig else None
 
         center, zoom = camera_at(self.stage, self.sheet.get("camera", []), t, locate)

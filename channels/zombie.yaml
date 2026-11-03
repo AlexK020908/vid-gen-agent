@@ -22,5 +22,6 @@ puppet:              # the main character's painted parts, drawn once on a sheet
   head_side: "the same head in its beanie once more, turned three-quarters to the right so the viewer sees more of its right side, the eyes looking the way it faces, cut off at the bottom of the chin, no neck, no scarf"
   scarf: "the red scarf alone, as it sits wrapped around the neck with its tail hanging down one side, nothing inside it"
   hand: "one black mitten hand alone, thumb up, no arm"
+  # cane and brace are drawn only in scenes whose look (the script's `looks`) has them (puppet/parts.py LOOK_PARTS)
   cane: "the wooden walking cane alone, upright, its curved handle at the top"
   brace: "the hinged metal knee brace wrapped in grey tape alone, upright, no leg inside it"

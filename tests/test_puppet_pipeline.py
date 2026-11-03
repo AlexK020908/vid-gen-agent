@@ -66,6 +66,10 @@ def test_a_good_sheet_passes_and_each_mistake_is_named(tmp_path):
     bad["camera"] = []
     assert any("camera" in p for p in sheets.check(bad, stage, PEOPLE, PROPS, 5000))
     bad = _sheet()
+    bad["figures"].pop()                                                             # Eli is in the scene but
+    bad["camera"][1]["center"] = "Eli"                                               # not on the sheet
+    assert any("'Eli' is neither a spot nor a person on this sheet" in p for p in sheets.check(bad, stage, PEOPLE, PROPS, 5000))
+    bad = _sheet()
     bad["light"]["time"] = "noon"
     assert any("light.time" in p for p in sheets.check(bad, stage, PEOPLE, PROPS, 5000))
 

@@ -154,6 +154,35 @@ def test_a_stage_map_is_kept_in_pixels_and_reloaded(tmp_path):
     assert again.occluders == stage.occluders
 
 
+def test_a_spot_off_the_floor_path_is_sized_by_its_depth(tmp_path):
+    """Video 5's front lawn: the floor points run diagonally from the stairs to the gate, and the helipad is far
+    off to the right at the gate's depth. It took the near points' size (38%) and came out twice too big."""
+    place = tmp_path / "place.png"
+    Image.new("RGB", (100, 100)).save(place)
+    stage = Stage.from_percent(place, {
+        "floor": [{"x": 60, "y": 98, "height": 44}, {"x": 56, "y": 89, "height": 33}, {"x": 42, "y": 70, "height": 24},
+                  {"x": 34, "y": 56, "height": 18}, {"x": 29, "y": 47, "height": 14}],
+        "spots": [{"name": "helipad", "x": 85, "y": 55}], "light": {"x": 50, "y": 10, "warm": False}})
+    assert stage.height_at(*stage.spot("helipad")) == pytest.approx(14 + 8 * 19 / 42)  # read along y, ~17.6
+    assert stage.height_at(5, 89) == pytest.approx(33)                     # a floor point's depth, anywhere across
+    assert stage.height_at(50, 100) == pytest.approx(44 + 11 * 2 / 9)       # past the near end: the same line on
+    assert stage.height_at(50, 0) == pytest.approx(7)                       # never below half the smallest
+
+
+def test_a_stair_point_only_sizes_the_spots_beside_it(tmp_path):
+    """Video 5's wine cellar: two floor points are on the stairs at the left, taller than the cellar floor at the
+    same depth. The racks in the middle and right are sized by the cellar floor's points."""
+    place = tmp_path / "place.png"
+    Image.new("RGB", (100, 100)).save(place)
+    stage = Stage.from_percent(place, {
+        "floor": [{"x": 7, "y": 50, "height": 34}, {"x": 14, "y": 72, "height": 46}, {"x": 38, "y": 92, "height": 60},
+                  {"x": 50, "y": 78, "height": 42}, {"x": 55, "y": 65, "height": 25}],
+        "spots": [], "light": {"x": 50, "y": 10, "warm": False}})
+    assert stage.height_at(41, 74) == pytest.approx(25 + 9 * 17 / 13)      # left racks, ~37 (not 46 off the stair)
+    assert stage.height_at(71, 80) == pytest.approx(42 + 2 * 18 / 14)      # right racks, ~45
+    assert stage.height_at(7, 50) == pytest.approx(34)                      # the top of the stairs
+
+
 def test_props_are_cut_with_their_own_pivots_and_sizes(tmp_path):
     kit = _props(tmp_path)
     assert set(kit.parts) == {"plate", "drill", "towel"}
@@ -205,6 +234,23 @@ def test_a_placed_prop_an_attached_prop_and_a_cutout_are_drawn_in_depth_order(tm
     assert bare.getpixel((round(x), round(y - 0.9 * stage.height_at(x, y))))[0] < 240   # no plate without the set
 
 
+def test_a_brace_and_a_cane_show_only_while_the_look_has_them(tmp_path):
+    """Video 5's seventeen-year-old had video 3's knee brace and cane: the channel's puppet is painted with them,
+    and they were drawn in every scene. They belong to one story's look."""
+    puppet, _ = _puppet(tmp_path)
+    plain = puppet.wearing("")
+    assert "brace" not in plain and "cane" not in plain and {"head", "scarf", "hand"} <= set(plain.parts)
+    hurt = puppet.wearing("a hinged metal knee brace wrapped in grey tape on the right leg; a wooden cane")
+    assert "brace" in hurt and "cane" in hurt
+    assert "cane" not in puppet.wearing("soaked through in a hurricane")               # whole words only
+    stage = _place(tmp_path)
+    stand = [{"from_ms": 0, "to_ms": 1000, "do": "stand", "at": "middle"}]
+    assert animate.figure_at(stage, hurt, stand, 900).pose == rig.STAND                # the hand on the cane
+    assert animate.figure_at(stage, plain, stand, 900).pose == rig.STAND_FREE          # the arm hangs free
+    walk = [{"from_ms": 0, "to_ms": 2000, "do": "limp", "start": "door_left", "end": "stairs_top"}]
+    assert all(animate.figure_at(stage, plain, walk, t).pose.cane is None for t in (0, 500, 1000, 1500))
+
+
 def test_a_small_puppet_stands_shorter(tmp_path):
     puppet, _ = _puppet(tmp_path)
     puppet.scale = 0.6
@@ -235,6 +281,28 @@ def test_a_scene_renders_the_figure_walking_then_kneeling(tmp_path):
     assert _ink(frame) > 2000                                                # the sticks are drawn
     out = scene.render(tmp_path / "demo.mp4")
     assert out.exists() and out.stat().st_size > 10_000
+
+
+def test_the_camera_moves_to_someone_before_they_come_on(tmp_path):
+    """Video 5, scene 41: the camera starts on the gate and moves to Mr. Ashford, who only walks on at 3.8 s.
+    Before he's there it heads for where he first stands, instead of failing to find him."""
+    puppet, _ = _puppet(tmp_path)
+    stage = _place(tmp_path)
+    sheet = {"stage": stage, "puppets": {"hero": puppet}, "duration_ms": 2000, "fps": 10,
+             "figures": [{"who": "hero", "actions": [
+                 {"from_ms": 1000, "to_ms": 2000, "do": "limp", "start": "stairs_top", "end": "middle"}]}],
+             "camera": [{"at_ms": 0, "center": "door_left", "zoom": 1.0}, {"at_ms": 1000, "center": "hero", "zoom": 1.0}]}
+    seen = []
+    real = animate.camera_at
+    animate.camera_at = lambda *a: seen.append(real(*a)) or seen[-1]
+    try:
+        animate.Scene(sheet).frame(10)                                       # at 1 s: he's just come on
+        animate.Scene(sheet).frame(5)                                        # halfway there, before he has
+    finally:
+        animate.camera_at = real
+    (arrived, _), (halfway, _) = seen
+    assert arrived[0] == pytest.approx(stage.spot("stairs_top")[0])
+    assert halfway[0] == pytest.approx((stage.spot("door_left")[0] + stage.spot("stairs_top")[0]) / 2, rel=0.05)
 
 
 def test_the_camera_stays_inside_the_picture():

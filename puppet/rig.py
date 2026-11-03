@@ -116,6 +116,12 @@ def ground(pose: Pose, H: float) -> float:
 STAND = Pose(torso=2, l_upper=-6, l_fore=-10, r_upper=22, r_fore=-4, l_thigh=-8, l_shin=-8, r_thigh=6, r_shin=6,
              cane=3)
 STAND_FREE = replace(STAND, r_upper=8, r_fore=6, cane=None)
+
+
+def free_hand(pose: Pose) -> Pose:
+    """A pose for someone without a cane: where the pose holds one, the right arm hangs as in STAND_FREE."""
+    return replace(pose, r_upper=STAND_FREE.r_upper, r_fore=STAND_FREE.r_fore, cane=None) if pose.cane is not None else pose
+
 LOOK_DOWN = replace(STAND, torso=12, head=16, r_upper=30, r_fore=-6, cane=6)
 REACH = Pose(torso=6, head=2, l_upper=70, l_fore=62, r_upper=78, r_fore=70, l_thigh=-8, l_shin=-8, r_thigh=8,
              r_shin=8)                                                     # both hands out in front, chest high

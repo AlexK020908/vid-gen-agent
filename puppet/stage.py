@@ -31,15 +31,25 @@ class Stage:
             raise KeyError(f"the stage has no spot {name!r} (it has {have})") from None
 
     def height_at(self, x: float, y: float) -> float:
-        """A standing adult's height at a point: from the two nearest floor points, weighted by distance."""
-        if len(self.floor) == 1:
-            return self.floor[0][2]
-        near = sorted(self.floor, key=lambda p: math.hypot(p[0] - x, p[1] - y))[:2]
-        d = [math.hypot(p[0] - x, p[1] - y) for p in near]
-        if d[0] < 1e-6:
-            return near[0][2]
-        w = [1 / d[0], 1 / d[1]]
-        return (near[0][2] * w[0] + near[1][2] * w[1]) / (w[0] + w[1])
+        """A standing adult's height at a point. Perspective makes it grow with how far down the picture the feet
+        are, not how far across, so it's read along y between the nearest floor point above the spot and the
+        nearest below it (a spot off to the side of the floor points takes the size of the depth it's at), or past
+        the ends along the line through the nearest two. Nearest keeps a point on another level (a stair) to the
+        spots beside it. Kept between half the smallest height and one and a half the largest."""
+        def nearest(pts):
+            return sorted(pts, key=lambda p: math.hypot(p[0] - x, p[1] - y))
+        above, below = nearest([p for p in self.floor if p[1] < y]), nearest([p for p in self.floor if p[1] >= y])
+        if above and below:
+            a, b = above[0], below[0]
+        else:
+            ends = above or below
+            a = ends[0]
+            b = next((p for p in ends[1:] if p[1] != a[1]), None)
+            if b is None:
+                return a[2]
+        height = a[2] + (b[2] - a[2]) * (y - a[1]) / (b[1] - a[1])
+        heights = [p[2] for p in self.floor]
+        return min(max(height, min(heights) / 2), max(heights) * 1.5)
 
     def save(self, path: Path) -> None:
         data = {"picture": str(self.picture), "size": list(self.size), "floor": [list(p) for p in self.floor],

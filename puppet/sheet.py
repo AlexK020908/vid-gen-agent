@@ -105,8 +105,8 @@ def check(sheet: dict, stage: Stage, people: list[str], props: list[str], durati
                 problems.append(f"placing {change.get('place')} needs `at`: a spot")
     for key in sheet.get("camera") or []:
         center = key.get("center")
-        if isinstance(center, str) and center not in spots and center.lower() not in names:
-            problems.append(f"the camera's center {center!r} is neither a spot nor a person in the scene")
+        if isinstance(center, str) and center not in spots and center.lower() not in seen:
+            problems.append(f"the camera's center {center!r} is neither a spot nor a person on this sheet's figures")
         if not ZOOM[0] <= float(key.get("zoom", 1.0)) <= ZOOM[1]:
             problems.append(f"camera zoom {key.get('zoom')} is outside {ZOOM[0]} to {ZOOM[1]}")
     if not sheet.get("camera"):

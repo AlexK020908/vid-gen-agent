@@ -8,6 +8,7 @@ here costs money. Runs only when render.pictures is `puppet`.
 """
 import json
 
+from core import series
 from core.stage import run_scene_stage
 from providers.images import make_preview
 from puppet import animate, parts, props, sheet as sheets, state
@@ -28,7 +29,8 @@ def _work(ctx, conn, video, scene) -> tuple[dict, str]:
     places = {p["id"]: p for p in json.loads(video["places_json"] or "[]")}
     place_id = scene["place"] or next(iter(places), "")
     stage = Stage.load(assets["stages"][place_id])
-    puppets = {key: parts.Puppet.load(folder) for key, folder in assets["puppets"].items()}
+    looks = {sheets.who_key(who): chain[-1] for who, chain in series.looks_of(scene).items()}
+    puppets = {key: parts.Puppet.load(folder).wearing(looks.get(key, "")) for key, folder in assets["puppets"].items()}
     library = props.load_library(assets["props"])
     written = json.loads(scene["sheet_json"])
     placements = state.placements(json.loads(scene["set_json"] or "{}"), place_id)
