@@ -1,0 +1,26 @@
+{
+ "what": "a real woodpecker, not a cartoon",
+ "source": {
+  "kind": "sketchfab",
+  "uid": "c2347b204cfe45f8bc46886f006de9cd"
+ },
+ "meters": 0.24,
+ "turn": 270,
+ "spots": {
+  "beak": [
+   0,
+   -0.12,
+   0.112
+  ],
+  "head": [
+   0,
+   -0.066,
+   0.098
+  ],
+  "feet": [
+   0,
+   -0.032,
+   -0.036
+  ]
+ }
+}

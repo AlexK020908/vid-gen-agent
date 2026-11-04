@@ -35,13 +35,24 @@ def next_slot(slot: str, now: datetime | None = None) -> float:
     return slot_time.timestamp()
 
 
+def free_slot(slots: list[str], taken: list[float], now: datetime | None = None) -> float:
+    """The next time in a channel's weekly slots that no other video of theirs goes public, for a channel posting several a
+    week. Each slot's next few weeks are tried, soonest first."""
+    times = sorted(next_slot(s, now) + week * 7 * 86400 for s in slots for week in range(26))
+    return next((t for t in times if all(abs(t - other) >= 3600 for other in taken)), times[-1])
+
+
 def description(outline: dict, chapters: list[dict], ai_disclosure: bool, previous: str | None = None,
-                blurb: str | None = None) -> str:
+                blurb: str | None = None, credits: list[str] | None = None) -> str:
     """`blurb` is the viewer-facing paragraph Claude writes with the titles (thumbs_json["description"]); videos
     from before it existed fall back to the outline's hook. `previous` is the line pointing back at the part
-    before, for a next part already on YouTube."""
-    lines = ([previous, ""] if previous else []) + [blurb or outline.get("hook", ""), "", "Chapters"]
+    before, for a next part already on YouTube. `credits` are the licenses of what's on screen that ask for one."""
+    lines = ([previous, ""] if previous else []) + [blurb or outline.get("hook", "")]
+    if chapters:
+        lines += ["", "Chapters"]
     lines += [f"{fmt_ts(c['t_ms'])} {c['title']}" for c in chapters]
+    if credits:
+        lines += ["", "3D models:", *credits]
     if ai_disclosure:
         lines += ["", DISCLOSURE]
     return "\n".join(lines).strip()
@@ -57,11 +68,12 @@ def publish_meta(ctx, conn: sqlite3.Connection, video: sqlite3.Row) -> dict:
     saved = json.loads(video["publish_json"] or "{}")
     ai = bool(saved.get("ai_disclosure", yt.get("ai_disclosure", True)))
     thumb_idx = video["thumb_idx"]
+    credits = json.loads(video["direction_json"] or "{}").get("credits")
     meta = {
         "title": video["title"] or outline.get("topic", ""),
-        "description": description(outline, chapters, ai, _previous_part(conn, video), thumbs.get("description")),
-        "tags": ["stick figure", "day by day", "survival", channel.name.lower()],
-        "publish_at": video["publish_at"] or next_slot(yt.get("publish_slot") or "Sat 15:00 UTC"),
+        "description": description(outline, chapters, ai, _previous_part(conn, video), thumbs.get("description"), credits),
+        "tags": list(yt.get("tags") or ["stick figure", "day by day", "survival"]) + [channel.name.lower()],
+        "publish_at": video["publish_at"] or _slot(conn, video, yt),
         "privacy": "private",  # with publishAt set, YouTube flips it public at that time
         "ai_disclosure": ai,
         "made_for_kids": False,
@@ -73,6 +85,15 @@ def publish_meta(ctx, conn: sqlite3.Connection, video: sqlite3.Row) -> dict:
     }
     meta.update({k: v for k, v in saved.items() if k in EDITABLE})
     return meta
+
+
+def _slot(conn: sqlite3.Connection, video: sqlite3.Row, yt: dict) -> float:
+    if not yt.get("publish_slots"):
+        return next_slot(yt.get("publish_slot") or "Sat 15:00 UTC")
+    taken = [r["publish_at"] for r in conn.execute(
+        "SELECT publish_at FROM videos WHERE channel_id = ? AND id != ? AND publish_at IS NOT NULL",
+        (video["channel_id"], video["id"]))]
+    return free_slot(list(yt["publish_slots"]), taken)
 
 
 def _previous_part(conn: sqlite3.Connection, video: sqlite3.Row) -> str | None:

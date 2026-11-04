@@ -1,0 +1,12 @@
+{
+ "what": "a big upright tree trunk",
+ "source": {
+  "kind": "sketchfab",
+  "uid": "2e1824ab0d8543f1b43093cc0c46777b"
+ },
+ "meters": 3,
+ "tilt": [
+  -12,
+  -10
+ ]
+}

@@ -1,0 +1,19 @@
+id: shorts
+name: Small True Things       # a working name: the owner hasn't named this channel yet
+format: character
+scenario_family: "one surprising true thing about bodies, animals or everyday physics, shown happening in front of you"
+voice_id: klsIP2huuLcYwcg7vB92   # zach D, the owner's own clone
+voice_model: eleven_v4
+voice_speed: 1.05             # the read the owner approved ("IT SOUNDS AMAZING")
+gates: [outline, render]      # the script runs on to the voice once it's past the reviewer
+baseline_cadence_days: 7
+budget_usd: 5
+clips_per_video: 0
+narrator: you
+max_seconds: 70
+youtube:                      # not connected: nothing here can publish until it is
+  category_id: 27             # Education
+  tags: [science, facts, shorts]
+  publish_slots: ["Tue 15:00 America/New_York", "Fri 15:00 America/New_York"]
+  ai_disclosure: true
+competitors: []

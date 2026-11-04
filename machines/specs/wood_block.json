@@ -1,0 +1,28 @@
+{
+ "name": "wood block",
+ "steps": [
+  "the block"
+ ],
+ "parts": [
+  {
+   "id": "block",
+   "kind": "box",
+   "size": [
+    0.5,
+    0.2,
+    0.12
+   ],
+   "material": "pale_wood",
+   "at": [
+    0,
+    0,
+    0.06
+   ],
+   "bevel": 0.002,
+   "cut": true
+  }
+ ],
+ "anchors": {},
+ "couple": [],
+ "contacts": []
+}

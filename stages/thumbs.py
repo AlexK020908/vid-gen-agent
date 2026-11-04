@@ -7,7 +7,7 @@ on in code (providers/images.py caption).
 import json
 import time
 
-from core import db
+from core import db, formats
 from core.stage import run_video_stage
 from providers.images import caption
 
@@ -24,7 +24,8 @@ def _work(ctx, conn, video) -> None:
     titles, texts = written["titles"][:3], written["thumb_texts"][:3]
     paths = []
     stamp = int(time.time())
-    for i, (title, text) in enumerate(zip(titles, texts)):
+    # a short has no thumbnail to pick: YouTube takes a frame
+    for i, (title, text) in enumerate(zip(titles, texts) if channel.format == formats.STORY else ()):
         out = ctx.media(video["id"]) / "thumbs" / f"t{i}_{stamp}.png"
         with ctx.reserve(conn, video, ctx.images.thumb_price, "a thumbnail", "images"):
             ctx.log_cost(conn, video["id"], NAME, "images", ctx.images.thumbnail(channel, title, i, out))

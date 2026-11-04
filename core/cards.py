@@ -107,7 +107,7 @@ def outline_card(ctx, conn: sqlite3.Connection, video: sqlite3.Row) -> dict:
     return {
         "kind": "outline", "video_id": video["id"], "version": _version(conn, video["id"], "outline"),
         "topic": o["topic"], "hook": o["hook"], "ending": o["ending"], "draft_note": video["draft_note"],
-        "backstory": o.get("backstory", ""), "cast": o.get("cast") or [],
+        "backstory": o.get("backstory", "") or o.get("fact", ""), "cast": o.get("cast") or [],
         "tracker": [{**t, "start": amount(t["start"])} for t in o.get("tracker") or []],
         "beats": [{"n": i + 1, **b} for i, b in enumerate(o["beats"])],
     }
@@ -149,6 +149,7 @@ def render_card(ctx, conn: sqlite3.Connection, video: sqlite3.Row) -> dict:
         "thumb_texts": thumbs.get("texts") or [],  # the words drawn on each thumbnail
         "picked": {"title": video["title"], "thumb_idx": video["thumb_idx"]},
         "video_url": url(video["video_path"]), "highlight_url": url(video["highlight_path"]),
+        "frames_url": url(video["frames_path"]),
         "duration_ms": video["duration_ms"], "cost_usd": round(video["cost_usd"], 2),
         "budget_usd": channel.budget_usd,
         "scenes": [
@@ -242,9 +243,19 @@ def error_card(ctx, conn: sqlite3.Connection, video: sqlite3.Row) -> dict:
             "error": video["error"], "resume_state": video["resume_state"]}
 
 
+def character_card(ctx, conn: sqlite3.Connection, video: sqlite3.Row) -> dict:
+    """Who and what a short is going to use, each with its sheet to look at, before it's filmed."""
+    direction = json.loads(video["direction_json"] or "{}")
+    return {"kind": "character", "video_id": video["id"], "topic": json.loads(video["outline_json"])["topic"],
+            "people": {p: str(ctx.config.data_dir / "characters" / p / "portraits" / "sheet.png") for p in direction.get("people") or []},
+            "things": {t: str(ctx.config.data_dir / "things" / t / "sheet" / "sheet.png") for t in direction.get("things") or []},
+            "credits": direction.get("credits") or []}
+
+
 BUILDERS = {"outline": outline_card, "script": script_card, "render": render_card,
-            "publish": publish_card, "error": error_card}
+            "publish": publish_card, "error": error_card, "character": character_card}
 INTRO = {
+    "character": "The cast is ready: look at their sheets, then approve to film it, or send it back with a note.",
     "outline": "Outline ready for review.",
     "script": "Script ready for review.",
     "render": "Render ready: pick a thumbnail and title, flag anything that looks off, then approve.",

@@ -6,9 +6,11 @@
     "ask": [
       "mcp__stickfleet__approve",
       "mcp__stickfleet__flag_scenes",
+      "mcp__stickfleet__restage",
       "mcp__stickfleet__edit_scene",
       "mcp__stickfleet__retry",
       "mcp__stickfleet__publish",
+      "mcp__stickfleet__go_public_now",
       "mcp__stickfleet__apply_swap"
     ]
   }

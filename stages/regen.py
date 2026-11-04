@@ -1,4 +1,6 @@
 """Flagged scenes from Gate 2. Visual: new still/clip with a prompt tweak. Narration: rewrite + re-voice.
+Puppet pictures: a visual flag with a note is staged again; without one, the scene is drawn again from the sheet
+it has (for a fix to the drawing code; no Claude job, no cost).
 
 With the Claude Code session writing, each flagged scene's rewrite is its own job (its scene id keeps two scenes'
 jobs apart), and the scene waits for it while the others carry on."""
@@ -6,6 +8,7 @@ import json
 
 from core import db
 from core.stage import run_scene_stage
+from stages.assets import puppet_mode
 
 NAME = "regen"
 
@@ -27,6 +30,8 @@ def _work(ctx, conn, video, scene) -> tuple[dict, str]:
     if note:
         fields["visual_prompt"] = ctx.llm.revise_visual(channel, _with_context(conn, video, scene), note, meter)
     fields.update(still_path=None, clip_path=None)
+    if puppet_mode(ctx) and not note and scene["sheet_json"]:
+        return fields, "staged"  # no note: drawn again from its sheet, with whatever the drawing code fixed since
     return fields, "voiced" if scene["audio_path"] else "pending"
 
 

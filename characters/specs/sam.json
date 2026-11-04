@@ -1,0 +1,13 @@
+{
+ "name": "Sam",
+ "gender": "male",
+ "preset": "David",
+ "age": 40,
+ "hair": "Short Combed",
+ "hair_color": "brown",
+ "eyes": "blue",
+ "outfit": "Relaxed Fit",
+ "footwear": "HG_Leather_Sneakers_Male",
+ "clothes": {"Sweater": [0.72, 0.72, 0.70]},
+ "keys": {"Stylized": 0.4, "Eye Scale": 0.6}
+}

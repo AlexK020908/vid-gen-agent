@@ -147,6 +147,8 @@ def outline_text(outline: dict) -> str:
     """The outline as the script, titles and revise turns read it. Outlines from before the backstory, cast and
     tracker leave those lines out."""
     lines = [f"Hook: {outline['hook']}"]
+    if outline.get("fact"):
+        lines.append(f"Fact: {outline['fact']}")
     if outline.get("backstory"):
         lines.append(f"Backstory: {outline['backstory']}")
     if outline.get("cast"):
@@ -158,8 +160,9 @@ def outline_text(outline: dict) -> str:
     lines.append("")
     for n, b in enumerate(outline["beats"], 1):
         hero = " (hero beat)" if b.get("hero") else ""
-        lines += [f"Beat {n} | {b['label']} | {b['title']}{hero}", f"  What happens: {b['summary']}",
-                  f"  Skill: {b['skill']}"]
+        lines += [f"Beat {n} | {b['label']} | {b['title']}{hero}", f"  What happens: {b['summary']}"]
+        if b.get("skill"):
+            lines.append(f"  Skill: {b['skill']}")
         if b.get("cast"):
             lines.append(f"  Cast: {', '.join(b['cast'])}")
     return "\n".join(lines + ["", f"Ending: {outline['ending']}"])

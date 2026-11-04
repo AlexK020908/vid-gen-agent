@@ -11,7 +11,7 @@ from core.context import make_ctx
 from core.engine import Engine
 from providers.llm import STUB_PLACES
 from puppet import sheet as sheets, state
-from puppet.stage import Stage
+from puppet.stage import VERSION, Stage
 
 PEOPLE = ["the stick figure", "Eli"]
 PROPS = ["plate", "drill"]
@@ -149,3 +149,60 @@ def test_a_stub_video_is_staged_and_animated_end_to_end(tmp_path):
     assert by_stage.get("assets", 0) >= 3 and by_stage.get("sheets", 0) == 4
     assert "stills" not in by_stage and "clips" not in by_stage               # the generative stages stood aside
     assert ctx.abs(video["video_path"]).exists()
+
+    # a scene flagged with no note is drawn again from the sheet it has: no new staging, a new clip
+    actions.flag_scenes(ctx, vid, [2], "visual")
+    Engine(ctx).run_until_idle()
+    with ctx.connect() as conn:
+        video = db.get_video(conn, vid)
+        again = db.scenes_for(conn, vid)[1]
+        sheets_paid = conn.execute("SELECT COUNT(*) FROM costs WHERE video_id = ? AND stage = 'sheets'", (vid,)).fetchone()[0]
+    assert video["state"] == "assembled", video["error"]
+    assert again["sheet_json"] == scenes[1]["sheet_json"] and sheets_paid == 4
+    assert again["clip_path"] != scenes[1]["clip_path"] and ctx.abs(again["clip_path"]).exists()
+    assert {"the-dead", "strangers"} <= set(assets["puppets"])               # the crowds, painted for the channel
+    assert str(tmp_path) in assets["puppets"]["the-dead"]
+
+    # staged again after a fix: a map made before the mapping changed is made again, every scene gets a new sheet,
+    # and nothing already painted is painted again
+    old = Path(assets["stages"][first["place"]])
+    data = json.loads(old.read_text(encoding="utf-8"))
+    old.write_text(json.dumps({**data, "version": 1}), encoding="utf-8")
+
+    def paid():
+        with ctx.connect() as conn:
+            return {(r["stage"], r["provider"]): r["n"] for r in conn.execute(
+                "SELECT stage, provider, COUNT(*) AS n FROM costs WHERE video_id = ? GROUP BY stage, provider", (vid,))}
+
+    before = paid()
+    actions.restage(ctx, vid)
+    Engine(ctx).run_until_idle()
+    with ctx.connect() as conn:
+        video = db.get_video(conn, vid)
+        restaged = db.scenes_for(conn, vid)
+    after = paid()
+    assert video["state"] == "assembled", video["error"]
+    assert all(s["state"] == "ok" and s["sheet_json"] and ctx.abs(s["clip_path"]).exists() for s in restaged)
+    assert after[("sheets", "llm")] == before[("sheets", "llm")] + 4
+    assert after[("assets", "llm")] == before[("assets", "llm")] + 2          # the one old map and the props list
+    assert after.get(("assets", "images")) == before.get(("assets", "images"))
+    assert json.loads(old.read_text(encoding="utf-8"))["version"] == VERSION
+
+    # switched back to painted pictures (video 5): every still painted again, the script's clips made, the puppet
+    # frames (named like the new stills) gone first so they aren't taken for them
+    ctx.config.render["pictures"] = "generative"
+    puppet_frames = [ctx.abs(s["still_path"]) for s in restaged]
+    with ctx.connect() as conn:
+        script = {s["idx"]: s["motion"] for s in json.loads(db.get_video(conn, vid)["script_json"])}
+    actions.restage(ctx, vid)
+    with pytest.raises(actions.ActionError, match="render review"):
+        actions.restage(ctx, vid)                                            # not again while it's being made
+    assert not any(f.exists() for f in puppet_frames)
+    Engine(ctx).run_until_idle()
+    with ctx.connect() as conn:
+        video = db.get_video(conn, vid)
+        painted = db.scenes_for(conn, vid)
+    assert video["state"] == "assembled", video["error"]
+    assert {s["idx"]: s["motion"] for s in painted} == script
+    assert all(ctx.abs(s["still_path"]).exists() for s in painted)
+    assert paid().get(("stills", "images"), 0) >= len(painted)

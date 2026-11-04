@@ -7,6 +7,8 @@ from pathlib import Path
 
 import yaml
 
+from core.formats import FORMATS, STORY
+
 ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -26,7 +28,13 @@ class Channel:
     competitors: list[str]
     narrator: str = "third"   # "you": the narration talks to the viewer as the main character; "third": about them
     puppet: dict = field(default_factory=dict)  # part name -> what the parts sheet draws for it (puppet/parts.py)
+    extras: dict = field(default_factory=dict)  # crowd kind ("the dead") -> {part name: what's drawn}, puppets
+                                                # painted once per channel for the crowds scenes show
     path: Path | None = None  # the YAML it came from; Connect writes youtube.channel_id back into it
+    format: str = STORY       # what it makes, and so which stages run for it (core/formats.py)
+    voice_model: str = ""     # an ElevenLabs model for this channel's voice, in place of models.voice
+    voice_speed: float = 0.0  # this channel's pace, in place of elevenlabs.speed
+    max_seconds: int = 0      # competitors' videos longer than this don't count: 60 or so for a Shorts channel
 
     @property
     def script_gate(self) -> bool:
@@ -48,6 +56,7 @@ class Config:
     stub: dict
     youtube: dict
     channels: dict[str, Channel]
+    blender: dict = field(default_factory=dict)  # where Blender is and how it renders machine shorts (SHORTS.md)
 
     def provider(self, kind: str) -> str:
         """Which provider runs `kind` (llm, tts, images, video). `mode: stub` makes every one a stub."""
@@ -85,8 +94,8 @@ def _channel(root: Path, raw: dict, path: Path | None = None) -> Channel:
         id=raw["id"],
         name=raw["name"],
         scenario_family=raw["scenario_family"],
-        character_ref=root / raw["character_ref"],
-        style_prompt=raw["style_prompt"],
+        character_ref=root / raw.get("character_ref", ""),   # only painted pictures use these two
+        style_prompt=raw.get("style_prompt", ""),
         voice_id=raw.get("voice_id", ""),
         gates=list(raw.get("gates") or ["outline", "render"]),
         baseline_cadence_days=int(raw.get("baseline_cadence_days", 7)),
@@ -96,8 +105,21 @@ def _channel(root: Path, raw: dict, path: Path | None = None) -> Channel:
         competitors=list(raw.get("competitors") or []),
         narrator=_narrator(raw.get("narrator", "third")),
         puppet={str(k): str(v) for k, v in (raw.get("puppet") or {}).items()},
+        extras={str(kind).strip().lower(): {str(k): str(v) for k, v in (spec or {}).items()}
+                for kind, spec in (raw.get("extras") or {}).items()},
         path=path,
+        format=_format(raw.get("format", STORY)),
+        voice_model=str(raw.get("voice_model") or ""),
+        voice_speed=float(raw.get("voice_speed") or 0),
+        max_seconds=int(raw.get("max_seconds") or 0),
     )
+
+
+def _format(value) -> str:
+    value = str(value).strip().lower()
+    if value not in FORMATS:
+        raise ValueError(f"format must be one of {', '.join(FORMATS)}, not {value!r}")
+    return value
 
 
 def _narrator(value) -> str:
@@ -129,4 +151,5 @@ def load(root: Path = ROOT, data_dir: Path | None = None, overrides: dict | None
         stub=raw.get("stub") or {},
         youtube=raw.get("youtube") or {},
         channels=channels,
+        blender=raw.get("blender") or {},
     )

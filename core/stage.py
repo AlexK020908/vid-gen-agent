@@ -7,7 +7,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from typing import Callable
 
-from core import db
+from core import db, formats
 from core.costs import BudgetExceeded
 from core.errors import FinalError, Stopped
 from core.jobs import PARK_S, NeedsClaude
@@ -45,7 +45,7 @@ def run_video_stage(ctx, name: str, state: str, work: VideoWork, where: str = ""
                     lease_s: float | None = None) -> bool:
     """Claim one video in `state` and run `work` on it. Returns True if anything was claimed."""
     with ctx.connect() as conn:
-        video = db.claim_video(conn, state, lease_s or ctx.lease_s, where, params)
+        video = db.claim_video(conn, state, lease_s or ctx.lease_s, f"{where} {formats.condition(ctx.config, name)}", params)
         if video is None:
             return False
         try:
@@ -109,8 +109,8 @@ def run_scene_stage(ctx, name: str, state: str, work: SceneWork, done_sql: str, 
     A scene whose work needs Claude Code waits for it (NeedsClaude) without counting a failed attempt.
     """
     with ctx.connect() as conn:
-        scenes = db.claim_scenes(conn, state, limit or ctx.parallel_calls * 2, ctx.lease_s, ctx.max_attempts, where,
-                                 in_order=limit == 1)
+        scenes = db.claim_scenes(conn, state, limit or ctx.parallel_calls * 2, ctx.lease_s, ctx.max_attempts,
+                                 f"{where} {formats.condition(ctx.config, name, 'v.channel_id')}", in_order=limit == 1)
     if not scenes:
         return False
 

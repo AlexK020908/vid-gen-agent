@@ -30,6 +30,7 @@ HINTS = {
 THUMB_HINT = "Custom thumbnails need a phone-verified channel (youtube.com/verify)."
 # What videos.update may set in the snippet. It clears anything left out, so a title change sends these back.
 WRITABLE_SNIPPET = ("title", "description", "tags", "categoryId", "defaultLanguage", "defaultAudioLanguage")
+WRITABLE_STATUS = ("embeddable", "license", "publicStatsViewable", "selfDeclaredMadeForKids", "containsSyntheticMedia")
 
 
 class YouTubeError(ActionError):
@@ -152,6 +153,19 @@ class Client:
         snippet = {k: v for k, v in items[0]["snippet"].items() if k in WRITABLE_SNIPPET}
         body = {"id": video_id, "snippet": {**snippet, "title": title}}
         self._run("videos.update", self.yt.videos().update(part="snippet", body=body))
+
+    def make_public(self, video_id: str) -> None:
+        """Make a video public now, dropping its scheduled publishAt. videos.update resets every status field it
+        isn't sent, so the current status is read first and sent back with only the privacy changed."""
+        items = self._run("videos.list", self.yt.videos().list(part="status", id=video_id)).get("items") or []
+        if not items:
+            raise YouTubeError(f"YouTube has no video {video_id} on this channel")
+        current = items[0]["status"]
+        status = {k: v for k, v in current.items() if k in WRITABLE_STATUS}
+        if "selfDeclaredMadeForKids" not in status and "madeForKids" in current:
+            status["selfDeclaredMadeForKids"] = current["madeForKids"]
+        body = {"id": video_id, "status": {**status, "privacyStatus": "public"}}
+        self._run("videos.update", self.yt.videos().update(part="status", body=body))
 
     def whoami(self) -> str:
         """The YouTube channel id this sign-in is for (1 quota unit): the daily sign-in check."""

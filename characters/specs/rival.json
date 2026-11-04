@@ -1,0 +1,13 @@
+{
+ "name": "Rival",
+ "gender": "male",
+ "preset": "Jack",
+ "age": 35,
+ "hair": "Short Curly Fade",
+ "hair_color": "black",
+ "eyes": "brown",
+ "outfit": "Bomber look",
+ "footwear": "HG_Leather_Sneakers_Male",
+ "clothes": {"Bomber": [0.05, 0.05, 0.06], "Jeans": [0.10, 0.11, 0.14]},
+ "keys": {"Stylized": 0.3, "Eye Scale": 0.3}
+}

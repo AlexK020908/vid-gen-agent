@@ -1,0 +1,61 @@
+{
+ "what": "a thick red X, standing, facing -y",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "bar0",
+    "kind": "box",
+    "size": [
+     0.21,
+     0.026,
+     0.05
+    ],
+    "rot": [
+     0,
+     45,
+     0
+    ],
+    "bevel": 0.004,
+    "material": {
+     "color": [
+      0.72,
+      0.008,
+      0.006
+     ],
+     "rough": 0.4
+    }
+   },
+   {
+    "id": "bar1",
+    "kind": "box",
+    "size": [
+     0.21,
+     0.026,
+     0.05
+    ],
+    "rot": [
+     0,
+     -45,
+     0
+    ],
+    "bevel": 0.004,
+    "material": {
+     "color": [
+      0.72,
+      0.008,
+      0.006
+     ],
+     "rough": 0.4
+    }
+   }
+  ]
+ },
+ "spots": {
+  "body": [
+   0,
+   0,
+   0
+  ]
+ }
+}

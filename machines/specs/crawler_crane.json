@@ -1,0 +1,357 @@
+{
+ "name": "crawler crane",
+ "steps": [
+  "the crane"
+ ],
+ "parts": [
+  {
+   "id": "crane",
+   "kind": "group",
+   "joint": {
+    "type": "spin",
+    "axis": "z"
+   }
+  },
+  {
+   "id": "track_l",
+   "kind": "box",
+   "size": [
+    1.0,
+    7.2,
+    1.1
+   ],
+   "material": "rubber",
+   "bevel": 0.25,
+   "at": [
+    -1.7,
+    0,
+    0.55
+   ]
+  },
+  {
+   "id": "track_r",
+   "kind": "box",
+   "size": [
+    1.0,
+    7.2,
+    1.1
+   ],
+   "material": "rubber",
+   "bevel": 0.25,
+   "at": [
+    1.7,
+    0,
+    0.55
+   ]
+  },
+  {
+   "id": "turntable",
+   "kind": "cylinder",
+   "r": 1.5,
+   "h": 0.4,
+   "material": "dark_steel",
+   "at": [
+    0,
+    0,
+    1.1
+   ],
+   "parent": "crane"
+  },
+  {
+   "id": "cab",
+   "kind": "box",
+   "size": [
+    3.2,
+    4.4,
+    2.4
+   ],
+   "material": "white_paint",
+   "bevel": 0.08,
+   "at": [
+    0.2,
+    0.7,
+    2.7
+   ],
+   "parent": "crane"
+  },
+  {
+   "id": "cab_panel",
+   "kind": "box",
+   "size": [
+    3.22,
+    1.4,
+    1.0
+   ],
+   "material": "blue_paint",
+   "at": [
+    0.2,
+    -0.6,
+    2.4
+   ],
+   "parent": "crane"
+  },
+  {
+   "id": "cab_window",
+   "kind": "box",
+   "size": [
+    1.2,
+    0.1,
+    0.9
+   ],
+   "material": "black_steel",
+   "at": [
+    -0.7,
+    -1.52,
+    3.1
+   ],
+   "parent": "crane"
+  },
+  {
+   "id": "counterweight",
+   "kind": "box",
+   "size": [
+    3.0,
+    1.2,
+    1.7
+   ],
+   "material": "dark_steel",
+   "bevel": 0.05,
+   "at": [
+    0.2,
+    3.4,
+    2.4
+   ],
+   "parent": "crane"
+  },
+  {
+   "id": "boom_pivot",
+   "kind": "group",
+   "at": [
+    0,
+    -2.4,
+    2.3
+   ],
+   "parent": "crane",
+   "joint": {
+    "type": "hinge",
+    "axis": "x",
+    "min": 0,
+    "max": 80,
+    "rest": 20
+   }
+  },
+  {
+   "id": "boom",
+   "kind": "truss",
+   "length": 46.0,
+   "width": 1.4,
+   "bays": 22,
+   "material": "white_paint",
+   "chord": 0.08,
+   "lace": 0.04,
+   "parent": "boom_pivot"
+  },
+  {
+   "id": "tip",
+   "kind": "group",
+   "at": [
+    0,
+    -1.0,
+    46.0
+   ],
+   "parent": "boom",
+   "joint": {
+    "type": "hinge",
+    "axis": "x",
+    "min": -80,
+    "max": 0,
+    "rest": -20
+   }
+  },
+  {
+   "id": "sheave",
+   "kind": "cylinder",
+   "r": 0.45,
+   "h": 0.3,
+   "material": "steel",
+   "at": [
+    -0.15,
+    0,
+    0
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "parent": "tip"
+  },
+  {
+   "id": "cable",
+   "kind": "cylinder",
+   "r": 0.03,
+   "h": 1.0,
+   "material": "rubber",
+   "rot": [
+    180,
+    0,
+    0
+   ],
+   "segments": 12,
+   "parent": "tip",
+   "joint": {
+    "type": "stretch",
+    "axis": "z",
+    "min": 0.5,
+    "max": 60,
+    "rest": 10
+   }
+  },
+  {
+   "id": "hook",
+   "kind": "group",
+   "parent": "tip",
+   "joint": {
+    "type": "slide",
+    "axis": "z",
+    "min": -60,
+    "max": -2.0,
+    "rest": -10
+   }
+  },
+  {
+   "id": "hook_block",
+   "kind": "box",
+   "size": [
+    0.7,
+    0.45,
+    1.0
+   ],
+   "material": "hazard_stripes",
+   "bevel": 0.04,
+   "at": [
+    0,
+    0,
+    -0.5
+   ],
+   "parent": "hook"
+  },
+  {
+   "id": "hook_claw",
+   "kind": "torus",
+   "major": 0.22,
+   "minor": 0.08,
+   "arc": 290,
+   "axis": "Y",
+   "material": "hazard_stripes",
+   "at": [
+    0,
+    0,
+    -1.3
+   ],
+   "parent": "hook"
+  }
+ ],
+ "anchors": {
+  "hook": [
+   "hook_block",
+   [
+    0.35,
+    0,
+    0.0
+   ]
+  ],
+  "boom": [
+   "boom",
+   [
+    0.7,
+    0,
+    25
+   ]
+  ],
+  "cab": [
+   "cab",
+   [
+    1.6,
+    -1.0,
+    0
+   ]
+  ]
+ },
+ "couple": [
+  {
+   "type": "follow",
+   "driver": "boom_pivot",
+   "driven": "tip",
+   "ratio": -1.0
+  },
+  {
+   "type": "follow",
+   "driver": "hook",
+   "driven": "cable",
+   "ratio": -1.0
+  }
+ ],
+ "contacts": [
+  [
+   "track_l",
+   "turntable"
+  ],
+  [
+   "track_r",
+   "turntable"
+  ],
+  [
+   "cab",
+   "turntable"
+  ],
+  [
+   "cab_panel",
+   "cab"
+  ],
+  [
+   "cab_window",
+   "cab"
+  ],
+  [
+   "cab_window",
+   "cab_panel"
+  ],
+  [
+   "counterweight",
+   "cab"
+  ],
+  [
+   "counterweight",
+   "turntable"
+  ],
+  [
+   "boom",
+   "turntable"
+  ],
+  [
+   "boom",
+   "sheave"
+  ],
+  [
+   "cable",
+   "sheave"
+  ],
+  [
+   "cable",
+   "hook_block"
+  ],
+  [
+   "hook_block",
+   "hook_claw"
+  ],
+  [
+   "cab_panel",
+   "turntable"
+  ],
+  [
+   "boom",
+   "cable"
+  ]
+ ]
+}

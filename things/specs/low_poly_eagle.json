@@ -1,0 +1,10 @@
+{
+ "what": "a bald eagle, low-poly, with flying and idle clips",
+ "source": {"kind": "url",
+            "url": "https://opengameart.org/sites/default/files/Animal%20Pack%20Vol.2%20by%20%40Quaternius.zip",
+            "member": "Animal Pack Vol.2 by @Quaternius/FBX/Eagle.fbx",
+            "license": "CC0", "page": "https://opengameart.org/content/animated-animales-low-poly"},
+ "meters": 2.0,
+ "smooth": true,
+ "colors": {"Wings": [0.10, 0.055, 0.03], "Head": [0.85, 0.83, 0.78], "Beak": [0.85, 0.55, 0.08], "Claws": [0.85, 0.55, 0.08]}
+}

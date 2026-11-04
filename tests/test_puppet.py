@@ -3,12 +3,13 @@ set state carried between scenes, foreground cutouts, and a scene rendered."""
 from pathlib import Path
 
 import pytest
-from PIL import Image, ImageDraw
+from PIL import Image, ImageChops, ImageDraw
 
 from core import config
+from providers import checks
 from providers.images import StubImages
 from providers.llm import StubLLM
-from puppet import animate, draw, parts, props, rig, state
+from puppet import animate, draw, parts, props, rig, sheet as sheets, state
 from puppet.stage import Stage
 
 
@@ -251,6 +252,17 @@ def test_a_brace_and_a_cane_show_only_while_the_look_has_them(tmp_path):
     assert all(animate.figure_at(stage, plain, walk, t).pose.cane is None for t in (0, 500, 1000, 1500))
 
 
+def test_a_figure_standing_still_holds_still(tmp_path):
+    """Video 5: a standing figure shook, from a jitter added to its joints every few frames."""
+    puppet, _ = _puppet(tmp_path)
+    stage = _place(tmp_path)
+    scene = animate.Scene({"stage": stage, "puppets": {"hero": puppet}, "duration_ms": 3000, "fps": 10,
+                           "figures": [{"who": "hero", "actions": [{"from_ms": 0, "to_ms": 3000, "do": "stand",
+                                                                     "at": "middle"}]}],
+                           "camera": [{"at_ms": 0, "center": "middle", "zoom": 1.5}]})
+    assert ImageChops.difference(scene.frame(10), scene.frame(25)).getbbox() is None
+
+
 def test_a_small_puppet_stands_shorter(tmp_path):
     puppet, _ = _puppet(tmp_path)
     puppet.scale = 0.6
@@ -309,3 +321,114 @@ def test_the_camera_stays_inside_the_picture():
     frame = Image.new("RGB", (1920, 1080))
     assert draw.view(frame, (0, 0), 2.0, (192, 108)).size == (192, 108)
     assert draw.view(frame, (1920, 1080), 0.5, (192, 108)).size == (192, 108)  # zoom under 1 is a full view
+
+
+# --- staging the story (phase 21) ---
+
+def _gate_stage(tmp_path: Path, see_through: bool) -> Stage:
+    """A light picture with a gate of dark vertical bars across x 400-800, y 300-700 (it meets the ground at 700)."""
+    place = tmp_path / "gate.png"
+    img = Image.new("RGB", (1200, 1000), (200, 200, 190))
+    d = ImageDraw.Draw(img)
+    for x in range(400, 801, 40):
+        d.rectangle((x, 300, x + 8, 700), fill=(25, 25, 30))
+    img.save(place)
+    return Stage.from_percent(place, {
+        "floor": [{"x": 50, "y": 95, "height": 40}, {"x": 50, "y": 60, "height": 20}],
+        "spots": [{"name": "gate", "x": 50, "y": 75}, {"name": "outside_gate", "x": 50, "y": 62}],
+        "occluders": [{"name": "gate", "base_y": 70, "see_through": see_through,
+                       "polygon": [{"x": 33, "y": 30}, {"x": 67.5, "y": 30}, {"x": 67.5, "y": 70}, {"x": 33, "y": 70}]}],
+        "light": {"x": 50, "y": 10, "warm": False}})
+
+
+def test_a_see_through_gate_hides_only_its_bars(tmp_path):
+    """Video 5: Mr. Ashford begged at the gate from inside the walls: the map had no ground beyond the bars, and
+    an occluder hid everything behind it."""
+    bars = _gate_stage(tmp_path, True)
+    piece, (x0, y0) = draw.cutout(Image.open(bars.picture).convert("RGB"), bars.occluders[0]["polygon"], True)
+    assert piece.getpixel((402 - x0, 500 - y0))[3] == 255                    # a bar is drawn over whoever's behind
+    assert piece.getpixel((420 - x0, 500 - y0))[3] == 0                      # a gap shows them
+    solid = _gate_stage(tmp_path, False)
+    piece, (x0, y0) = draw.cutout(Image.open(solid.picture).convert("RGB"), solid.occluders[0]["polygon"])
+    assert piece.getpixel((420 - x0, 500 - y0))[3] == 255
+    assert bars.behind(*bars.spot("outside_gate"))["name"] == "gate" and bars.behind(*bars.spot("gate")) is None
+    assert "on the far side of the gate, seen through it" in sheets.stage_text(bars)
+    bars.save(tmp_path / "stage.json")
+    assert Stage.load(tmp_path / "stage.json").occluders[0]["see_through"] is True
+    data = {"floor": [{"x": 50, "y": 95, "height": 40}] * 3, "spots": [{"name": "outside_gate", "x": 50, "y": 62, "what": ""}],
+            "occluders": [{"name": "gate", "base_y": 70, "see_through": True,
+                           "polygon": [{"x": 33, "y": 30}, {"x": 67, "y": 30}, {"x": 67, "y": 70}, {"x": 33, "y": 70}]}],
+            "light": {"x": 50, "y": 10, "warm": False}}
+    assert checks.stage_map(data) == []                                      # a spot beyond the bars is fine
+    data["occluders"][0]["see_through"] = False
+    assert any("solid" in p for p in checks.stage_map(data))                 # beyond a solid one it would be hidden
+    for p in data["occluders"][0]["polygon"]:                                # unless it's a low wall: a person
+        p["y"] = max(p["y"], 50)                                             # there (40% tall, head at 22) shows
+    assert checks.stage_map(data) == []                                      # head and shoulders over its top at 50
+
+
+def test_a_crowd_is_drawn_about_its_spot_out_of_step(tmp_path):
+    """Video 5 had no zombies on screen: only the cast had puppets."""
+    puppet, _ = _puppet(tmp_path)
+    stage = _place(tmp_path)
+    sheet = {"figures": [{"who": "the stick figure", "actions": [{"from_ms": 0, "to_ms": 2000, "do": "stand",
+                                                                  "at": "door_left"}]}],
+             "crowds": [{"who": "the dead", "count": 5, "from_ms": 0, "to_ms": 2000, "do": "limp",
+                         "start": "stairs_top", "end": "middle", "facing": "left"}],
+             "set": [], "camera": [{"at_ms": 0, "center": "middle", "zoom": 1.0}], "light": {"time": "day", "lamp": ""}}
+    assert sheets.check(sheet, stage, ["the stick figure"], [], 2000, ["the dead"]) == []
+    out = sheets.resolve(sheet, stage, {"hero": puppet, "the-dead": puppet}, None, {}, 2000, 10)
+    dead = [f for f in out["figures"] if f["who"].startswith("the-dead#")]
+    assert len(dead) == 5 and all(f["who"] in out["puppets"] for f in dead)
+    assert len({tuple(round(v) for v in f["actions"][0]["start"]) for f in dead}) == 5   # a step apart
+    assert len({f["actions"][0]["phase"] for f in dead}) == 5                              # and out of step
+    assert len({out["puppets"][f["who"]].scale for f in dead}) > 1
+    lone = animate.Scene({**out, "figures": out["figures"][:1]}).frame(5)
+    assert _ink(animate.Scene(out).frame(5)) > _ink(lone) * 3
+    bad = {**sheet, "crowds": [{**sheet["crowds"][0], "who": "aliens", "count": 30}]}
+    problems = sheets.check(bad, stage, ["the stick figure"], [], 2000, ["the dead"])
+    assert any("aliens" in p for p in problems) and any("30" in p for p in problems)
+    still = {**sheet, "crowds": [{"who": "the dead", "count": 3, "from_ms": 0, "to_ms": 2000, "do": "reach"}]}
+    assert any("needs `at`" in p for p in sheets.check(still, stage, ["the stick figure"], [], 2000, ["the dead"]))
+    assert "a crowd of 5 the dead: ended at middle, limp" in sheets.summary(sheet, {})
+
+
+def test_someone_turned_takes_the_head_and_hands_of_the_dead(tmp_path):
+    """Video 5, scene 48: Mr. Ashford came back to the gate one of the dead, and his puppet didn't change."""
+    puppet, _ = _puppet(tmp_path)
+    red = Image.new("RGBA", (40, 40), (220, 30, 30, 255))
+    dead = parts.Puppet(tmp_path, {"head": parts.Part("head", red, (20, 40), 0.27, "head", "front"),
+                                   "hand": parts.Part("hand", red, (20, 20), 0.085, "hand", "front")})
+    turned = puppet.wearing("now one of the dead: grey-green round head, the filthy torn navy suit", dead)
+    assert turned["head"] is dead["head"] and turned["hand"] is dead["hand"]
+    assert "head_side" not in turned and turned["scarf"] is puppet["scarf"]   # still in their own clothes
+    assert puppet.wearing("a soaked bandage on his left forearm", dead)["head"] is puppet["head"]
+
+
+def test_someone_inside_a_vehicle_isnt_drawn_and_a_hovering_one_is_raised(tmp_path):
+    """Video 5: the pilot and the hero stood in front of the helicopter, which sat on the pad while it hovered."""
+    puppet, _ = _puppet(tmp_path)
+    kit = _props(tmp_path)
+    stage = _place(tmp_path)
+    actions = [{"from_ms": 0, "to_ms": 1000, "do": "walk", "start": "door_left", "end": "stairs_top"},
+               {"from_ms": 1000, "to_ms": 3000, "do": "inside", "at": "stairs_top"}]
+    assert animate.figure_at(stage, puppet, actions, 500) is not None
+    assert animate.figure_at(stage, puppet, actions, 2000) is None
+    scene = animate.Scene({"stage": stage, "puppets": {"hero": puppet, "pilot": puppet}, "props": kit,
+                           "duration_ms": 3000, "fps": 10, "set": {"drill": {"at": "middle", "lift": 1.0}},
+                           "figures": [{"who": "hero", "actions": actions},
+                                       {"who": "pilot", "actions": [{"from_ms": 0, "to_ms": 3000, "do": "inside",
+                                                                     "at": "stairs_top"}]}],
+                           "camera": [{"at_ms": 0, "center": "pilot", "zoom": 1.5}]})
+    scene.frame(20)                                                           # the camera finds the pilot inside
+    _, part, at, H, _, ground = scene.placed[0]
+    assert at[1] == pytest.approx(ground[1] - 1.0 * H)                        # up off the ground; its shadow stays
+    high = animate.Scene({**scene.sheet, "set": {"drill": {"at": "middle", "lift": 4.0}}}).placed[0][2]
+    assert high[1] - part.pivot[1] / part.image.height * part.height * H > 0  # never off the top of the picture
+    two = {"figures": [{"who": "the stick figure", "actions": [{"from_ms": 0, "to_ms": 3000, "do": "inside", "at": "middle"}]},
+                       {"who": "Eli", "actions": [{"from_ms": 0, "to_ms": 3000, "do": "inside", "at": "middle"}]}],
+           "set": [{"place": "plate", "at": "middle", "angle": 0, "lift": 9}],
+           "camera": [{"at_ms": 0, "center": "middle", "zoom": 1.2}], "light": {"time": "day", "lamp": ""}}
+    problems = sheets.check(two, stage, ["the stick figure", "Eli"], ["plate"], 3000)
+    assert not any("both stand" in p for p in problems)                      # two can ride in one
+    assert any("lift" in p for p in problems)

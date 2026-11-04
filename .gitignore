@@ -6,3 +6,6 @@ secrets/
 .env
 node_modules/
 dist/
+tools/
+human_packs/
+.claude/skills/remotion-best-practices/

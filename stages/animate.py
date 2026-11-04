@@ -30,7 +30,9 @@ def _work(ctx, conn, video, scene) -> tuple[dict, str]:
     place_id = scene["place"] or next(iter(places), "")
     stage = Stage.load(assets["stages"][place_id])
     looks = {sheets.who_key(who): chain[-1] for who, chain in series.looks_of(scene).items()}
-    puppets = {key: parts.Puppet.load(folder).wearing(looks.get(key, "")) for key, folder in assets["puppets"].items()}
+    loaded = {key: parts.Puppet.load(folder) for key, folder in assets["puppets"].items()}
+    dead = loaded.get(parts.slug(parts.DEAD))
+    puppets = {key: puppet.wearing(looks.get(key, ""), dead) for key, puppet in loaded.items()}
     library = props.load_library(assets["props"])
     written = json.loads(scene["sheet_json"])
     placements = state.placements(json.loads(scene["set_json"] or "{}"), place_id)

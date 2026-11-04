@@ -9,7 +9,9 @@ A prop is an object a scene shows being used, carried, placed or built: a steel 
 - `height`: how tall it is drawn against a standing adult, as a fraction of their height (a door-sized plate 1.1, a drill 0.17, a towel 0.1, a rifle seen from the side 0.14 tall and long).
 - `stands`: `bottom` for something that stands on the floor (a plate, a cot, a can), `center` for something small that is held or lies (a towel, a wrench), `grip` for a tool held by its handle (a drill, a rifle, a flashlight).
 
-Reuse a prop from the list of ones already painted when the script means the same thing, with its exact name, and don't list it again. Keep the list short: the props scenes actually show, usually 3 to 8.
+A thing the story moves or uses somewhere else than the one place whose picture shows it is a prop, even though that picture shows it: a car in the garage's picture that is rolled down to the gate, a boat at the dock's picture that is rowed out. A place's picture shows it only in that place. So are vehicles that arrive or leave (a truck that rams the gate, a helicopter that lands), drawn from the side.
+
+Reuse a prop from the list of ones already painted when the script means the same thing, with its exact name, and don't list it again. Keep the list to the props scenes actually show, usually 4 to 12.
 
 `people`: every cast member from the outline with `scale`: their standing height against the main character's, 1.0 for an adult, about 0.6 for a child, 0.8 for a teenager.
 

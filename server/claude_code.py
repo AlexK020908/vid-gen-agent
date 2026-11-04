@@ -37,7 +37,7 @@ Running the channels: `status` lists the channels, their videos and which card w
 a waiting card in full: show the owner what they decide on (the outline, the script file to open, the video file \
 to watch, the title and thumbnail options). `news` gives what the app posted since the last look. Then do what \
 the owner says: `approve`, `revise` with their note, `edit_outline`, `flag_scenes`, `pick`, `update_publish`, \
-`publish`. Approve, flag, edit a scene, retry, publish or swap only when the owner asks for it in this chat: those \
+`publish`. Approve, flag, restage, edit a scene, retry, publish or swap only when the owner asks for it in this chat: those \
 spend money or change YouTube, and Claude Code asks the owner to confirm each one.
 
 Claude's work waits as jobs: the outline, the script, the reviewer's read of each, rewrites of flagged scenes, \

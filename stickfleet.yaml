@@ -65,7 +65,8 @@ topics:               # stages/topics.py: competitors' recent hits, Claude's top
 
 render:
   engine: remotion    # remotion: Ken Burns + word captions (needs render/remotion/node_modules). ffmpeg: plain, the fallback
-  pictures: puppet      # generative: fal stills, set changes and hero clips (stages/stills.py, clips.py).
+  pictures: generative  # generative: fal stills, set changes and hero clips (stages/stills.py, clips.py). Back on
+                        # since Nov 2, 2026: video 5's puppets looked crude (BUILD.md, phase 21); puppets are on hold.
                         # puppet: places painted once and mapped, characters and props painted once as parts, every
                         # scene staged by Claude Code's worker agent and animated by code (stages/assets.py,
                         # sheets.py, animate.py)
@@ -75,8 +76,13 @@ render:
   pause_ms: 400       # silence after each scene's line while its picture holds, so it lands before the next one
   new_day_pause_ms: 1000   # the longer one when the next scene starts a new day or beat, and at the end
 
+blender:              # machine shorts (SHORTS.md): Blender 5.2 LTS renders each shot with EEVEE on the GPU
+  path: tools/blender-5.2.3-windows-x64/blender.exe   # the portable zip from blender.org, unzipped; gitignored
+  samples: 32         # EEVEE samples a frame; more is smoother soft shadows and depth of field, and slower
+  humgen: human_packs    # Human Generator's zip and .hgpack files (CHARACTERS.md); gitignored, its license forbids sharing them
+
 stub:
-  scenes: 12          # scenes per placeholder script (120 = full length)
+  scenes: 12         # scenes per placeholder script (120 = full length)
   simulate_costs: true  # stub providers log what the real one would cost (marked simulated)
 
 youtube:

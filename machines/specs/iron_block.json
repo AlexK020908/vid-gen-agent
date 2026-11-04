@@ -1,0 +1,43 @@
+{
+ "name": "iron block",
+ "steps": [
+  "the block"
+ ],
+ "parts": [
+  {
+   "id": "block",
+   "kind": "cylinder",
+   "r": 0.65,
+   "h": 1.75,
+   "material": "steel",
+   "bevel": 0.04,
+   "segments": 72
+  },
+  {
+   "id": "eye",
+   "kind": "torus",
+   "major": 0.11,
+   "minor": 0.03,
+   "material": "steel",
+   "at": [
+    0,
+    0,
+    1.82
+   ],
+   "axis": "X",
+   "parent": "block"
+  }
+ ],
+ "anchors": {
+  "block": [
+   "block",
+   [
+    0.65,
+    0,
+    1.05
+   ]
+  ]
+ },
+ "couple": [],
+ "contacts": []
+}

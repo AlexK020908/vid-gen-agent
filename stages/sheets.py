@@ -41,6 +41,7 @@ def _work(ctx, conn, video, scene) -> tuple[dict, str]:
     if checks.HERO in scene["visual_prompt"].lower() or not people:
         people.insert(0, checks.HERO)
     library = props.load_library(assets["props"])
+    crowds = [kind for kind in channel.extras if sheets.slug(kind) in assets["puppets"]]
     before = conn.execute("SELECT sheet_json, set_json FROM scenes WHERE video_id = ? AND idx = ?",
                           (scene["video_id"], scene["idx"] - 1)).fetchone()
     state = json.loads(before["set_json"]) if before and before["set_json"] else {}
@@ -56,16 +57,17 @@ def _work(ctx, conn, video, scene) -> tuple[dict, str]:
         "visual_prompt": scene["visual_prompt"],
         "set_change": f"The line changes the place for good: {written['set_change']}" if written.get("set_change") else "",
         "looks": f"What people have on: {looks}" if looks else "",
-        "people": ", ".join(people), "stage": sheets.stage_text(stage),
+        "people": ", ".join(people), "crowds": ", ".join(crowds) or "none", "stage": sheets.stage_text(stage),
         "props": ", ".join(sorted(library.parts)) or "none", "poses": ", ".join(sheets.rig.POSES),
         "cycles": ", ".join(sheets.rig.CYCLES), "previous": previous,
         "state": "; ".join(f"{prop} at {p.get('at')}" for prop, p in (state.get(place_id) or {}).items()) or "nothing",
     }
-    context = {"spots": list(stage.spots), "people": people, "props": sorted(library.parts),
+    context = {"spots": list(stage.spots), "people": people, "props": sorted(library.parts), "crowds": crowds,
                "duration_ms": scene["duration_ms"], "set_change": written.get("set_change", ""),
                "narration": scene["narration"]}
     written_sheet = ctx.llm.scene_sheet(
-        channel, values, context, lambda d: sheets.check(d, stage, people, sorted(library.parts), scene["duration_ms"]),
+        channel, values, context,
+        lambda d: sheets.check(d, stage, people, sorted(library.parts), scene["duration_ms"], crowds),
         ctx.meter(conn, video, NAME, f"the sheet for scene {scene['idx']}", scene["id"]))
     after = sheets.after(written_sheet, state, place_id)
     return {"sheet_json": json.dumps(written_sheet), "set_json": json.dumps(after)}, "staged"

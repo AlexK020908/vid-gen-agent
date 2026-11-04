@@ -7,11 +7,13 @@ Code's permission prompt (claude-settings.json).
 from __future__ import annotations
 
 import json
+import shutil
 import sqlite3
 import time
 
-from core import db, jobs, metadata, series
+from core import db, formats, jobs, metadata, series
 from core.errors import ActionError
+from providers import checks
 
 FLAG_KINDS = ("visual", "narration")
 MAX_REGENS = 3
@@ -98,6 +100,28 @@ def suggest_swap(ctx, video_id: int, reason: str | None = None) -> None:
     if not video["thumbs_json"]:
         raise ActionError("this video has no other thumbnails or titles to swap to")
     ctx.events.emit("swap_suggested", video_id, reason=reason)
+
+
+def go_public_now(ctx, video_id: int) -> None:
+    """A scheduled video goes public now instead of at its time (video 5: the owner didn't want to wait four days).
+    YouTube drops the scheduled publishAt with it; the go-public time becomes now, so the analytics stage sees it
+    public on its next loop, moves it to live and posts the link, and the 48 h and 7 d metrics count from now."""
+    from youtube import client, quota
+    with ctx.connect() as conn:
+        video = db.get_video(conn, video_id)
+        if video["state"] != "scheduled":
+            raise ActionError(f"only a video scheduled on YouTube can go public now (video is {video['state']})")
+        live = ctx.config.youtube.get("mode", "stub") == "live" and not (video["youtube_id"] or "").startswith("stub-")
+        if live:
+            quota.check(conn, ["videos.list", "videos.update"])
+    if live:
+        client.Client(ctx, video["channel_id"]).make_public(video["youtube_id"])
+    with ctx.connect() as conn, db.tx(conn):
+        meta = json.loads(video["publish_json"] or "{}")
+        now = time.time()
+        db.update_video(conn, video_id, publish_at=now, lease_until=None,
+                        publish_json=json.dumps({**meta, "publish_at": now}))
+    ctx.events.emit("card_refresh", video_id, kind="publish")
 
 
 def apply_swap(ctx, video_id: int, title_idx: int | None = None, thumb_idx: int | None = None) -> dict:
@@ -218,14 +242,36 @@ def approve(ctx, video_id: int, gate: str) -> None:
             start_generating(conn, video_id)
         elif gate == "render":
             video = db.get_video(conn, video_id)
-            if video["state"] == "assembled" and (video["title"] is None or video["thumb_idx"] is None):
-                raise ActionError("pick a title and a thumbnail first")
+            has_thumbs = json.loads(video["thumbs_json"] or '{"thumbs": [0]}')["thumbs"]   # a short has none to pick
+            if video["state"] == "assembled" and (video["title"] is None or (has_thumbs and video["thumb_idx"] is None)):
+                raise ActionError("pick a title and a thumbnail first" if has_thumbs else "pick a title first")
             db.transition(conn, video_id, "assembled", "render_approved")
+        elif gate == "character":
+            _approve_cast(conn, video_id)
         else:
             raise ActionError(f"unknown gate {gate!r}")
     ctx.events.emit("gate_resolved", video_id, gate=gate, outcome="approved")
     if gate == "render":
         ctx.events.emit("gate_reached", video_id, gate="publish")
+
+
+def _approve_cast(conn: sqlite3.Connection, video_id: int) -> None:
+    """The people and things a character short uses are right: it can be filmed."""
+    video = db.get_video(conn, video_id)
+    direction = json.loads(video["direction_json"] or "null")
+    if video["state"] != "generating" or not direction or direction.get("approved"):
+        raise ActionError("no cast is waiting on this video")
+    db.update_video(conn, video_id, direction_json=json.dumps({**direction, "approved": True}))
+
+
+def _direct_again(conn: sqlite3.Connection, video_id: int, note: str, *origin: str) -> None:
+    """A character short directed again with the owner's note, keeping its voice."""
+    db.add_feedback(conn, video_id, "direct", note)
+    draft = json.loads(db.get_video(conn, video_id)["direction_draft_json"] or "{}")
+    db.update_video(conn, video_id, direction_json=None, lease_until=None,
+                    direction_draft_json=json.dumps({**draft, "looked": False}))   # looked at afresh, once
+    if origin:
+        db.transition(conn, video_id, origin[0], "generating")
 
 
 def revise(ctx, video_id: int, gate: str, note: str) -> None:
@@ -235,11 +281,14 @@ def revise(ctx, video_id: int, gate: str, note: str) -> None:
     with ctx.connect() as conn, db.tx(conn):
         if gate == "outline":
             db.transition(conn, video_id, "outlined", "new", draft_note=None)
+            db.add_feedback(conn, video_id, gate, note)
         elif gate == "script":
             db.transition(conn, video_id, "scripted", "outline_approved", draft_note=None)
+            db.add_feedback(conn, video_id, gate, note)
+        elif gate == "character":
+            _direct_again(conn, video_id, note)
         else:
             raise ActionError("only the outline and the script can be revised with a note; flag scenes instead")
-        db.add_feedback(conn, video_id, gate, note)
     ctx.events.emit("gate_resolved", video_id, gate=gate, outcome="revised")
     ctx.events.emit("notice", video_id, text=f"Rewriting the {gate} with your note…")
 
@@ -341,6 +390,14 @@ def flag_scenes(ctx, video_id: int, idxs: list[int], kind: str, note: str = "") 
         video = db.get_video(conn, video_id)
         if video["state"] != "assembled":
             raise ActionError(f"scenes can be flagged at the render review (video is {video['state']})")
+        if ctx.channel(video["channel_id"]).format == formats.CHARACTER:
+            if kind != "visual" or not note:
+                raise ActionError("a short's voice stays as it is here. Say what's wrong with the picture in a note, and "
+                                  "it's directed again")
+            where = ", ".join(map(str, idxs))
+            _direct_again(conn, video_id, f"On lines {where}: {note}", "assembled")
+            ctx.events.emit("gate_resolved", video_id, gate="render", outcome="flagged")
+            return
         rows = {s["idx"]: s for s in db.scenes_for(conn, video_id)}
         missing = [i for i in idxs if i not in rows]
         if missing:
@@ -361,19 +418,76 @@ def flag_scenes(ctx, video_id: int, idxs: list[int], kind: str, note: str = "") 
         ctx.events.emit("blocked", video_id)
 
 
-def edit_scene(ctx, video_id: int, idx: int, visual_prompt: str | None = None, narration: str | None = None) -> None:
-    """Manual prompt or line edit (the fix for a blocked scene). Regenerates that scene as written."""
-    if visual_prompt is None and narration is None:
-        raise ActionError("give a new visual_prompt or narration")
+def restage(ctx, video_id: int) -> None:
+    """Make the whole video's pictures again (at the render review, or when it failed), keeping the voice, the way
+    render.pictures is set now.
+
+    Puppet pictures: places, puppets and props already made are reused; a map made before the mapping changed is
+    made again; the props list is asked again, so new props are painted; every scene gets a new sheet and is drawn.
+    Painted pictures (generative): every still is painted again and the scenes the script made clips get them (a
+    puppet video switched back to painted stills, video 5); the pictures made before are deleted, since they're
+    named like the new ones and would be taken for them."""
+    puppet = str(ctx.config.render.get("pictures", "generative")).lower() == "puppet"
     with ctx.connect() as conn, db.tx(conn):
         video = db.get_video(conn, video_id)
-        if video["state"] not in ("assembled", "blocked"):
-            raise ActionError(f"scenes can be edited at the render review or when blocked (video is {video['state']})")
+        if video["state"] not in ("assembled", "failed", "blocked"):
+            raise ActionError(f"a video is staged again at the render review or when it failed (video is {video['state']})")
+        if ctx.channel(video["channel_id"]).format == formats.CHARACTER:
+            shutil.rmtree(ctx.media(video_id) / "film", ignore_errors=True)
+            db.update_video(conn, video_id, direction_json=None, lease_until=None)
+            db.transition(conn, video_id, video["state"], "generating", resume_state=None)
+            ctx.events.emit("gate_resolved", video_id, gate="render" if video["state"] == "assembled" else "error",
+                            outcome="flagged" if video["state"] == "assembled" else "retried")
+            return
+        script = json.loads(video["script_json"] or "[]")
+        motion = {s["idx"]: s.get("motion") or "kenburns"
+                  for s in (script if isinstance(script, list) else script.get("scenes") or [])}
+        for scene in db.scenes_for(conn, video_id):
+            if not scene["audio_path"]:
+                continue
+            if not puppet:
+                for made in (scene["still_path"], scene["clip_path"]):
+                    if made and ctx.abs(made).exists():
+                        ctx.abs(made).unlink()
+            db.update_scene(conn, scene["id"], state="voiced", sheet_json=None, set_json=None, clip_path=None,
+                            still_path=None, flag_kind=None, flag_note=None, attempts=0, lease_until=None,
+                            motion=scene["motion"] if puppet else motion.get(scene["idx"], "kenburns"))
+        db.update_video(conn, video_id, assets_json=None)
+        db.transition(conn, video_id, video["state"], "generating", resume_state=None)
+    ctx.events.emit("gate_resolved", video_id, gate="render" if video["state"] == "assembled" else "error",
+                    outcome="flagged" if video["state"] == "assembled" else "retried")
+
+
+def edit_scene(ctx, video_id: int, idx: int, visual_prompt: str | None = None, narration: str | None = None,
+               motion: str | None = None) -> None:
+    """Manual prompt, line or motion edit (the fix for a blocked scene). Regenerates that scene as written. A
+    motion change alone keeps the picture: a clip scene made `kenburns` drops its clip (video 5: clips of crowds
+    came out smeared), a still made a `clip` gets one.
+
+    The scene keeps its regen count, so the new picture gets a new file name: reset to 0, the redraw was named
+    like the scene's first picture, which is still on disk, and was taken for it."""
+    if visual_prompt is None and narration is None and motion is None:
+        raise ActionError("give a new visual_prompt, narration or motion")
+    if motion is not None and motion not in checks.MOTIONS:
+        raise ActionError(f"motion is one of {', '.join(checks.MOTIONS)}")
+    with ctx.connect() as conn, db.tx(conn):
+        video = db.get_video(conn, video_id)
+        if ctx.channel(video["channel_id"]).format == formats.CHARACTER:
+            raise ActionError("a short is directed as a whole: flag its lines with a note instead")
+        if video["state"] not in ("assembled", "blocked", "failed"):
+            raise ActionError(f"scenes can be edited at the render review, or when blocked or failed (video is "
+                              f"{video['state']})")
         scene = conn.execute("SELECT * FROM scenes WHERE video_id = ? AND idx = ?", (video_id, idx)).fetchone()
         if scene is None:
             raise ActionError(f"no scene {idx}")
-        fields = {"state": "flagged", "flag_note": None, "regen_count": 0,
-                  "flag_kind": "narration" if narration is not None else "visual"}
+        if visual_prompt is None and narration is None:
+            fields = {"motion": motion, "clip_path": None, "flag_kind": None, "flag_note": None,
+                      "state": "still_done" if scene["still_path"] else "voiced"}
+        else:
+            fields = {"state": "flagged", "flag_note": None,
+                      "flag_kind": "narration" if narration is not None else "visual"}
+            if motion is not None:
+                fields["motion"] = motion
         if visual_prompt is not None:
             fields["visual_prompt"] = visual_prompt
             if narration is not None:  # the narration path keeps the picture, so drop it to get a new one

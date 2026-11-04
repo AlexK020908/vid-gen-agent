@@ -26,7 +26,24 @@ The spec is [../plan.md](../plan.md). This file tracks what is built, how it dev
 | 18. The chat replaces the browser | Every card action is an MCP tool in the Claude Code chat: approve, publish, swaps, YouTube sign-in, `review` (the waiting card in full, with pictures and file paths), `news`. Anything that spends money or changes YouTube goes through Claude Code's permission prompt. The browser UI, REST API, websocket, in-app chat agent and card comments are deleted | **Done** (Nov 2, 2026) |
 | 19. The session writes | Outline, script (in parts, each checked as it arrives), the reviewer (the `critic` agent), flagged-scene rewrites and topic ideas are jobs this chat does; the `stickfleet` skill, the `critic` agent, and the viral-hooks skill with its checklist in the shared outline prompt | **Done** (Nov 2, 2026) |
 | 20. The session looks; the API is gone | Puppet assets (place maps, part names, the props list), scene sheets and picture checks are jobs for the `worker` agent; a stage that parks on one never pays fal twice; the API code path, the `anthropic` package, the `claude:` config, `ANTHROPIC_API_KEY` and the live Claude tests deleted | **Done** (Nov 2, 2026) |
-| 21. The shorts look | Remotion skills and label and arrow overlays for vertical explainer shorts (the hooks half came in phase 19) | Optional, not started |
+| 21. Staging the story | From video 5's render review: people and things outside a gate drawn outside it (see-through occluders, spots beyond them), crowds of the dead and strangers on screen, a cast member who turns drawn as one of the dead, riding inside vehicles and hovering, props the story moves listed, and `restage` to make a finished video's pictures again | **Built** (Nov 2, 2026); puppets then put on hold for painted stills |
+| 22. The shorts look | Remotion skills and label and arrow overlays for vertical explainer shorts (the hooks half came in phase 19) | Folded into phases 23, 27 and 30 |
+| 23. Blender look test | Blender 5.2 LTS, the materials and two environments, three of reference A's opening shots built by hand with a first overlay, laid beside A's frames; seconds a frame measured. Spec: [SHORTS.md](SHORTS.md) | **Done** (Nov 3, 2026); the nail shot rebuilt after the owner's review, then the look approved ("ok looks good") |
+| 24. A's storyboard | Reference A broken down beat by beat (word times from local Whisper, captions, parts, camera, cutaways, effects, labels, tags) into `data/benchmarks/pile_hammer/` | **Done** (Nov 3, 2026): 64 beats, 30 models |
+| 25. The kit and A's models | The Blender parts kit, joints, cutaways, the model spec and its checks, the turnaround sheet; every machine A shows | **Built** (Nov 3, 2026): 6 machines, all collision-free; waiting on the owner's look at the sheets |
+| 26. A's shots | Shot sheets for all of A: the continuous camera, joints timed to A's word times, effects, tracks, render cache, shot checks | **Built** (Nov 3, 2026): all of A in five timeline segments, with effects, tracks, the render cache and the label check; no music, and two of the planned shot checks not yet (How A was rebuilt) |
+| 27. A's overlays and sound, side by side | `MachineShort` in Remotion: captions, labels, tags, title, real footage, SFX, music; ours beside A for all 1:58 (internal only, never published) | **Built** (Nov 3, 2026): the owner's notes on the first cut fixed in the code; narrated by their clone on `eleven_v4` (How A was rebuilt). Earlier cuts kept as `rebuild_v1.mp4` and `rebuild_ryan.mp4` |
+| 28. Formats and the vertical short | `format` per channel, stages by format, voice model per channel, Shorts competitors, several publish slots, Shorts publishing with no thumbnail and credits in the description | **Built** (Nov 3, 2026) for `story` and `character`; `machine` and `diagram` come with phases 29 and 30, so their stub channels aren't here (How a character short runs) |
+| 29. Writing machine shorts | The model and shot-sheet jobs, and the machine format's topic, outline, script and critic prompts and checks; one real short on our own topic | Planned |
+| 30. Systems shorts | The diagram spec, simulation, layouts, `DiagramShort`, ticks on the beat; one real load-balancing short | Planned |
+| 31. Instagram Reels | Reels publishing through the Instagram API, after the owner's Meta setup | Planned |
+| 32. Character look test | Human Generator (a paid Blender add-on) loading with no window, one person, one 3 to 5 s close-up with a blink, eye move, jaw and prop, laid beside the owner's reference frame; seconds a frame measured. Spec: [CHARACTERS.md](CHARACTERS.md) | **Built and run on the real add-on** (Nov 3, 2026; Commercial license, $128): a 4 s clip at 1.7 s a frame on EEVEE; **the owner approved the look ("really good")** (How people are made) |
+| 33. Characters on demand | The character spec and its checks, a saved `.blend` per person, the portrait sheet, rendering with the add-on off | **Built** (Nov 3, 2026): Sam, Nia and Walt, from JSON, about 25 s each; waiting on the owner's look at their sheets (How characters are made) |
+| 34. The scene language | One JSON format the agent directs in (cast, grips, strikes, thrown things, glows, shots, captions); fixed code stages it and works out the contacts; the sword test remade from it, and a new scene with no new code | **Built** (Nov 3, 2026): waiting on the owner's look at `data/scenes/ball_to_the_head/scene.mp4` (How scenes work) |
+| 35. Getting things | Anything the agent needs that it doesn't have, such as a bird: Poly Haven, Sketchfab, free packs, then a generated 3D model, kept for reuse | **Built** (Nov 3, 2026): `scenes/examples/bird_lands_on_head.json` runs with no scene code, using the free low-poly eagle; waiting on the owner's look at `data/scenes/bird_lands_on_head/scene.mp4`, and a free `SKETCHFAB_TOKEN` for realistic models (How things are got) |
+| 36. The director | `format: character`: the jobs where the agent turns a topic into a script, a cast and scenes in that language, with the critic, look checks and the `character` gate | **Built** (Nov 3, 2026): a stub channel runs from a topic to published, and the real filming path runs on a stand-in person. The jobs haven't yet been done by the agent for real: that's phase 37 (How a character short runs) |
+| 37. One real character short | One short on our own topic, end to end; voice about $0.25, asked first | **Run** (Nov 3 to 4, 2026): #6, "Why woodpeckers don't get headaches", made in this chat on a channel with a working name; voice $0.096. Its abilities are general, but it did need new code, and it found 3 bugs the stand-ins couldn't (What the first real short taught). Waiting on the owner's look at `data/media/v6/film/short.mp4` |
+| 38. Precision | The owner's standard, in code: exact things built from data, placement by contact, a real spin, glow on surfaces and in thin lines only, a level camera, and scenes refused in words when they aren't physically right (The owner's standard) | **Built** (Nov 4, 2026), proved on an internal rebuild of `pan.mov`. Waiting on the owner's look at `data/benchmarks/pan/pan_test.mp4` |
 
 The code for plan.md's whole build order is complete (weeks 4–6 are running videos, not building); phase 10 is the YouTube tools plan.md lists that no phase has needed yet. What needs your accounts is under "Your turn" in How YouTube works, How Claude writes, How voice, pictures and clips work, and How topics and metrics work.
 
@@ -39,7 +56,7 @@ copy .env.example .env           # ElevenLabs, fal and YouTube keys (no Claude k
 copy claude-settings.json .claude\settings.json   # once, by hand (and into the workspace folder above): the permission prompts
                                  # .claude\skills and .claude\agents are in the repo; the workspace folder above has copies
 uv run python run.py serve       # the engine, and MCP for Claude Code at http://localhost:8000/mcp
-uv run pytest -q                 # 99 tests, ~6 min (the session, looking and puppet ones are slowest), real ffmpeg + Remotion; Claude's jobs answered in the tests, fake ElevenLabs, fal, Google APIs; $0
+uv run pytest -q                 # 350 tests, ~10 min (the session, looking and puppet ones are slowest), real ffmpeg, Remotion and Blender; Claude's jobs answered in the tests, fake ElevenLabs, fal, Google APIs; $0
 uv run pytest -m live            # 4 tests against real APIs (a voice line, a still, a 3 s clip ~$0.35, competitors' videos, free); skipped without keys
 uv run python run.py demo        # headless run through every gate
 uv run python run.py status
@@ -49,6 +66,11 @@ uv run python run.py still-test zombie   # one fal picture with the character re
 uv run python run.py clip-test zombie    # animates that picture with models.clip -> data/clip_test_zombie.mp4 (~$0.90)
 uv run python run.py topics zombie       # check competitors now, list their top recent videos and the queued topics; --propose
 uv run python run.py bench-render --engine remotion   # or ffmpeg; --scenes, --concurrency, --x264-preset
+uv run python run.py look-test           # three of reference A's shots in Blender beside A's frames -> data/looktest/ ($0)
+uv run python run.py thing --search bird # free 3D models, with pictures to choose from -> data/things/_search/ ($0)
+uv run python run.py thing apple         # a thing from things/specs, fetched and sized, with a sheet -> data/things/apple/ ($0)
+uv run python run.py scene scenes/examples/bird_lands_on_head.json   # a scene file rendered -> data/scenes/<name>/ ($0)
+uv run python -m machines.specs.generate # writes machines/specs/*.json (the machines' specs) and checks each
 uv run python run.py connect zombie                   # YouTube sign-in for one channel (or connect_youtube in the chat)
 uv run python run.py youtube-test zombie              # day-1 unlisted upload check
 ```
@@ -86,6 +108,7 @@ So a full-length render holds the render card back about 13 minutes. The Remotio
 - `providers/`: `make_providers(config)` picks one per kind from `providers:` (`mode: stub` makes them all stubs). `llm.py` (the `LLM` protocol, `StubLLM`, `NoMeter`), `claude.py` (`ClaudeLLM`: what Claude is asked, in which schema, and how the reply is checked and read; no API), `prompts.py` (loads and fills prompt files), `checks.py` (checks on what the LLM writes, and the counts the prompts ask for), `elevenlabs.py` (`ElevenLabsTTS`), `fal.py` (`FalImages`, `FalVideo`, `clip_settings()`), stub `tts.py`, `images.py` (also the contact-sheet previews and `caption()`, the thumbnail text), `video.py`.
 - `stages/`: topics (per channel, not per video), outline, script, regen, voice, stills, clips, thumbs, assemble, publish, analytics (went live, then metrics and the reach import). Outline and script pass the last draft when there is one (a revision), and the script streams its scene count. A video stage's work can return seconds to wait before the video is claimed again (analytics uses it to re-check YouTube every 15 min).
 - `render/render.py`: `render_video(items, beats, out_dir, progress, engine, settings)`. The ffmpeg engine (per-scene segments cached by content hash, concat), the highlight reel (segments for ffmpeg, cut from the final MP4 for Remotion), SRT and chapters. `render/ffmpeg.py` uses system ffmpeg or the `imageio-ffmpeg` bundled binary; `duration_ms()` reads a file's length.
+- `core/formats.py`: which stages run for which channel format. `things/`: `spec.py`, `get.py` (search and fetch, license rules, the spending gate), `build.py`. `blender/things.py`: importing, sizing and placing them. `scenes/direction.py`: a whole short's clock, its checks and captions. `stages/direct.py`, `stages/film.py`: a character short. `prompts/character/`: its prompts.
 - `render/remotion_render.py`: stages the scene files (hardlinks) as a public dir, writes `props.json`, runs `node .../remotion-cli.js render`, turns `Rendered N/M` lines into percent progress. Named so it doesn't shadow the `render/remotion/` folder.
 - `render/remotion/`: the Remotion project (pinned 4.0.539). `src/Video.tsx` (one `<Sequence>` per scene, start frames rounded per scene so 120 scenes never drift; a clip scene plays its clip once, then Ken Burns on the clip's last frame), `KenBurns.tsx` (1.0 → 1.08 zoom, pan direction from `idx % 8`), `Captions.tsx` (2–4 words at a time, current word highlighted), `types.ts` (mirrors `props.json`). `npm run studio` opens Remotion Studio; `npm run typecheck`.
 - `puppet/`: the cutout pipeline. `rig.py` (proportions in H, `Pose`, `blend`, `cycle`, `joints`, `ground`, the poses and the `LIMP` cycle), `parts.py` (`key_out` the green sheet, `blobs` → numbered boxes → `build()` names them through the LLM and saves `channels/<id>/puppet/<who>/`), `stage.py` (`Stage`: floor points with heights, spots, light; `grid()` for Claude, `overlay()` to check by eye), `draw.py` (one frame: strokes at 2× over a painted background, parts rotated on their pivots, shadow, `light()` tint + lamp glow, `view()` camera), `animate.py` (`Scene` from a sheet: actions per figure, camera keyframes, frames piped to ffmpeg with the audio).
@@ -104,6 +127,401 @@ So a full-length render holds the render card back about 13 minutes. The Remotio
 - `server/app.py`: `create_app(ctx, run_engine, hosts)`: the engine in the lifespan, the local-only Host and Origin check, and `/mcp`. Nothing else is served.
 
 Media paths are stored relative to `data/media`. Card payloads still write them as `/media/...`, and the chat's tools turn that into the file's path on this machine. Each still has a `.thumb.jpg` preview for the contact sheet.
+
+## How A was broken down (phase 24: the storyboard)
+
+Everything here is A's, so it stays in `data/benchmarks/pile_hammer/` (gitignored) and is never published (SHORTS.md, "Rebuilding A").
+
+- **`transcript.json`:** the narration with every word's time. It's from local Whisper (`faster-whisper`, small.en on the CPU, free), run once with `uv run --no-project --with faster-whisper`, so it isn't one of the project's dependencies. Its audio loader clashed with the installed PyAV, so the script reads the WAV itself and passes the samples. The voice runs 0 to 108.2 s, and the rest is the title and real footage.
+- **`sheets/`:** A at one frame a second, six to a sheet, timestamped.
+- **`storyboard.json` and `.md`:** 64 beats, one per on-screen caption, split where the scene or camera changes. Each beat has:
+  - the caption exactly as shown (with its line break);
+  - the words spoken;
+  - what's on screen, each part's state, and the camera's framing, angle, move, start and end;
+  - the cutaway, effects, labels and tags (each with its times and place), the transition, sound events, and notes.
+
+  At the top: the style, 6 environments and 30 models, each described in multiples of the pile's diameter.
+  - A subagent wrote it from the sheets and 4 to 12 fps strips. Caption times come from a per-frame scan of the caption box; motion and overlays are accurate to about ±0.125 s.
+  - Its script is in the session's scratchpad, not the repo.
+  - Checked by hand: the STEEL PILE label's times, the ×N counter, and the move into the engine through the cylinder's side port at 57.1 s (the brief had said the engine starts at the 62.75 s cut; it starts earlier).
+- **What it found** that the plan hadn't:
+  - The nail grows ×1 to ×100 in one continuous shot, staying the same size in the frame, while the world around it turns from the black room to the desert. The wood's face becomes the soil's cut face.
+  - The engine is entered and left through the hammer cylinder's side port.
+  - The diesel cycle's air balls change colour as they heat up.
+  - About 20 labels ride on moving parts.
+  - Five captions word things differently from the narration ("But after every strike", "At that moment").
+- **The voice sample:** `voice_sample_zach.mp3`, the opening line in the owner's own voice, 4.96 s against A's 4.60 s ($0.016).
+
+## How machines are built (phase 25: the kit)
+
+A machine is a JSON spec of named parts, checked in code before Blender starts, then built by `blender/kit.py`. Shots (phase 26) will only ever set joint values.
+
+- **`machines/spec.py`** is the authority on the format. Its docstring lists every shape and what it needs.
+  - **Shapes:** box, cylinder, tube, cone, lathe, sphere, torus (and its C-shaped arc), extrude, pipe (a path with rounded bends), rods, truss, spring, text, and group (an empty that holds parts).
+  - **Placement and materials:** materials come from the palette; parts have places (`at`, `rot`, `scale`) under parents.
+  - **Steps:** a part says from which step it's there and until which, so the machine grows as the story does; a parent's absence takes its children with it.
+  - **Joints:** slide, hinge, spin, and stretch (a cable as long as its hook is low).
+  - **Couplings:** crank (a piston's height from its crank angle, exact), rod (a connecting rod's tilt), gear, and follow (a crane's tip undoing the boom's tilt so the hook hangs straight; the cable's length from the hook).
+  - **Helper parts:** never drawn, they cut holes in the parts that `subtract` them (an engine's bores and crankcase).
+  - **Anchors** for labels, **contacts** (pairs allowed to touch), and **`cut`** (whether a cutaway cuts the part).
+- **`check()`** returns every problem in words a writer can fix: unknown shapes or materials, missing sizes, a tube whose inside is bigger than its outside, sizes over 500 m or too small to see, parents that don't exist or go round in a circle, steps out of range, bad joint ranges, couplings to parts with no joint, a crank's throw longer than its rod, subtracting a part that isn't a helper.
+- **`blender/kit.py`:**
+  - `Model(spec)` builds every part. `set(part, value, frame)` moves a joint, drives its couplings and keys what moved. `show_step(step, frame)` shows only that step's parts.
+  - `overlaps(model, step)` uses BVH trees of the evaluated meshes, so holes and cutaways count. It tests every part pair at rest, with each joint at its min and its max, and with each spinning driver a quarter turn at a time. A driven part moves only through its driver.
+- **`blender/turnaround.py`** (`blender_render.turnaround()`, which runs `spec.check()` first): every step from the front, the three-quarter left, the side and the three-quarter right. Where parts are cut, there's also a cut-open front view, with the hatching spaced to the machine's size (`materials.hatch_for`).
+  - The pictures go to `data/models/<name>/`, tiled by `machines/sheet.py` into `sheet.png`.
+  - `blender/framing.py` fits the camera so every corner of the parts' box is in the 9:16 picture. Shots will use it for framing.
+  - A `pose` job sets joints and reports where every part ends up, for checks and tests.
+- **The machines,** written by `machines/specs/generate.py` (`uv run python -m machines.specs.generate`). Sizes follow the storyboard's multiples of the pile's diameter (0.6 m).
+  - **`diesel_pile_hammer`, 48 parts in A's 9 steps:**
+    - a 30 m hollow pile in `pile_paint` (white rings every diameter, red bands, a red tip), which sinks with each blow and carries the hammer;
+    - the iron block with its split line, then the ram and the anvil boss with its dished top;
+    - the flange with four sockets;
+    - the lipped cylinder with a port each side;
+    - the explosive drum, then the glassy guide rods (`glass_rod`), the collar with its ears and sleeves, and the crossbar with its pulley ball and start-up hook;
+    - the red canister pushed in from the front;
+    - the chrome injector, the jerry can (GASOLINE, then DIESEL) with its yellow fuel pipe, the spark plug with its coil, battery and wires.
+  - **`car_engine`:** an inline four cut through its bores, with liners, domes, pistons, rods, a crankshaft (journals between the throws), valves and plugs. Phases 0, 180, 180, 0.
+  - **`crawler_crane`, `claw_hammer`** (the shot scales it: half size for the taps, ×100 for the giant one), **`ground_section`** (A's soil layers, the barrier, cones) and **`nail`**.
+- **The checks caught real mistakes in every first draft:**
+  - the pile hammer's ram and eye bolt hitting the crossbar at full lift;
+  - its lugs, fuel pipe and spark wire through the guide rods;
+  - its collar inside the cylinder. This showed the storyboard's "1.1 ram heights" counts from the flange, round the boss;
+  - its canister through the left rod (it now comes in from the front);
+  - the engine's bores meeting the crankcase face to face, which left a skin;
+  - a one-piece main shaft under the rods;
+  - valves through the plugs;
+  - the crane's boom through its cab.
+
+  Touching surfaces can flicker as overlapping with floating-point rounding (the cylinder on the flange only showed with the pile at −20 m), so parts that sit on each other are declared contacts.
+- **New palette entries:** bright_steel, black_steel, pile_paint, glass_rod, blue_paint, orange_paint, barrier_stripes, and soil_top, mid, low and deep. `cut:<spacing>` gives hatching at any spacing.
+- **Tests:** `tests/test_machines.py`, 27 tests; the whole suite is 143, green (8 min 10 s).
+  - The spec checks: a good spec, 11 bad ones each saying what to fix, and steps.
+  - Every kept spec passes `check()`.
+  - A turnaround of every step from every side.
+  - Planted collisions found, both at rest and at a joint's end.
+  - The crank driving its piston to exactly twice its throw down at 180°, with the pin riding along.
+  - Every kept machine collision-free at every step.
+- **Not yet:** the effects A's models list (the fireball, ghost rams, air balls, fuel sprays, combustion glow, exhaust) are phase 26's. So are a machine scaled as one (the giant hammer) and the wood block, far bridge and stubs, which are scenery and are already in `envs.py`.
+- **Your turn:** look at the sheets in `data/models/*/sheet.png`, the pile hammer's and the engine's above all, and say what's off.
+
+## How A was rebuilt (phases 26 and 27: shots, overlays and sound)
+
+The engine is in the repo and serves every machine short. What is A's (its timelines, our narration of its script, the renders) stays in `data/benchmarks/pile_hammer/` (gitignored) and is never published (SHORTS.md, "Rebuilding A").
+
+- **A segment is a timeline,** a JSON file `blender/shots.py` turns into a scene. Its docstring is the authority on the format.
+  - **What it holds:** the set (`env`), the machines placed in it (one can hang from another's part), keys at seconds of the whole short (steps, joints, show and hide, scale, place, each with an ease), the camera's keys, the cutaways' times, the effects, the anchors to track and the sound events.
+  - **Frames are numbered for the whole short,** so a segment's clip, tracks and events line up with the narration with no offsets to carry.
+  - **The camera** is a rig: an empty on the target (a point, `model:anchor` or `model.part`), the camera on an arm from it by `az`, `el` and the width of the world to `frame`, nudged in the picture by `x` and `y`, with `lens`, `roll` and `fstop` keyed too. Shots can also give `at` and `aim` directly.
+  - **Eases:** inout (smooth, the default), linear, in (a fall), out (a rise or a stop), const (hold, then jump), whip.
+  - **Cutaways** that are on for the whole segment are baked into the mesh. Timed ones are keyed modifiers. Baking took the engine from 79 s a frame to 3 s.
+- **Effects,** `blender/effects.py`, animated by code so a render is the same every time: air balls (keyed from blue to white to amber as the air heats), fuel spray with a mist cone, a glowing gas column or sphere, a fireball, smoke puffs, ghost copies of parts (a missed landing), a shock ring, a spark, a flashing light. An effect's light has zero-energy keys either side of it; without them it lit the scene before it started.
+- **`blender_render.render_segment()`** passes every machine spec to Blender by its file's name and returns the tracks (`first`, `frames`, the anchors, the events).
+- **`MachineShort`** (Remotion, `src/shorts/MachineShort.tsx`, props in `machine.ts`) is the whole short:
+  - the segments' clips, crossfaded where they overlap;
+  - screen effects: dim, crossfade, a tint, a black or white flash held for its frames, a smoke wipe, and a darkening to the end;
+  - labels riding their tracks, tags (fail, warn, question, multiplier, section, mode, stat, title, dimension, deeper, footage, credit) and A's caption box;
+  - the narration, the sound effects, and real footage at the end.
+  - `remotion_render.render_machine()` renders it, then holds the mix's peaks under −1 dBFS (`_limit`, ffmpeg's alimiter; the picture is copied, not re-encoded). Without it, 13 impacts landing on words clipped at 0 dB.
+  - A label rides through a hide shorter than 18 frames, 0.6 s (`BLINK`), so a part passing in front of its dot doesn't make it blink. A longer hide hides it.
+- **The label check,** `render/shot_checks.py`: `label_problems(labels, tracks, fps)` says which labels can't be seen, before Remotion runs. A label fails when its anchor is hidden (counted as the overlay counts it) in over a tenth of its frames, or outside the safe area in over a tenth of those it's seen in, or has no track.
+- **Sound effects,** `render/sfx.py`, are made by code (decaying partials for metal, filtered noise for air and fire): tap, heavy tap, heavy impact, thud, clank, whooshes, riser, explosion (and muffled), hiss, crackle, hum, click, error, pop, scrape. Nothing to license; each is made once into `data/sfx/`.
+- **Narration,** `render/narration.py`: `fit()` voices each line in ElevenLabs and fits it to its slot with ffmpeg's atempo, so the pitch stays the voice's.
+  - A line too long for its slot is sped up, at most 1.45×. One much too short is slowed, at most to 0.88×. Within 0.85 to 1.0 of its slot it's left alone.
+  - A line too long even at the fastest spills into the pause after it. The next one starts just after and catches up, so the read never drifts far from its marks.
+  - Each line's voice file is kept by a hash of the voice, speed and text, so running again never pays twice. Lengths are measured on the decoded WAV: an MP3's stated length counts its encoder padding.
+- **A's rebuild,** in `data/benchmarks/pile_hammer/timeline/`:
+  - `make.py` writes A's five segments: the nail on the bench (0 to 6.1 s), the nail growing ×1 to ×100 into the desert (5.3 to 7.5), the desert to the side port (7.0 to 57.1), the engine (57.0 to 63.25), and the desert to the end (63.2 to 109.1). The hammer, crane and engine are the phase 25 specs. Every joint is timed to A's word times from the storyboard.
+  - `preview.py` renders a few frames at low size beside A's at the same moments.
+  - `assemble.py` renders the segments, voices A's script in the owner's voice (zach D) as 39 lines from A's transcript, takes the captions, labels, tags and sounds from the storyboard, and renders `rebuild.mp4` and `side_by_side.mp4` (ours, then A with its own sound). `--draft` is half size and 8 samples.
+    - A segment is reused while its picture is unchanged: its timeline, the machines and the `blender/` code, leaving out the anchors. When only anchors changed, Blender runs again for the tracks alone: 17 s for the 50 s desert segment, against 12 minutes to render it.
+    - It runs the label check and prints what fails.
+  - The first narration cost $0.35 (2,030 characters at `elevenlabs.price_per_char`, $0.00017), once.
+  - The full-size render took about 32 minutes in Blender for the 3,318 frames (the engine's 188 about 2 s each, the rest 0.4 to 0.5 s), then about 3 minutes for Remotion and the side by side, at $0. Fixing the labels afterwards took 40 s of tracks and the same 3 minutes.
+  - The real footage at the end is Wikimedia Commons' "Pile driving for bridge pier foundation at Patimban, Indonesia" by Irvan Ary Maulana (CC BY-SA 4.0), credited on screen. A shows its own.
+- **What comparing with A found:**
+  - **The owner's voice reads about 24% slower than A's narrator.** Fitted to A's marks, 12 of the 39 lines are sped up past 1.35×, and the read ends at 108.8 s against A's 108.2. The owner found this rushed (below).
+  - **A's sand is brown, not orange.** Under AgX in full sun our first tint read pale salmon. The tint went to (0.70, 0.43, 0.16); the ground now averages about (171, 111, 83) against A's (154, 111, 75).
+  - **Labels need their anchors in view for their whole time.** A's AIR and DIESEL labels sit on effects, so effects export anchors (`fx:air`, `fx:spray`). The label check, run on the first full draft, found problems with 9 of its 20 labels. Three never showed at all, and PRESSURE sat on the picture's bottom edge:
+    - DOZENS OF TONS pointed at the pile's top, 30 m up and above the picture while the camera runs down the pile. It now points at `pile_low`, 3.5 m up.
+    - FUEL INJECTOR pointed at the injector's middle, inside its port ring. It now points at its front.
+    - PRESSURE and EXHAUST pointed at whichever glow and smoke came last in the segment, since each took the default anchor name. The timeline now names every effect's anchor, and smoke puffs are one group as the air balls are.
+    - SPARK PLUG went out of the picture and IGNITION SYSTEM's camera arrived late and left early. Both shots were reframed to A's.
+    - Left as they are, all brief: EXPLOSIVES and INJECT hidden for about 0.4 s each, as the drum and the spray pass behind the cylinder's lip; SPARK PLUG and EXHAUST at the picture's right edge, as in A.
+  - **Short flashes break Remotion's interpolate** when a range is two frames or less. Fades are clamped to the time they have, and a held flash peaks at its middle when it's that short.
+  - **Bloom made the crane's white lattice glow.** The compositor's threshold went to 1.8 and white paint down to 0.62.
+- **Tests:** `tests/test_shorts.py` gained 10: every sound effect is made; narration fits lines to their slots, a read stays at the voice's pace, and neither voices a line twice (with a fake voice); the picture follows a new read and only ever slows, with every timeline time moved; a reference video slows by one long ffmpeg expression; camera moves too fast are reported, and cuts and marked dives aren't; the label check finds hidden, off-picture and untracked labels and lets a blink pass; a segment renders from its timeline with frames numbered for the whole short; a whole `MachineShort` composes with sound.
+- **The owner's notes on the first cut** ("its good but the floor flickers a bit, and the person talks too fast", "the video zooms in an out also too fast", "lets use ryan well", "breathing room between every senetence"):
+  - **The floor flicker was two faces at one height.** The soil block's top sat exactly on the sand plane, 80 m by 14 m of it, and the camera's near clip was 0.01 m in every shot, too coarse for a depth test at a distance. From high up the two swapped every frame: the bottom of the picture jumped between brightness 118 and 159 from 8.1 to 8.55 s, and with the camera held still nothing changed at all, which ruled out render noise. The soil now starts 3 cm under the sand, and each camera key sets its near clip to its distance over 300 (`blender/shots.py`). The same 20 frames now hold at 117 to 119.
+  - **The picture follows the voice** (`render/retime.py`). `narration.read()` voices each line unfitted, and `retime.layout()` places them with a pause after each. A `Warp` then moves every time in the timelines and overlays onto that read: between line starts the picture stretches evenly, and it never speeds up. `Warp.setpts()` slows A by the same map for the side by side, under our sound. Captions come from the read itself (`narration.captions()`): a sentence to a caption, or split at the comma nearest its middle over 64 characters, each from its first word at the voice's own time until the next, so the box stays up through a pause. Borrowing A's caption breaks gave fragments ("This" / "is a nail."), since A's captions start a moment before its words.
+  - **The script has connectors and pauses** (`narration_v2.json`, 39 lines, one for each of A's): "But" and "So" where a problem hands over to its fix, at least 0.5 s after every sentence and 0.9 s after a question or problem, in Ryan Wells ($0.35).
+  - **The length is the cost of this.** At speed 0.95 Ryan Wells reads this script at 16.6 characters a second, faster than the 13.4 to 14.7 of the zombie channel's scenes at 0.9, which come with that channel's own script and pacing. With its 24 s of pauses the read ends at 148 s and the short lasts 2:38, against A's 1:58, and the picture slows about 1.5× on average. Real machine shorts have to be written shorter for this pace (SHORTS.md, Voice).
+  - **The voice was tried again as the owner's clone, on v4.** Ryan Wells measured flatter (a pitch range of about 12 semitones against the clone's 16), and the owner called him bland. The clone's questions were then measured against A's narrator: A lifts at the end of all 5, while the clone dropped on 3 and ended its questions no higher than its statements. On those 5 lines ($0.12), v2 with lower stability lifted 2, a hint in `next_text` lifted 2, and `eleven_v4` lifted 4; retaking the fifth lifted all 5 (+5.7 semitones on average, against −1.3 for statements). v4 bills the same per character, and `narration.read(model=)` selects it. Its lines carry silence at their ends and it reads slowly (13.7 characters a second), so the ends are trimmed and a tempo of 1.10 brings it to 16, which makes the short 2:44. A local Whisper pass over the read (`voice_final.mp3`) found all 393 words. The owner: "IT SOUNDS AMAZING". `narration.read()` does the trim and tempo (`pace`), `narration.track()` the one leveled track the short plays.
+  - **Camera moves are checked** (`shot_checks.camera_problems()`): over 2.5 e-folds of framing a second, or 120° of swing a second, is reported with the time it needs. A cut (under three frames) passes, as does a key marked `fast`, for a deliberate dive. The 5× whip and 53° swing in 0.15 s at 8.6 s now takes 0.7 s; the dive into the port takes 1.05 s, not 0.5; out of it takes 0.6 s, not 0.35. The nail's ×1 to ×100 is an even curve, where A's races through the middle.
+  - **Slowing a shot shows what speed hid.** At 0.5 s, the dive into the port went by unnoticed. At 1.5 s, a guide rod filled the screen, because the camera came straight along the line of the port and the rod, into a cylinder still cut open. Compared again with A: A's cylinder is whole by then (its cut ends under the explosion's flash) and its port is a black hole, approached from about 55° with the rod off to the right. Ours now does the same, and a black ball sits in the port while the cylinder is whole, where the lit ram showed through. The second cut's frames for those stretches were rendered again alone (`render_segment(frames=...)`), about 3 minutes against 50. So after retiming, look at every transition at full length again.
+  - **The last pass over the final cut:** the big fireball was a flat pale disc with a hard edge for a moment, where A's is a translucent orange ball, so a fireball can now ask for `soft` edges. Sound effects that land on a spoken line play at 60% (`narration.duck()`): a buzz sat on "couldn't swing it" and the impacts on "slamming into the pile". The voice now sits a median 14 dB over everything else while it speaks.
+  - **Reusing frames:** `assemble.py` keys a segment's frames on all of `blender/`, so another session's work on character shorts there set off a full render, which was stopped within minutes. One frame from each desert and engine segment, rendered again with the changed code, matched the kept frames (a mean difference of at most 0.004 out of 255), and `--segments none` kept them all. Phase 28's render cache should key on the code a machine short actually uses.
+  - **Labels may keep their side.** PRESSURE flipped off the safe area's edge onto the white glow, where it couldn't be read. A label's `stay` keeps it on its side, as A has this one.
+  - **A failure this turned up:** the pile hammer's collision test had been failing since phase 26 gave the start-up hook 6 m of travel, which took it through the ram. It now stops at the ram's eye, the lowest the shots use.
+- **Not built yet from phases 26 and 27's plan:** the music bed (music is still an open decision in SHORTS.md), and the shot checks for a label clear of its own part and a level camera on a cutaway. A's timelines were written by hand in Python, not as shot sheets from a job; the sheets come with phase 29.
+- **Your turn:** watch `data/benchmarks/pile_hammer/side_by_side.mp4` (ours left, A right, A's sound) and `rebuild.mp4`, and say what's off. Changing a segment and rendering again takes only that segment's time; the narration is already paid for.
+
+## How characters are made (phase 33: on demand)
+
+A character is a short JSON file in `characters/specs/`, and `uv run python run.py characters` makes each one, about 25 s a person with their portraits, at $0. `run.py characters sam` makes just Sam, and `--options` lists every choice. `characters/spec.py`'s docstring is the authority on the format.
+
+- **The flow:** `characters/spec.py` checks the spec against what's really installed, and a bad one is refused with its reasons before Blender starts ("hair: no 'Short Comb'; did you mean Short Combed?"). `characters/build.py` makes the person into `data/characters/<id>/` and renders `portraits/sheet.png`. A person is only made again when their spec changes.
+- **Names, not numbers:** a spec says `"hair_color": "brown"`. The numbers behind each color are in `spec.py`, found by looking, because the add-on's lightness runs far past 1. Only brown, black and grey have been seen on a person; the rest are estimates until someone needs them.
+- **The portrait sheet** (`blender/portraits.py`): the face from three sides, the full body, and 8 expressions. It runs with the add-on off, so it also proves the saved person works alone. It's the check the worker agent and the `character` gate will look at in phase 35.
+- **Expressions** are the add-on's artist-made faces, saved on every person as shape keys (`e_happy_smile`, `e_big_surprise`, ...), and asked for by name through `Person.expression()`. They were much stronger than the mixes of face-rig keys tried first.
+- **People in a segment:** a timeline can have `people`, and the camera or a label can follow `id:eyes`, `id:mouth` or `id:head`. Two people can share a scene: the second arrives with renamed objects, so `Person` finds them by what they were saved as. Tested on the stand-in person, not yet on two real ones.
+- **Found on the real add-on:**
+  - It has no facial hair for women, and even asking to remove it raises an error, so the spec refuses it and `to_person` leaves it out.
+  - A preset's beard takes `hair_color` separately from the head's hair, so it's set on both. Walt's stayed brown until then.
+  - A preset's hair and outfit colors come with it; `clothes` changes a garment's main color by part of its name, and `person.json` lists the garments. A name that matches nothing is refused.
+- **Known weak spots:** Nia's lips stay a pale rose even with lipstick. The full-body view stands in the add-on's A-pose, arms out, since nothing sets a natural standing pose yet (phase 34).
+- **Your turn:** look at `data/characters/sam/portraits/sheet.png`, `nia/` and `walt/`, and say what's off.
+
+## What the first real short taught (phase 37)
+
+Video #6 went from topic to render through the real jobs: the outline and script past the critic agent, the owner's clone at 1.05 on `eleven_v4`, the worker agent choosing and checking models from Sketchfab, and a direction written in the scene language. No code for this video. The acceptance line in CHARACTERS.md said "with no new code"; that was too strong, since a first real topic was bound to find gaps. What was added is general: anything could use it.
+
+- **The critic earned its place:** it caught "too small to get hurt" going past the finding (a 2018 study found tau build-up in woodpecker brains), "out cold" being unsupported, and small birds being stunned by windows.
+- **General abilities it needed:**
+  - `rock`: a whole thing tipping about a place on it, for a model with no clips (a peck, a tapping hammer).
+  - `aura`: a soft light on a thing's spot, as `glow` is on a person.
+  - `sparks` `kind: "chips"`: wood chips, since a hammer on bark throws no sparks. The critic's catch.
+  - A strike on a thing's side: a swing, landing the tool's front flat, where strikes only came down from above. A tool's `grip` and `end` spots make it exact.
+  - A hand holding something closes on it (`FIST`), whatever its stance's hand is doing.
+  - Rings face the lens of the shot they're in, where they faced one fixed way.
+  - `"ahead"` on a shot: aim where the subject will be, for a close-up of a landing.
+- **Bugs the stand-ins couldn't show:**
+  - A stage runs again from the top, and getting a thing changed the library, so "what the short needs" became a new question every time. It's now asked once per set of the owner's notes (`_asked_once`), and each thing's progress is kept in a file.
+  - The sheet for the look paired a frame with the line before it, when a shot started just after a line ended. The looker believed it and reported a false mismatch. A frame is now paired with what's being said at that moment, with `[this frame]` marking the word.
+  - What the look found asked "what the short needs" again. Its notes now start with `LOOK_NOTE`, and only the owner's count.
+- **The look job isn't enough on its own.** A 216-wide sheet missed Walt's face going through the trunk, and a hammer handle through his chest. They were found by rendering a few frames larger before answering. Its notes also need judging: of 6, one was real and most were either the design or the bad labels above.
+- **Worth knowing for directing:**
+  - The frame is narrow: 0.5625 of `frame` across. Two subjects side by side only fit with depth between them, the near one large.
+  - A shot's `angle` on a thing counts from its heading. For a thing facing a wall, 0 puts the camera in the wall, so stay past -95 or so.
+  - A knock rings back and then forward: leave a few centimeters, or the head goes into what it hit.
+  - Photo-scans bring their own trouble: the trunk's base slab floats once it's stood upright, and its top is hollow, so both are framed out.
+- **The server needs a restart to pick up `scenes/spec.py`, `stages/` or `providers/`.** `blender/` is read fresh by each render, and `prompts/` by each call.
+
+## The owner's standard (phase 38: precision)
+
+On Nov 4, 2026 the owner asked for a test: could what was built the day before emulate a Zack D Films short (`pan.mov`, how induction cooking works)? The first cut used the scene language as it stood, with free models. Their verdict: "it looks really bad compared to the original video. The screen wobbles, the pan doesnt respect boundaries, the magingate doesnt actaully spin, the glow looks really basic", "person's hat doesnt even sit on top", and then the standard for everything from here on: "every subsequent video should be made with precision and resepcts pysical boundarties and remove bad glows and placements. I dont wanna keep saying smt doesnt look appealing."
+
+So the fix went into code, not care. What each fault was, measured:
+
+| What they saw | What it was | What changed |
+| --- | --- | --- |
+| The screen wobbles | Not shake: within a shot the picture wandered under 0.1 px a frame, and the frames were in order. The director swung the camera left and right between cuts, so the counter's edge tilted differently at every cut, and the coil scene alternated 4 degrees either way on purpose. The reference holds its counter dead level | `square` shots count their angle from the set. `scenes/spec.py` refuses a swing under 18 degrees between shots of about one size, and a push over 0.05 of the distance a second |
+| The pan doesn't respect boundaries | `lands` is for what flies: it flared the pan's nose up and put its front edge through the glass | `slide` sets a thing down, straight and level, to exactly where it rests. `on` lowers a thing until the meshes touch |
+| The magnet doesn't spin | A thin flat magnet turned by a `go` round a tiny circle, seen edge-on from the film's camera. It only looked right in a check from above, a camera the film doesn't use | `spin`, about one exact axis of a thing, through a spot. A chunky magnet built from data, on a shaft from a motor, turning so the lens sees it flip |
+| The glow looks basic | `aura` was a ball of light in front of a thing | Gone. `lit` lights a thing's own surface, and can't leave its edges. `flow` is thin lines laid on the surface by rays, stopping at its edge. `rings` are true thin circles. The bloom only catches what's really bright (`blender/glow.py`) |
+| The hat doesn't sit on top | Placed by hand, with numbers read off a picture | `wear` measures the head and the inside of the hat, fits it, seats it on the brow or crown, rides it on the head, and cuts the hair it covers in the hair's own shader |
+
+**What's new:**
+- **Built things** (`things/spec.py`, source `built`): anything geometric, written as parts in the machine kit's format, each with a palette material or its own paint. They're exact and clean, and their spots and lines are known. A scan is for what can't be drawn, such as food. `things/build.py` makes one again if the code its look comes from changes (`made_by.txt`).
+- **`sky_counter`** (`blender/envs.py`): a level matte counter before the reference's blue, in the Standard view so colors go straight to the screen. Measured against the reference: sky (72, 146, 206) to their (71, 147, 205). What the camera sees and what reflections see are separate, so steel has a studio to mirror.
+- **`blender/bounds.py`, the refusals.** When a scene's staged, its meshes are measured frame by frame while they're both in the picture: anything passing through something by over 3 mm, anything left hanging unsaid (`floats: true` says it's meant to), and any lens inside something or with something right in front of it. `Stage.run` raises `Refused`, `refused.json` carries the reasons to `scenes/render.py`, and `stages/film.py` sends them back to the director as notes, three times at most. It earned its keep at once: it caught an arrow 7 mm into a pan's rim, when by hand the arrow should have cleared it, since the stand's ring sits 3 cm forward of its middle.
+- **`marks`** in a direction: a big number counting up, drawn in Remotion (`count` in `MachineTags.tsx`).
+- **`to`** on a cast thing: fixed to another at a point, from any side, its `by` spot exactly on the other's spot. `on` only stacks downward, so without it a shaft into a motor took numbers worked out by hand, the very thing this phase ends.
+- **Directing:** `prompts/character/direct.md`, `cast.md`, `thing.md` and `film.md` carry all this, `cast` can ask for a thing to be built, and `scenes/examples/magnet_under_pan.json` is a worked example.
+
+**Does it work for other topics?** The owner's question, so it was tried: five scenes with nothing in common with `pan.mov`, through the stock checks and stage with no code for them (frames in `data/benchmarks/general/general.png`). A desk fan with its blades fixed `to` its motor and spinning, on a counter, beside a real scanned apple on a built plate. A built cap fitted to Nia, her hair below it. The hard hat fitted to Walt, with his beard and thin hair. A real bird landing on a built bench on the floor set. A scanned apple on a crate in the gym. No code in `blender/`, `things/`, `scenes/` or the stages names any of this short's things. All five passed, and all looked physically right, though the bird is a poor fit for perching: it's a scan of one clinging to a trunk. It found the need for `to`, and a ridge on the hard hat standing off its dome from the side.
+
+**What it can and can't do.** It's for solid things and held poses: objects on surfaces, machines, tools, food, animals from scans, people in strong poses. It has nothing for water or anything poured, smoke and fire in the character format, cloth that moves, walking and acting, crowds, or big landscapes. Each of those is new general code when a topic needs it. The checks catch what's physically wrong, not what's unappealing: a dull shot passes. That's still the director's job and the look job's, against a reference when there is one.
+
+**How to work from here:**
+- Judge motion from consecutive frames through the film's own camera, beside the reference, never from a test angle or a still. Compare at full size before showing the owner anything. A contact sheet read through the image tool can look posterized when the frames aren't: check a crop.
+- A scene's look files are kept by the scene's JSON, so after changing a thing or the set, clear them.
+- Don't edit `blender/` or `things/specs/` during a full render: each scene reads them fresh.
+- **Not done:** gestures. A person still holds one stance, where the reference's raises a finger. A thermometer, and the reference's fast moves between shots with motion blur. `pan.mov`'s rebuild stays internal: it follows the creator's shots.
+
+## How a character short runs (phases 28 and 36)
+
+A channel with `format: character` in its YAML makes vertical 3D shorts. `core/formats.py` says which stages run for which format, and `core/stage.py` keeps each stage to its channels. With only story channels, every query is the same as before. A short's whole flow:
+
+1. **Outline and script:** the same stages and gates, with prompts from `prompts/character/` and their own checks (`checks.short_outline`, `short_script`). 60 to 150 words, 4 to 14 lines. The shapes come back as the story ones, so cards and `start_generating` didn't change.
+2. **Voice:** the same stage. `voice_model` in the channel's YAML sets its ElevenLabs model, as the owner's clone needs `eleven_v4`.
+3. **Titles:** the `thumbs` stage writes titles and a description, and no thumbnails. YouTube takes a frame.
+4. **`stages/direct.py`:**
+   - A `cast` job says who and what it needs. New people are checked and made (`characters/`).
+   - For a new thing, code searches, a `source` job chooses from a sheet of pictures, it's fetched and sized, and a `thing` job checks its sheet and corrects its turn, size, moves and spots, twice at most. A model turned down moves on to the next, up to 3. Only then does its spec go in `things/specs/`.
+   - A `direct` job writes the whole short in the scene language, on the short's clock, from the voice's word times (`scenes/direction.py`). Code turns each scene into its own time, requires them to cover the short exactly, and runs the scene language's check. Length and captions are never written.
+   - With `character` in the channel's `gates`, a card waits on the owner with the sheets (`approve` or `revise`).
+5. **`stages/film.py`:**
+   - A rough frame of every shot, 432 wide. A `film` job looks at the sheet. A scene the stage refuses to build ("stands too far to reach") counts as a problem too. Problems go back as notes on the `direct` job, once only, as with the critic.
+   - Every scene rendered, each kept by a hash of its JSON, so directing again only renders what changed. The frames are deleted once in the clip.
+   - `MachineShort` with `captionStyle: 'big'`: the clips, the voice line by line, impact and whoosh sounds from `render/sfx.py` on the stage's cues, and captions a few words at a time from the voice.
+   - The render card, with the MP4, a frame sheet and only a title to pick.
+6. **Publishing:** the same stage. `metadata.publish_meta` takes `youtube.tags`, adds the CC-BY credits to the description, and leaves out the Chapters heading when there are none. `youtube.publish_slots`, a list, finds the next time no other video of the channel goes public; a channel with `publish_slot` behaves as before.
+
+Fixes after a render: `flag_scenes` with kind `visual` and a note directs it again and keeps the voice; `restage` also clears the kept renders. Narration flags are refused, since `regen` doesn't run for this format.
+
+- **Not done:**
+  - No channel exists yet: `channels/` needs a YAML with its name, voice and YouTube channel, which are the owner's to choose.
+  - The worker agent doesn't look at a new person's portrait sheet as CHARACTERS.md planned; only the `character` gate shows it.
+  - A person can't change stance within a scene, though the director can start a new scene to do it.
+  - No music.
+  - Sound is only the voice, impacts, taps and whooshes from `render/sfx.py`.
+  - `max_seconds` keeps a Shorts channel's competitors to Shorts, but ranking and `prompts/character/topic.md` haven't been run on real ones.
+- **Skills, added at the owner's request (Nov 3, 2026, "be sure they are well known"):**
+  - `.claude/skills/remotion-best-practices`: Remotion's own, 740K installs on skills.sh, from `remotion-dev/skills` at commit `c7cb2fd`. The repo has no license file, so it's gitignored; install it with `npx skills add remotion-dev/skills@remotion-best-practices`.
+  - `.claude/skills/blender-motion-state-inspection`: from `affaan-m/ECC`, 296K stars, MIT, commit `db7f2a6`, text only.
+  - Passed over: Blender skills from small authors (they write Blender Python, which this project doesn't do), HyperFrames (another renderer), OpenMontage (AGPL), fal's cinematography skill (its steps run paid generations), `frontend-design` (web pages), and ECC's `taste-distillation` (its scripts lift stills and overlays from a reference, which the rule on references forbids).
+
+## How things are got (phase 35)
+
+A scene can use any thing in `things/specs/`, by id, as a prop: flown, thrown, held, struck, aimed at. `things/spec.py`'s docstring is the authority on the format, and a thing is kept in `data/things/<id>/` for reuse: `thing.blend`, `thing.json`, `sheet/sheet.png`.
+
+- **Where they come from, cheapest first:**
+  - **Poly Haven:** 521 free CC0 models, real scans of everyday things, no key. Its [API page](https://polyhaven.com/our-api) says it's free for everyone, including commercial use, which settles what a secondhand source said. If this line ever serves other people, they have to be told the assets came from Poly Haven.
+  - **Sketchfab:** the search is public and download needs a free `SKETCHFAB_TOKEN`. Only CC0 and CC-BY come through, read from Sketchfab when it's fetched, and anything tagged `noai` is refused. The best finds are CC0 museum scans of real birds (no clips, so they sit) and animated CC-BY birds. A CC-BY credit goes in the video's description by itself.
+  - **A URL:** a pack with its license and page written in the spec, such as `low_poly_eagle`.
+  - **Generated on fal:** `fal-ai/hunyuan3d-v3/text-to-3d`, $0.375, no clips. Refused without `--spend`, the owner's yes. Not yet run.
+- **Choosing:** `run.py thing --search <words>` prints the hits and makes a numbered picture sheet. Uploaders on Sketchfab don't always own what they upload, so anything named after a game or film is skipped by the agent, by looking: `prompts/character/source.md` says so, and code doesn't check it.
+- **`blender/things.py`:** any glb, gltf, fbx or obj comes in the same way: its cameras and lights dropped, the longest side scaled to `meters`, turned and tilted, with its origin in its middle, under two empties (`root` for the scene, `holder` for the size). Clips are listed with their frames and named by the spec or the file. They play through the NLA, so they loop, slow down and ease into each other. A file's grey model can be colored by material name, and `smooth` welds a faceted one.
+- **New in the scene language:**
+  - `go`: under its own power, nose first along a smooth line, banked by tan(bank) = speed x turn rate / g, flaring to land. It rides on a person's bone once it's landed on them.
+  - `play`: a thing's clip from a time, looping.
+  - `"follow": true` on a shot: the camera travels with it, and `angle` counts from the way it's heading.
+  - Aims: a thing's `spots`, plus `crown`, `shoulder_r/l`, `hand_r/l` on a person. `crown` casts a ray at the head.
+  - A soft floor shadow under people on `sky_set`, whose floor is only a picture.
+- **The bird test (`scenes/examples/bird_lands_on_head.json`):** an eagle flies in on a banked curve, flares, and lands with its feet on Walt's hair, and rides there. 210 frames at 1.2 s each, 274 s of Blender in all. No code for this bird. **Its captions are placeholder words, not a fact**, so it isn't to publish.
+- **What's weak:** it's the low-poly eagle, with no feathers and a goofy idle clip that drapes its wings, because realistic models need the token. A model with no clips can't flap. An auto-rig for generated birds wasn't built, since animated models are available.
+- **Your turn:** make a free Sketchfab account, copy the API token from [settings](https://sketchfab.com/settings/password), and add `SKETCHFAB_TOKEN=...` to `.env`.
+
+## How scenes work (phase 34: the scene language)
+
+After the owner's verdict on the sword test ("good"), they set the bar: "i dont wanna loo at another video nd have u make a another custom solution ideally this agent should figure out whats best, like if i m talking about a bird now, it should create scenes that are reasonable acorordinlgy". So a new topic must need no new code. The agent writes a scene as JSON, and fixed code runs it. `scenes/spec.py`'s docstring is the authority on the format.
+
+- **Run one:** `uv run python run.py scene <file.json>` renders to `data/scenes/<name>/`: `scene.mp4` with captions, `frames/`, `bench.json`. `--frames 10,50 --width 432 --samples 12` is a quick look. A bad scene is refused with its reasons before Blender starts.
+- **The two scenes so far:** `data/benchmarks/zack_sword/sword_in_mouth.json` remakes the owner's reference test (gitignored, internal only, like reference A), and `scenes/examples/ball_to_the_head.json` is a different topic that needed no scene code. Writing it added two general things every topic can use: `fly` (a thrown thing on gravity's arc, which bounces) and a strike that lands on a person.
+- **What the reference taught (`ScreenRecording_11-03-2026 20-58-48_1.mov`, a 15 s Zack D Films short in the folder above):** its people hardly animate. It holds a strong pose and does the rest with a cut every second or so, wide lenses close up, one slow-motion macro of the hit, glows for the force, and large bare captions. An earlier full-body sword clip from game animations looked "kinda bad". The check refuses a shot over 4 s for this reason.
+- **`blender/stage.py` keeps things physically true by how it's built:**
+  - Held props lead, and hands are locked on them (`Person.hold`: IK on the arm, the hand's turn copied), so a hand can't slip off a grip. `tests/blender_hold_check.py` checks it's within 5 mm.
+  - A strike's arc ends on the target's surface, found by casting a ray at it. It speeds up on the way down and bounces off. If the striker stands too far to reach, the scene fails and says so.
+  - Struck further out along a prop, whoever holds it reels harder, about the teeth or hand: a lever. Head, neck and chest ring down as one damped spring (`ring_down`), each taking less. Sparks and thrown things fall under gravity.
+  - The body is a stance clip played very slowly, so people breathe and shift. Fingers come from the clip's closed hand, mirrored to the other.
+- **Other pieces:** `envs.gym`, `Person.glow` (skin replaced by a mottled color: added to the skin instead, it washes out), red rings, `CaptionBig` in Remotion.
+- **Where it falls short of the reference:** faces are smoother and younger, with no lines or eye bags. Hair is less tousled, limited by the add-on's styles. No x-ray of teeth. Props are simple: `katana`, `long_sword`, `stick`, `ball`, until phase 35. Grips are a short fixed list, and a person can't yet walk or change stance within a scene. Tearing tops at the shoulder if an arm goes overhead.
+- **The owner on the ball scene:** "LOOKS GOOD" (Nov 3, 2026).
+
+## How body clips work (phase 34: the motion test)
+
+The owner asked whether a person can swing a katana, and this made one, from body clips on our rig. The owner judged the full-body version "kinda bad", which led to the scene language above. The command is gone, and its stances remain.
+
+- **The clips:** the store's add-on (v4.0.28) has no animation library, so they come from two free CC0 packs the owner downloaded into `data/motion/` (gitignored): [KinemIQ's free set](https://kinemiq.itch.io/free-game-animations) (35 FBX clips, with a mannequin in a T-pose) and [Quaternius's Universal Animation Library 2](https://quaternius.itch.io/universal-animation-library-2) (42 clips in one GLB, with a T-pose clip; the sword clips are in the free version). No credit or account needed. `render/clips.py` unpacks and lists them. They download by hand: scripting itch.io's download returned "invalid key".
+- **Retargeting (`blender/clips.py`):** a clip is read as how far each bone turned from that file's own T-pose, in the world's axes. Each of our bones first turns from its A-pose to a T-pose matching theirs, then turns the same way. Only the hips' travel is scaled, by leg length. A clip is only ever compared with a reference from its own pack, because their bones' axes differ by file. `Solver.play` crossfades between clips, and `hold_fist` keeps one hand closed through a clip whose hands are relaxed.
+- **The sword** rides on the hand bone: `_in_the_hand` sets its grip across the palm toward the thumb, so the blade leaves the fist on the thumb's side.
+- **What the tries showed:**
+  - `Sword_Regular_A` into `Sword_Regular_A_Rec` reads as one overhead cut. `Sword_Heavy_Combo`, `Sword_Regular_C` and `Sword_slash` are acrobatic, game-style moves.
+  - `Idle_relaxed` is wrong for a sword: the blade lies across the chest. `Idle_with_a_sword` holds it well, in a wide, bent-kneed stance.
+  - **Clothes tear at the back of the shoulder with the arm overhead.** It's worst in single-layer tops (tees, sweaters). Layered outfits hold up much better; the bomber jacket still shows a small tear there. Switching off the add-on's body masks doesn't help, because the skin then pokes through everywhere. So `characters/specs/sam_jacket.json` wears the jacket.
+- **Not done:** the left hand stays off the grip (these are one-handed clips); hair and cloth aren't simulated; feet can slide a little; the shot sits on the machines' sand lot.
+- **Other sources, if these fall short:** Mixamo (free with a free Adobe login, no API), LIM - Life In Motion ($40, 360+ clips for this rig, swords unconfirmed), Rokoko Vision (film a move; free tier of about 30 s a month).
+- **Now used for stances.** A body clip can't be swapped in mid-scene yet.
+
+## How people are made (phase 32: the character look test)
+
+The plan is [CHARACTERS.md](CHARACTERS.md). Phase 32 answers its first question before anything is built on it: can Human Generator, in our Blender with no window, make a figure close enough to the owner's reference frame?
+
+- **What runs:** `uv run python run.py character-test`, and `--list` first to see what's installed. `--preset`, `--hair` and `--outfit` take part of a name, `--frames 1,104` is a quick look, and `--engine cycles` tries Cycles. Everything lands in `data/characters/look_test/`: `compare.png` (ours beside the reference), `portrait.mp4` and `bench.json`.
+- **The files:**
+  - `render/humgen.py` finds the owner's downloads in `human_packs/`, and unpacks them once into `addon/` and `content/`. `.hgpack` files are zips, and it refuses one that would write outside its folder. Blender's Install button isn't used.
+  - `blender/humgen.py` is the only file that touches the add-on. It enables it, then makes a person and saves `person.blend` and `person.json`: which objects and bones are which, and every face key.
+  - `blender/people.py` brings a saved person into a scene with no add-on loaded, and keys the face, blinks, gaze and props on bones.
+  - `blender/charactertest.py` is the shot, built by hand as phase 23's were. `envs.sky_set` and `envs.portrait_lights` are the set.
+- **Results on the real add-on:** it ran with no window on Blender 5.2.3 the first time. The store's zip, named v4.0.29, calls itself v4.0.28, and has no animation library (the public v4.0.38 source does), so walking and body clips are an open question for phase 34. A person takes about 7 s to make and is reused. The final clip took 1.7 s a frame on EEVEE at 32 samples, with 8K skin. Cycles was 13 s on the one frame timed (at 64 samples), and its hair comes out grey because the hair shader is set for EEVEE.
+- **Controls added after looking:** `age`, `face_hair` (presets can bring a beard), `eye_color`, `clothes` (a garment's main color), `brows`, `brow_density`, `textures_8k`, `skin`, and `keys` such as `Stylized` and `Eye Scale`.
+- **What looked wrong, and why:**
+  - **Noisy white teeth, tongue and eyes:** their materials are mirror-gloss, so `Person._soften_gloss` softens the teeth, gives the eye lens a little roughness and blends it instead of dithering.
+  - **A glowing tongue:** EEVEE lets the sky's light into the mouth, so the teeth material is darkened by ambient occlusion.
+  - **Eyes that didn't turn:** they track `eyeball_lookat_master`, so `Person.gaze` moves that.
+  - **A snarl:** `mouthUpperUp` bares the teeth, so a stunned face is a dropped jaw with relaxed lips.
+  - **A Blender crash in EEVEE's motion blur:** it came after changing every eyebrow system, hidden ones included. Only the brows in use are changed now.
+- **The first run's pick:** preset David, hair Short Combed, outfit Relaxed Fit, with `character_test.LOOK` on top. The hair is neater than the reference's tousled hair, and the face smoother than its lined, cartoon-like one.
+- **Facts found in the add-on's source (v4.0.38), each of which would have failed at run time:**
+  - It looks up its settings in the preferences' add-on list, so `addon_utils.enable` needs `default_set=True`. The stub caught this.
+  - Its setup, `HG_start`, runs when Blender opens a file, so an add-on enabled afterward has to call it. It fills the lists `from_preset` needs. `skip_url_request` stops it going online.
+  - It joins hair paths to its content folder with no separator, so `filepath_` ends in one. It finds a preset's gender by splitting on the system's slash, so paths use backslashes on Windows.
+  - Its drivers would overwrite a keyed face shape, so `Person.face` removes a key's driver first, as its own motion capture does.
+- **The sky:** AgX washes out strong blue, so the sky overshoots on purpose and still comes out a little paler than the reference.
+- **Tests:** `tests/test_characters.py`. `tests/stub_humgen/` plays the add-on with its source's signatures, and `tests/blender_fake_person.py` is a ball with a rig and face keys. They test our side of the join; the real add-on's content can't be in a test, as it's paid and gitignored.
+- **The files:** the owner's downloads are in `human_packs/` (gitignored, `blender.humgen` in `stickfleet.yaml`), unpacked to `addon/` and `content/` beside them.
+- **The owner's review:** they watched `data/characters/look_test/portrait.mp4` and said "really good" (Nov 3, 2026). A new try takes about 15 s for a few frames, and under 4 minutes for the whole clip, at $0.
+
+## How machine shorts are rendered (phase 23: the look test)
+
+The plan for the shorts is [SHORTS.md](SHORTS.md). Phase 23 answers its first question before anything else is built on it: can Blender reach reference A's look (the diesel pile hammer reel in the folder above)?
+
+- **Blender:**
+  - Blender 5.2.3 LTS, the portable zip, unzipped to `tools/blender-5.2.3-windows-x64/` (gitignored). The owner downloaded it, and its SHA-256 matched blender.org's published one.
+  - `blender.path` and `blender.samples` (32) are in `stickfleet.yaml`.
+  - `render/blender_render.py` runs `blender -b --factory-startup --python-exit-code 1 -P blender/run.py -- job.json`, reads `FRAME i/n` lines for progress, and encodes the frames (CRF 14).
+  - EEVEE renders on the RTX 5080 with no window. That was the open question on Windows; `gpu.platform` after a render says `NVIDIA GeForce RTX 5080 Laptop GPU`, OpenGL.
+- **Speed** at 1080×1920 and 32 samples:
+  - the first frame takes 1.3 s while shaders compile;
+  - after that, 0.33 to 0.43 s a frame (the crane fastest, the cutaway and the nail slowest), with motion blur on;
+  - a 90 s short (2,700 frames) is about 15 to 20 minutes, at $0.
+- **`blender/` runs inside Blender and imports nothing from the app.**
+  - `look.py`:
+    - the render settings: AgX "Medium High Contrast", soft shadows, screen-space ray tracing, fast GI (the ambient occlusion look);
+    - a soft bloom through Blender 5's compositor node group (`scene.compositing_node_group`; the Glare node's settings are now inputs);
+    - `camera()`, aimed at an empty so a shot keys either one, with depth of field;
+    - `key`/`ease` (Blender 5 keeps F-curves in layered action slots, which `_fcurves` reads).
+  - `materials.py`, the fixed palette:
+    - steel, bright_steel, black_steel, dark_steel (A's blue-grey pile), safety_yellow, hazard_stripes, chrome, rubber, white_paint, red_paint, air;
+    - `cut`: orange with dark 45° hatching in world space, so the lines run the same way on every part;
+    - wood (varnished oak), pale_wood, `wood_cut` (sawn), sand (Poly Haven's red_sand, tinted to A's orange) and far;
+    - `hazed()`: aerial perspective, by the distance from the camera.
+  - `shapes.py`, bmesh shapes (no `bpy.ops`):
+    - `lathe` (a profile of radius and height turned about Z: the nail, the anvil housing with its dish), `cylinder`, `tube`, `box`, `sphere`;
+    - `torus` (and a C-shaped hook), `rods`, and `truss` (the crane's lattice boom);
+    - `cut_away()`, an EXACT boolean with `material_mode: TRANSFER`, so the cut faces take the cutter's material.
+  - `envs.py`:
+    - `desert_lot`: Poly Haven's `kloofendal_43d_clear_puresky` HDRI, a sun, an 800 m sand plane, a far fence, and pile stubs;
+    - `workbench`: a wood block on black under one warm lamp. The world shows black to the camera and a dim grey to reflections, so steel in a black room isn't black.
+  - `tracks.py`: each anchor's screen position in every frame, and whether it's seen. A ray from the camera that hits another rendered part first hides it; the hidden cutter doesn't, nor does a part of the same `group`.
+  - `looktest.py`: the three hand-built shots.
+  - `run.py`: the entry. Frames go to `f_0001.png ...`, with `tracks.json` holding the anchors, events and per-frame render times.
+- **`render/assets.py`** fetches Poly Haven files once into `data/assets/polyhaven/<id>/`. They're CC0 (no credit needed), through the public API with a User-Agent.
+- **The overlay,** in `render/remotion/src/shorts/`:
+  - the `ShortClip` composition, 1080×1920 at 30 fps, registered in `Root.tsx`;
+  - `Overlays.tsx`:
+    - A's caption box: Inter SemiBold 42 in a dark rounded box at 71.5% down. A `\n` in the text is where the line breaks, as A breaks by phrase; otherwise the lines are balanced;
+    - part labels: Inter ExtraBold 32, uppercase in a tone color with a dark outline, a dot and a leader line. They follow the track, hide while the anchor is hidden, and go on the other side when they wouldn't fit inside the safe area;
+    - tags: fail (a red ✗ or stopwatch), ok, warn, and mode ("// SLOW MOTION");
+  - `types.ts`: the props and the safe area (top 8%, right 14%, bottom 22%);
+  - `fonts.ts`: Inter, bundled under the SIL OFL (`fonts/OFL.txt`).
+
+  `remotion_render.render_short()` renders it. Its CLI loop is shared with the long videos' `render()` as `_run()`.
+- **`run.py look-test`** (`render/look_test.py`) renders the three shots at full size, lays the overlays on, and writes to `data/looktest/`:
+  - each shot's MP4 and `looktest.mp4` (all three in a row);
+  - `compare_<shot>.png` (ours on the left, A's frame at the same moment on the right) and `compare.png`;
+  - `bench.json`.
+- **What comparing frame by frame with A found:**
+  - **A's nail shot is a cutaway too.** The block is cut through the nail's own plane, so the nail is seen going into the wood, on a dark sawn face. Cutaways are the format's main idea, not one effect.
+  - **Labels are small in A,** about 32 px on a 1080-wide picture. At 40 px "IRON BLOCK" didn't fit beside the block and flipped onto it.
+  - **AgX washes bright orange toward pink.** The sand needed a lower sun and a deeper tint, and the haze had to start farther out.
+  - **A ram coming down covers the chamber behind its front edge when the camera looks down at the cutaway.** The first AIR anchor was hidden for the shot's last half second, so its label vanished. Phase 26's shot checks need:
+    - a label's anchor seen for its whole show time;
+    - a label clear of its own part;
+    - a level enough camera on a cutaway.
+- **The nail shot, rebuilt after the owner's review** ("its good but the first nail there is a lot of differences"). Compared at 5 frames a second over the same 2.4 s, it differed in nearly everything:
+  - **A shows the taps.** A claw hammer swings in from the top right, taps three times 0.6 s apart (A's 2.0, 2.6 and 3.2 s), lifting only a little between taps, then leaves. The nail goes from standing on its point to under half out.
+    - The hammer is built full size and shrunk to A's, whose head is about a third as tall as the nail is long.
+    - It swings about a pivot at the end of its handle: QUAD easing into each tap and out of it, the pivot dropping with the nail as it sinks.
+    - The first scaled build stopped 1.4 cm short of the nail: its face profile used the already-shrunk length inside the shrunk hammer.
+  - **The camera moves:** close on the standing nail, back as the hammer comes in, then in again as the nail goes in.
+  - **A's wood is plain and pale** (`pale_wood`: soft lengthwise streaks and a fine sanded ripple). Its cut face is darker brown, with fine crosswise ridges broken into dashes (`wood_cut`). Both are procedural now; the oak photo texture is only the hammer's handle.
+  - **The cut is a notch** (`cut_away(x_range=...)`) whose left wall stays out of the picture. The dark wedge at the bottom left of A's cut face is the uncut block's shadow, not a wall.
+  - **The light, read from the nail's shadow, is about 54° up, in front and 37° to the left.** That's why A's top is brighter than its cut face. The spot's pool fades out before the block's back edge (`envs.workbench(elevation, azimuth)`).
+  - **The nail** is long (10 cm), thin and light (`bright_steel`), with a thin flat head. Motion blur (half a frame) is on for every shot.
+- **Tests:** `tests/test_shorts.py`, 5 tests; the whole suite is 114, green (7 min 41 s). Each shot renders with tracks for every frame; the cutaway's anchor is seen in every frame; `ShortClip` renders at 1080×1920 for exactly the clip's length. The Blender ones skip without Blender, as the Remotion one does without `node_modules`.
+- **Your turn:** watch `data/looktest/looktest.mp4` (in a desktop player) and look at `data/looktest/compare.png`, then say whether the look is close enough to build the kit on (phase 25), or what's off. Re-rendering after a change is about 2½ minutes for all three shots, at $0.
 
 ## How the chat runs the fleet (phase 18)
 
@@ -233,7 +651,39 @@ The browser app and the in-app chat agent were deleted on Nov 2, 2026, when the 
   - **Found: people were sized from the wrong floor points.** The worker noticed that the sizes its sheet briefs listed didn't match the heights it had mapped. `Stage.height_at` averaged the two nearest floor points, so a spot off to the side of the mapped path took the size of points at another depth: the front lawn's helipad came out 38% of the picture tall (18% is right), the terrace's lawn 45% (20%), the garage's generator 49% (34%). It now reads the size along y between the nearest floor point above the spot and the nearest below, or along the line through the nearest two past the ends (perspective grows with depth, not across). Nearest keeps a point on another level (the wine cellar's stairs) to the spots beside it. Checked by eye on the bunker, garage and cellar maps; `tests/test_puppet.py` has the lawn and cellar numbers. The map prompt now asks for floor points covering every spot's depth. Scenes 1 to 5 used spots whose size didn't change; scene 6 (the sink) was animated a quarter too big and gets flagged at the render review.
   - **Found: a camera moving to someone who hadn't come on yet failed the video.** Scene 41's camera starts on the gate and moves to Mr. Ashford, who walks on at 3.8 s; until then the animator couldn't find him and took his name for a spot (`KeyError: the stage has no spot 'mr-ashford'`), which failed the whole video after 50 sheets. The camera now heads for where that person first stands. The sheet check now refuses a camera on a person who isn't on the sheet's figures (it allowed anyone in the scene's people list). Scenes 8 and 25 had the same move to Wade. Tests in `test_puppet.py` and `test_puppet_pipeline.py`.
   - **Found by the owner: the seventeen-year-old had a knee brace and a cane.** The channel's puppet was painted in phase 13 from video 3's story (a rebuilt knee, a cane), with both in its parts, and the rig drew the brace in every pose and the cane whenever the right hand was free. An injury belongs to one story's look, not to the character: the brace and cane (`parts.LOOK_PARTS`) are still painted with the puppet but drawn only in a scene whose look (the script's `looks`, as each scene's `looks_json`) names them (`Puppet.wearing`), for the main character and the cast alike. Without a cane, the poses that hold one hang the right arm as `stand_free` does (`rig.free_hand`). The sheet prompt no longer says the main character has a braced leg and a cane, and says `limp` is for someone hurt or one of the dead. Nothing is painted again.
+  - **Found by the owner: a figure standing still shook.** Every 4 frames its joints were moved by a small random jitter, meant to make the lines look hand-drawn; on a figure holding still it read as shaking. Taken out (`draw._jitter`, the `wobble` and `seed` of a figure); a standing figure's frames are now identical.
+  - **"No audio" was the player.** The render has the narration all the way through (mean -21.6 dB, no silence over 3 s), and so does the highlight reel; VS Code's built-in player showed it without sound. Watch renders in a desktop player.
+  - **Redrawing after a drawing fix.** A puppet scene flagged `visual` with no note is now drawn again from the sheet it has (`stages/regen.py` sends it to `staged`, not back to `voiced`), so fixing the drawing code costs no new staging; a flag with a note still re-stages it. Video 5's 56 scenes are redrawn this way after the brace, jitter and size fixes.
   - **Seen at the render review (contact sheets), for a next phase:** people and the tow truck meant to be outside the gate stand inside it (every gate shot looks out from the house, and the place has no spot beyond the bars); no zombies, looters or crowds on screen (only the cast have puppets); no SUV prop (the props list left it out because the garage's picture shows one); the pilot and the hero stand in front of the helicopter instead of in it; Mr. Ashford's puppet doesn't change when his look turns him into one of the dead (scene 48).
+
+## How the story is staged (phase 21)
+
+Video 5 was the first whole puppet video. Its render review found the pictures telling a different story from the narration, in ways shared code caused, so every channel gets these:
+
+- **Inside is inside, outside is outside.** Every shot of the front gate looked out from the house, the map had no ground beyond the bars, and the map prompt allowed only solid occluders, so Mr. Ashford begged at his gate from inside the walls and Wade's truck rammed it from the lawn.
+  - An occluder can be `see_through` (a gate, a fence, a railing, a banister): `draw.cutout` keeps only its bars (the pixels inside the polygon darker than the Otsu split of its own brightness, at most 90 of 255, widened a pixel), so whoever is behind shows through the gaps. Checked on video 5's real gate: a block drawn behind it shows between the bars.
+  - The map prompt asks for a spot on the far side of each gate, fence or railing (outside_gate), and `checks.stage_map` refuses a spot behind an occluder only when it's solid. `Stage.behind` says which occluder a spot is behind, and the sheet brief says "on the far side of the gate, seen through it".
+  - The map prompt also says a spot is on ground a person can stand on: never in water, on a tabletop or in the air (video 5's terrace had the pool's spot in the water).
+  - A low wall is a solid occluder a person can stand behind: `checks.stage_map` refuses a spot behind a solid one only when its top is above the shoulders of an adult there (the top quarter of their height). The first restage of video 5 had no spot below the terrace's back wall, so the crew's ladders and the dead there weren't drawn (scenes 19, 20 and 23); the map prompt now asks for one (beyond_wall).
+  - `Stage.VERSION` is 3 (2: see-through occluders; 3: beyond a low wall). A map saved by an older mapping is made again the next time the assets stage runs (one looking job, no cost).
+  - The sheet prompt: someone the story keeps outside stands at a far-side spot, never inside the walls.
+- **Crowds are drawn.** Only the cast had puppets, so no dead were ever on screen.
+  - A channel's `extras` (channels/zombie.yaml: `the dead`, `strangers`) are puppets painted once for the channel (`data/channels/<id>/puppet/the-dead/`, one fal picture each, 4.4 cents at 1K), from the channel's style and each part's description.
+  - A sheet's `crowds`: who (a kind), how many (1 to 12), a pose at a spot or a walk from one to another, when, facing. `sheet.resolve` turns each into one figure per member: about the spot a step apart in a widening fan, a little nearer or farther, each a touch taller or shorter, and out of step (`phase` on the walk cycle).
+  - A cast member whose look makes them one of the dead (`parts.TURNED`: "one of the dead", "zombie", "undead") takes the dead's head and hands, still in their own clothes (`Puppet.wearing`). Video 5's Mr. Ashford from scene 48 on.
+- **Vehicles.** `do: inside` at a spot: the person is in a vehicle or a building there and isn't drawn (the camera can still follow them; two can ride in one). A placed prop's `lift` raises it that many adult heights (a helicopter hovering or coming in), its shadow left on the ground, and never past the top of the picture (at a far spot, video 5's helicopter at lift 2.5 went off the top and was never seen).
+- **Props.** A prop is in one place at a time: picked up, it's removed from the place (video 5 had a shotgun leaning by the shutter and the same one in hand). The props list includes things the story moves out of the one place whose picture shows them (the SUV in the garage, rolled to the gate) and vehicles that arrive or leave; it may run to 16.
+- **`restage`** (an MCP tool, asked every time): at the render review or after a failure, the whole video is staged again, keeping the voice. The assets stage runs again (pictures, puppets and props already made are reused; old maps are made again; the props list is asked again and new props painted), then every scene gets a new sheet and is drawn. Cents, plus the looking jobs.
+- **Tests:** a see-through gate's bars and gaps, the map check, a crowd's members and their drawing, the turned head, riding inside and hovering (`test_puppet.py`); a stub video restaged end to end, with an old map made again and nothing painted twice (`test_puppet_pipeline.py`).
+- **Not yet:** a prop moving within a scene (a helicopter lifting off, a gate falling flat) and a slung prop (a shotgun on the back).
+- **Video 5 restaged** (Nov 2, 2026): 9 maps (the front gate see-through, outside_gate on the road, the pool's spot on its edge), the props list (suv, funnel, tow cable and others new; the two crowd puppets and the new props painted, about 13 cents), 56 sheets, every job accepted first time. Scene 1 shows the tow truck and Mr. Ashford through the gate's bars, the SUV braced inside it. The SUV hides anyone outside the gate below the shoulders, so those shots frame their face. Crowds: Wade's men at the gate, the dead at the gate on Day 16. The terrace scenes (19, 20, 23) have no dead yet: their map had no spot beyond the back wall (VERSION 3 fixes it at the next restage).
+- **Puppets on hold** (Nov 2, 2026). The owner watched the restaged video and judged the puppets crude: the hero walked from one window to the other behind the bed (a walk is a straight line between spots, and nothing checks it against the furniture), and his arms vanished while standing (in the side-on standing poses both arms hang along the body line, and the black mitten hands sit on the black legs). Fixable, but each whole-video review had found a new batch, and the cutout look stays well short of the painted stills. `render.pictures` is `generative` again, and video 5 is painted.
+  - `restage` follows `render.pictures`: painted, it deletes the scene pictures made before (the puppet stage named its first frames like the stills, `s001_r1.png`, so the stills stage would have taken them as done), puts each scene's motion back to the script's (the animate stage had made every scene a clip; video 5's script has 8 clips), and the stills, their picture checks and the clips run as for a new video. Tested in `test_puppet_pipeline.py` (a puppet video switched to painted).
+  - **A blank strip fal leaves.** Painting video 5 again, 3 of the first 25 stills came back from fal with a blank white strip along the bottom (scene 21's: 126 px). The picture check sent two back, but scene 21's redraw had one too and was kept. `fal.trim_blank` now cuts a blank edge strip (8 or more rows or columns with no pixel darker than 225 of 255) off every picture before it's fitted to size, so no redraw is spent on it (`test_media.py`).
+  - **Outside the gate, painted.** Video 5's front lawn was one place, its picture drawn from the house steps looking down the drive, so the painter put Wade, his crew, the tow truck and the dead on the near side of the gate in scenes 25 and 31 to 34, even after the picture check named it and the redraw tried again. A place is one camera view: `prompts/script.md` now says that when the story has people on both sides of a gate, fence, wall or window, the outside is a place of its own, seen from out there looking in, and the outside scenes happen in it. For scripts written from now on; video 5's script was approved before it.
+  - **Clips smear crowds.** Video 5's painted scene 19 was a clip of a dozen small figures climbing the back wall and running; fal's animator turned them into blurred ghosts. `prompts/script.md` now keeps clips to one or two people or one object big in the frame doing one simple movement; crowds, many small figures and people running across the frame stay `kenburns`. Also there: a damaged barrier that still holds is described by what it still does (`prompts/visual.md`), after "the bent gate" was painted torn open with a gap Mr. Ashford stood in.
+  - **Video 5 published** (Nov 3, 2026) as "Zombie Outbreak Survival: House-Sitting for a Billionaire", thumbnail 2, $21.50 in all (puppet runs $2.71, the painted repaint and two rounds of flagged fixes the rest; scenes 33 and 45 still show Wade and Mr. Ashford inside the gate after three tries each). Scheduled for Saturday, the owner wanted it up at once: `go_public_now` (an MCP tool, asked every time) makes a scheduled video public on YouTube (`Client.make_public`: status read and sent back whole with only the privacy changed, which drops publishAt) and sets its go-public time to now, so the analytics stage moves it to live and its metrics count from then (`test_youtube.py`). `edit_scene` also takes `motion` now (kenburns or clip; a motion change alone keeps the picture) and works on a failed video, and no longer resets the regen count: reset, the redraw was named like the scene's first picture, still on disk, and that was kept instead (`test_pipeline.py`).
+  - If puppets come back: plan walks around solid occluders (or refuse a walk that passes behind one taller than a person's shoulders), hold the arms off the body in the standing poses, and judge every change on 3 or 4 scenes before a whole video.
 
 ## How the Claude Code session works (phase 17)
 
@@ -417,8 +867,8 @@ drawing stages, in phases. Phase 1 is the look test, built to be judged before a
 - **Frames** (`puppet/draw.py`, `puppet/animate.py`): a scene sheet says who is where doing what from when to when
   (`do` a pose or a cycle, `start`/`end` spots), the camera keyframes (a spot means the middle of the person
   standing there) and the light (a level and tint, a lamp glow). Figures are drawn far-side first at 2× and
-  scaled down, with a soft shadow, a small jitter every 4 frames so the lines feel drawn, then the tint, then the
-  camera crop. Frames go straight to ffmpeg with the scene's narration. 311 frames of 1080p take 25 s on the CPU.
+  scaled down, with a soft shadow (the small jitter every 4 frames that was meant to make the lines feel drawn
+  read as shaking on a figure standing still, and came out after video 5), then the tint, then the camera crop. Frames go straight to ffmpeg with the scene's narration. 311 frames of 1080p take 25 s on the CPU.
 
 **Result**: `data/puppet_demo/scene23_puppet.mp4` is scene 23 of video 3 (the stairwell at midnight) with the hero
 limping from the bathroom door to the top of the stairs and kneeling, over its real narration; `contact.jpg`
@@ -711,4 +1161,5 @@ Phases:
   - **Done when** a stub video goes from idea to scheduled using only MCP tools.
 - **19. Writing.** Done (Nov 2, 2026); see How the session writes. The hooks half of phase 21 came with it, since it changes the outline prompt.
 - **20. Looking, and the API gone.** Done (Nov 2, 2026); see How the session looks.
-- **21. The shorts look** (optional). Remotion's agent skills, plus label and arrow overlays, for vertical explainer shorts like the .mov reels in the folder above this repo. (The viral-hooks skill and its checklist came in phase 19.)
+- **21. Staging the story.** Built (Nov 2, 2026); see How the story is staged.
+- **22. The shorts look** (optional). Remotion's agent skills, plus label and arrow overlays, for vertical explainer shorts like the .mov reels in the folder above this repo. (The viral-hooks skill and its checklist came in phase 19.)

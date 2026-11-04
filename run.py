@@ -17,6 +17,7 @@ Claude's work is done by the Claude Code chat on the owner's plan (providers.llm
 Secrets come from .env (gitignored): ELEVENLABS_API_KEY and FAL_KEY are for providers.tts: elevenlabs and
 providers.images / providers.video: fal.
 YOUTUBE_API_KEY reads competitors' videos for topic ideas (topics.competitors: youtube).
+SKETCHFAB_TOKEN downloads free 3D models for character shorts (things/get.py).
 YouTube needs secrets/client_secret.json (gitignored); tokens go to the OS keychain.
 """
 from __future__ import annotations
@@ -159,6 +160,97 @@ def cmd_bench_render(args) -> None:
     print(f"\n{minutes:.1f}-minute video rendered in {elapsed / 60:.1f} min ({elapsed:.0f}s): {out['video']}")
 
 
+def cmd_look_test(args) -> None:
+    from core import config
+    from render import look_test
+
+    cfg = config.load()
+    shots = args.shots.split(",") if args.shots else None
+    bench = look_test.run(cfg, shots, args.samples, args.reference)
+    for name, b in bench.items():
+        print(f"{name}: {b['frames']} frames in {b['blender_s']}s of Blender, {b['median_frame_s']}s a frame "
+              f"(the first {b['first_frame_s']}s, compiling shaders), {b['samples']} samples")
+    print(f"side by side with reference A: {cfg.data_dir / 'looktest' / 'compare.png'}")
+
+
+def cmd_character_test(args) -> None:
+    import json
+
+    from core import config
+    from render import character_test, humgen
+
+    cfg = config.load()
+    reason = humgen.missing(cfg)
+    if reason:
+        raise SystemExit(f"{reason}\nBuy it at https://superhivemarket.com/products/humgen3d (CHARACTERS.md), and "
+                         f"download the zip and every .hgpack there.")
+    humgen.install(cfg)
+    if args.list:
+        print(json.dumps(humgen.options(cfg), indent=1))
+        return
+    frames = [int(f) for f in args.frames.split(",")] if args.frames else None
+    spec = character_test.person(cfg, args.gender, args.preset, args.hair, args.outfit)
+    bench = character_test.run(cfg, spec, args.samples, args.engine, frames)
+    print(f"{bench['frames']} frames in {bench['blender_s']}s of Blender, {bench['median_frame_s']}s a frame "
+          f"(the first {bench['first_frame_s']}s), {bench['samples']} samples, {bench['engine']}")
+    print(f"beside the reference: {cfg.data_dir / 'characters' / 'look_test' / 'compare.png'}")
+
+
+def cmd_characters(args) -> None:
+    import json
+
+    from characters import build, spec
+    from core import config
+    from render import humgen
+
+    cfg = config.load()
+    reason = humgen.missing(cfg)
+    if reason:
+        raise SystemExit(reason)
+    humgen.install(cfg)
+    if args.options:
+        found = humgen.options(cfg)
+        print(json.dumps({"hair_color": list(spec.HAIR), "eyes": list(spec.EYES), **found}, indent=1))
+        return
+    for cid in args.ids or spec.all_ids():
+        made = build.build(cfg, cid)
+        print(f"{cid}: {made['sheet']}")
+
+
+def cmd_thing(args) -> None:
+    from core import config
+    from things import build, get, spec
+
+    cfg = config.load()
+    if args.search:
+        found = get.search(cfg, args.search)
+        for i, hit in enumerate(found["hits"], start=1):
+            print(f"{i}. {hit['title']} by {hit['by']}: {hit['license']}, {hit['moves']} moves, {hit['faces']} faces, {hit['source']}")
+        print(f"pictures: {found['sheet']}")
+        print(f"or generate one, about ${found['generate_usd']}, if the owner says yes")
+        return
+    for tid in args.ids or spec.all_ids():
+        made = build.build(cfg, tid, spend=args.spend)
+        print(f"{tid}: {made['sheet']}")
+
+
+def cmd_scene(args) -> None:
+    from pathlib import Path
+
+    from core import config
+    from scenes import render, spec
+
+    cfg = config.load()
+    path = Path(args.path)
+    scene = spec.load(path)
+    frames = [int(f) for f in args.frames.split(",")] if args.frames else None
+    size = (args.width, args.width * 16 // 9)
+    bench = render.render(cfg, scene, cfg.data_dir / "scenes" / path.stem, args.samples, frames, size)
+    print(f"{bench['frames']} frames in {bench['blender_s']}s of Blender, {bench['median_frame_s']}s a frame")
+    if not frames:
+        print(f"the clip: {cfg.data_dir / 'scenes' / path.stem / 'scene.mp4'}")
+
+
 def cmd_voice_test(args) -> None:
     from providers.elevenlabs import ElevenLabsTTS
     ctx = make_ctx()
@@ -260,6 +352,8 @@ def cmd_serve(args) -> None:
 
 def main() -> None:
     load_dotenv(ROOT / ".env")
+    if hasattr(sys.stdout, "reconfigure"):      # a model's maker can have any name, and Windows' console can't print them all
+        sys.stdout.reconfigure(errors="replace")
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s: %(message)s")
     parser = argparse.ArgumentParser(prog="run.py", description="Stick Fleet")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -281,6 +375,41 @@ def main() -> None:
     p = sub.add_parser("stage", help="run one stage once")
     p.add_argument("name")
     p.set_defaults(fn=cmd_stage)
+
+    p = sub.add_parser("look-test", help="three of reference A's shots in Blender, beside A's frames (SHORTS.md)")
+    p.add_argument("--shots", default=None, help="comma-separated: nail,crane,air (default all)")
+    p.add_argument("--samples", type=int, default=None, help="EEVEE samples a frame (default blender.samples)")
+    p.add_argument("--reference", default=None, help="reference A's video (default the .mov in the folder above)")
+    p.set_defaults(fn=cmd_look_test)
+
+    p = sub.add_parser("character-test", help="one person in a close-up, beside the reference frame (CHARACTERS.md)")
+    p.add_argument("--list", action="store_true", help="list the presets, hair and outfits installed, and stop")
+    p.add_argument("--gender", choices=["male", "female"], default="male")
+    p.add_argument("--preset", default=None, help="part of a preset's name (default the first)")
+    p.add_argument("--hair", default=None, help="part of a hairstyle's name (default the first)")
+    p.add_argument("--outfit", default=None, help="part of an outfit's name (default the first)")
+    p.add_argument("--samples", type=int, default=None, help="samples a frame (default blender.samples)")
+    p.add_argument("--engine", choices=["eevee", "cycles"], default=None)
+    p.add_argument("--frames", default=None, help="comma-separated frames for a quick look (default all 120)")
+    p.set_defaults(fn=cmd_character_test)
+
+    p = sub.add_parser("characters", help="make people from characters/specs, each with a portrait sheet (CHARACTERS.md)")
+    p.add_argument("ids", nargs="*", help="which to make (default all)")
+    p.add_argument("--options", action="store_true", help="list what a character can be made of, and stop")
+    p.set_defaults(fn=cmd_characters)
+
+    p = sub.add_parser("thing", help="get a thing a scene needs, from things/specs, with a sheet to look at (things/spec.py)")
+    p.add_argument("ids", nargs="*", help="which things; all of them if none")
+    p.add_argument("--search", help="words to look for, free sources first, with pictures to choose from")
+    p.add_argument("--spend", action="store_true", help="allow a generated model, which costs money: the owner's yes")
+    p.set_defaults(fn=cmd_thing)
+
+    p = sub.add_parser("scene", help="render a scene file in the scene language (scenes/spec.py) to data/scenes/<name>/")
+    p.add_argument("path", help="the scene's JSON file")
+    p.add_argument("--samples", type=int, default=None, help="samples a frame (default blender.samples)")
+    p.add_argument("--frames", default=None, help="comma-separated frames for a quick look (default all)")
+    p.add_argument("--width", type=int, default=1080, help="picture width in pixels")
+    p.set_defaults(fn=cmd_scene)
 
     p = sub.add_parser("bench-render", help="time a full-length render")
     p.add_argument("--channel", default="zombie")

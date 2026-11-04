@@ -50,6 +50,8 @@ Plan before you write, but keep the plan short: in your thinking, settle the pla
 
 A home is several places (the living room, the bedroom, the hallway, the balcony), and outdoor spots are places too (the street below, the alley behind the building, the pier). When the story comes back somewhere, reuse its place rather than making a new one.
 
+A place is seen from one side, and whoever is in a picture's foreground is on that side. When the story puts people on both sides of a gate, a fence, a wall or a window (looters at the gate, the dead below the wall, someone begging to be let in), the outside is a place of its own, seen from out there looking in ("the road outside the front gate", looking through the bars at the drive and the house), and every scene whose action is outside happens in it. Drawn from the inside instead, the people outside end up on the lawn.
+
 ## The pictures
 
 Every scene has a `visual_prompt` for its still picture:
@@ -58,7 +60,7 @@ Every scene has a `visual_prompt` for its still picture:
 
 ## Motion
 
-`motion` is `kenburns` (the still with a slow pan) for almost every scene. Use `clip` (a short animation made from the scene's picture) only in hero beats, on their one or two moments with the strongest visible motion, and never on more than {clips_per_video} scenes in the whole script.
+`motion` is `kenburns` (the still with a slow pan) for almost every scene. Use `clip` (a short animation made from the scene's picture) only in hero beats, on their one or two moments with the strongest visible motion, and never on more than {clips_per_video} scenes in the whole script. A clip's motion must be something the animator can do: one or two people or one object, big in the frame, doing one simple movement (a turn, a reach, a lunge at a door, a truck slamming into a gate). Crowds, many small figures and people running across the frame come out as smeared ghosts, so a scene like that stays `kenburns` however much is happening in it.
 
 ## Shape of the reply
 

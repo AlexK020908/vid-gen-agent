@@ -246,6 +246,9 @@ MIGRATIONS = (
     ("videos", "prev_video_id", "INTEGER"),    # the part this video continues (core/series.py)
     ("videos", "part", "INTEGER NOT NULL DEFAULT 1"),
     ("videos", "assets_json", "TEXT"),         # puppet pictures: the stage maps, puppets and props made for it
+    ("videos", "direction_json", "TEXT"),      # a character short: its people, things and scenes (stages/direct.py)
+    ("videos", "direction_draft_json", "TEXT"),  # its last direction, to revise, and whether its shots were looked at
+    ("videos", "frames_path", "TEXT"),         # a short's frame sheet, for the render card
     ("scenes", "sheet_json", "TEXT"),          # puppet pictures: the scene sheet Claude wrote (puppet/sheet.py)
     ("scenes", "set_json", "TEXT"),            # puppet pictures: what stands in each place after this scene
     ("messages", "seen_at", "REAL",            # when the chat's `news` showed it (server/tools.py); what was
@@ -258,7 +261,7 @@ VIDEO_COLUMNS = {
     "outline_json", "script_json", "thumbs_json", "title", "thumb_idx", "publish_at", "publish_json",
     "video_path", "highlight_path", "srt_path", "chapters_json", "duration_ms", "youtube_id",
     "attempts", "lease_until", "error", "resume_state", "draft_note", "places_json", "prev_video_id", "part",
-    "assets_json",
+    "assets_json", "direction_json", "direction_draft_json", "frames_path",
 }
 SCENE_COLUMNS = {
     "narration", "visual_prompt", "motion", "state", "audio_path", "still_path", "clip_path",

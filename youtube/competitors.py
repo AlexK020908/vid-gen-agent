@@ -36,7 +36,7 @@ def _ts(rfc3339: str) -> float:
     return datetime.fromisoformat(rfc3339.replace("Z", "+00:00")).timestamp()
 
 
-def fetch(ctx, competitor_ids: list[str], recent_days: float, min_s: int) -> tuple[list[dict], list[str]]:
+def fetch(ctx, competitor_ids: list[str], recent_days: float, min_s: int, max_s: int = 0) -> tuple[list[dict], list[str]]:
     """(videos, competitor ids YouTube doesn't know). Each video: youtube_id, competitor_id, competitor_name,
     title, published_at, duration_s, views."""
     svc = client.public_service(ctx)
@@ -73,8 +73,8 @@ def fetch(ctx, competitor_ids: list[str], recent_days: float, min_s: int) -> tup
         for v in items:
             snippet = v.get("snippet", {})
             length = seconds(v.get("contentDetails", {}).get("duration", ""))
-            if length < min_s or snippet.get("liveBroadcastContent", "none") != "none":
-                continue  # Shorts and clips, or a stream that's live or upcoming
+            if length < min_s or (max_s and length > max_s) or snippet.get("liveBroadcastContent", "none") != "none":
+                continue  # Shorts and clips (or, for a Shorts channel, long videos), or a stream that's live or upcoming
             c = recent[v["id"]]
             videos.append({
                 "youtube_id": v["id"], "competitor_id": c["id"], "competitor_name": c.get("snippet", {}).get("title"),

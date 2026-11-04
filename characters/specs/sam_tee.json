@@ -1,0 +1,13 @@
+{
+ "name": "Sam",
+ "gender": "male",
+ "preset": "David",
+ "age": 40,
+ "hair": "Pixie Messy",
+ "hair_color": "brown",
+ "eyes": "blue",
+ "outfit": "Casual_Weekday",
+ "footwear": "HG_Leather_Sneakers_Male",
+ "clothes": {"TSHIRT": [0.42, 0.42, 0.43]},
+ "keys": {"Stylized": 0.4, "Eye Scale": 0.6}
+}

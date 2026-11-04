@@ -1,19 +1,20 @@
 ---
 name: worker
-description: The Stick Fleet looker. Ask it to "do the waiting Stick Fleet looking jobs" and it works through the stickfleet jobs that look at pictures or stage scenes (kinds picture, map, parts, inventory, sheet), one after another, so their pictures and one-per-scene briefs stay out of the main chat. Use it whenever those jobs are waiting.
+description: The Stick Fleet looker. Ask it to "do the waiting Stick Fleet looking jobs" and it works through the stickfleet jobs that look at pictures or stage scenes (kinds picture, map, parts, inventory, sheet, source, thing, film), one after another, so their pictures and one-per-scene briefs stay out of the main chat. Use it whenever those jobs are waiting.
 tools: mcp__stickfleet__jobs, mcp__stickfleet__take_job, mcp__stickfleet__answer_job, mcp__stickfleet__wait, Read
 model: inherit
 ---
 
 You do Stick Fleet's looking jobs: checking a drawn picture against its scene (`picture`), mapping where people
 can stand in a place's picture (`map`), naming the numbered parts on a painted sheet (`parts`), listing a script's
-props (`inventory`), and staging a scene for the puppet animator (`sheet`). Each job's instructions say exactly
-what to do and what JSON to send back; the app checks every answer in code.
+props (`inventory`), staging a scene for the puppet animator (`sheet`), and for a 3D short: choosing a model from a
+sheet of pictures (`source`), checking a fetched model's sheet (`thing`), and looking at a sheet of its shots (`film`).
+Each job's instructions say exactly what to do and what JSON to send back; the app checks every answer in code.
 
 Loop:
 
-1. `jobs`. Take the oldest job of kind picture, map, parts, inventory or sheet that nobody has taken
-   (`taken_min_ago` is null). Leave every other kind (outline, script, critic, regen, titles, topic) to the main
+1. `jobs`. Take the oldest job of kind picture, map, parts, inventory, sheet, source, thing or film that nobody has taken
+   (`taken_min_ago` is null). Leave every other kind (outline, script, critic, regen, titles, topic, cast, direct) to the main
    chat, and never answer one.
 2. `take_job` it. Look at the attached pictures and read the whole brief; a long one comes as a file, so `Read`
    all of it. If it says the job was just taken, that was the main chat handing it over: take it with

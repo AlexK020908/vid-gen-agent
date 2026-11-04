@@ -1,5 +1,5 @@
 """Claude's work: the writing (outline, script, regen tweaks, titles, topic ideas, reviews) and the looking (picture
-checks, stage maps, part names, the props list, scene sheets).
+checks, stage maps, part names, the props list, scene sheets), and directing a 3D short.
 
 Each method returns its value. `meter` (core.context.Meter) names the call and carries Stop; the stub reports what
 the call would have cost through it (`check(usd)` before, `spend(usd)` after), as simulated costs. Claude's own
@@ -92,6 +92,17 @@ class LLM(Protocol):
     def inventory(self, channel, cast: str, script: str, have: list[str], meter: Meter) -> dict:
         """{"props": [{name, draw, height, stands}], "people": [{name, scale}]} for a script (prompts/inventory.md);
         `have` are prop names already painted, to reuse."""
+    def cast_short(self, channel, values: dict, check: Callable[[dict], list[str]], meter: Meter) -> dict:
+        """Who and what a character short needs (prompts/character/cast.md): {"people": [{id, plays, spec}], "things":
+        [{id, what, search, meters, moves}]}. `check` says what's wrong with a draft."""
+    def pick_thing(self, channel, want: dict, hits: list[dict], sheet, rejected: list[str], meter: Meter) -> dict:
+        """{"seen", "choice": which of `hits`, numbered from 1 as on the picture `sheet`, or 0 for none, "why"}."""
+    def check_thing(self, channel, want: dict, manifest: dict, sheet, round_n: int, meter: Meter) -> dict:
+        """What a thing's sheet shows, and how to set it up (prompts/character/thing.md)."""
+    def direct(self, channel, values: dict, check: Callable[[dict], list[str]], meter: Meter) -> dict:
+        """{"scenes": [...]}: the whole short in the scene language (prompts/character/direct.md, scenes/direction.py)."""
+    def check_film(self, channel, shots: str, sheet, meter: Meter) -> list[dict]:
+        """What a viewer would see is wrong on a sheet of frames: [{shot, what, fix}]."""
 
 
 def _cost(meter: Meter, usd: float) -> None:
@@ -177,6 +188,38 @@ class StubLLM:
         people = [{"name": line.split(":")[0].strip("- ").strip(), "scale": 1.0}
                   for line in cast.splitlines() if line.startswith("- ")]
         return {"props": props, "people": people}
+
+    def cast_short(self, channel, values: dict, check: Callable[[dict], list[str]], meter: Meter) -> dict:
+        _cost(meter, 0.02)
+        first = values["people"].splitlines()[0].split(":")[0].strip("- ")
+        return {"people": [{"id": first, "plays": "the person it happens to", "spec": {}}], "things": []}
+
+    def pick_thing(self, channel, want: dict, hits: list[dict], sheet, rejected: list[str], meter: Meter) -> dict:
+        _cost(meter, 0.01)
+        return {"seen": "a sheet of models", "choice": min(len(rejected) + 1, len(hits)), "why": "the first one left"}
+
+    def check_thing(self, channel, want: dict, manifest: dict, sheet, round_n: int, meter: Meter) -> dict:
+        _cost(meter, 0.01)
+        return {"seen": "the model", "right_thing": True, "turn": 0, "tilt": [0, 0], "meters": want["meters"], "rest": "",
+                "moves": {}, "spots": {}, "problems": []}
+
+    def direct(self, channel, values: dict, check: Callable[[dict], list[str]], meter: Meter) -> dict:
+        """One scene on the first person, cutting every 3 seconds."""
+        _cost(meter, 0.05)
+        total, who = values["total"], values["cast_ids"][0]
+        starts = [float(t) for t in range(0, max(1, int(total)), 3)]
+        scene = {"from": 0, "to": total, "set": "sky_set",
+                 "cast": {who: {"type": "person", "character": who, "at": [0, 0], "stance": values["stances"].split(", ")[0]}},
+                 "happens": [], "shots": [{"t": t, "on": f"{who}:eyes", "frame": 0.6, "lens": 26} for t in starts]}
+        direction = {"scenes": [scene]}
+        problems = check(direction)
+        if problems:
+            raise ValueError("the stub direction failed its own check: " + "; ".join(problems))
+        return direction
+
+    def check_film(self, channel, shots: str, sheet, meter: Meter) -> list[dict]:
+        _cost(meter, 0.01)
+        return []
 
     def outline(self, channel, topic: str, notes: list[str], previous: dict | None, meter: Meter,
                 sequel: dict | None = None) -> dict:

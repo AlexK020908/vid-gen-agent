@@ -6,7 +6,6 @@ out smooth.
 from __future__ import annotations
 
 import math
-import random
 from dataclasses import dataclass, field
 
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
@@ -18,6 +17,7 @@ INK = (22, 22, 26, 255)
 SS = 2                          # supersampling
 SHADOW_ALPHA = 85
 MARGIN = 0.6                    # around the joints, in H, so no painted part or held prop is cut off
+BARS_DARKEST = 90               # a see-through occluder's bars are its pixels at most this bright (of 255)
 
 
 @dataclass
@@ -27,8 +27,6 @@ class Figure:
     feet: tuple[float, float]   # where the figure stands: the lowest point of its legs sits here
     height: float               # H, in stage pixels (the puppet's scale already applied)
     facing: int = 1
-    wobble: float = 0.0         # hand-drawn jitter of the joints, in H
-    seed: int = 0               # the jitter changes when the seed does (every few frames, not every frame)
     attached: dict = field(default_factory=dict)  # joint -> (Part, angle): a drill in r_hand, a towel on r_knee
     at_camera: bool = False     # looking at the viewer: the front head even while the body faces a side
 
@@ -54,21 +52,11 @@ def _rotated(part: Part, size_h: float, facing: int, rot: float) -> tuple[Image.
     return img, (px, py)
 
 
-def _jitter(j: dict, amount: float, seed: int) -> dict:
-    if amount <= 0:
-        return j
-    rng = random.Random(seed)
-    out = {}
-    for k, v in j.items():
-        out[k] = (v[0] + rng.uniform(-amount, amount), v[1] + rng.uniform(-amount, amount)) if k != "rot" else v
-    return out
-
-
 def figure(frame: Image.Image, fig: Figure) -> None:
     """Draws the figure onto the frame (RGB, stage size)."""
     H, facing, pose, puppet = fig.height, fig.facing, fig.pose, fig.puppet
     root = (fig.feet[0], fig.feet[1] - rig.ground(pose, H))
-    j = _jitter(rig.joints(pose, H, root, facing), fig.wobble * H, fig.seed)
+    j = rig.joints(pose, H, root, facing)
     pts = [v for k, v in j.items() if k != "rot"]
     m = MARGIN * H
     x0, y0 = math.floor(min(p[0] for p in pts) - m), math.floor(min(p[1] for p in pts) - m)
@@ -156,16 +144,43 @@ def shadow(frame: Image.Image, at: tuple[float, float], H: float) -> None:
     frame.paste(layer, (round(x - w / 2 - pad), round(y - h / 2 - pad)), layer)
 
 
-def cutout(background: Image.Image, polygon: list[tuple[float, float]]) -> tuple[Image.Image, tuple[int, int]]:
-    """A piece of the painted place cut along `polygon`, to draw over whatever stands behind it."""
+def cutout(background: Image.Image, polygon: list[tuple[float, float]],
+           see_through: bool = False) -> tuple[Image.Image, tuple[int, int]]:
+    """A piece of the painted place cut along `polygon`, to draw over whatever stands behind it. A see-through
+    one (a gate, a fence) keeps only its dark bars, so whoever is behind shows through the gaps."""
     xs, ys = [p[0] for p in polygon], [p[1] for p in polygon]
     x0, y0 = max(0, math.floor(min(xs))), max(0, math.floor(min(ys)))
     x1, y1 = min(background.width, math.ceil(max(xs))), min(background.height, math.ceil(max(ys)))
     piece = background.crop((x0, y0, x1, y1)).convert("RGBA")
     mask = Image.new("L", piece.size, 0)
     ImageDraw.Draw(mask).polygon([(x - x0, y - y0) for x, y in polygon], fill=255)
+    if see_through:
+        gray = piece.convert("L")
+        cut = min(BARS_DARKEST, _split(gray, mask))
+        bars = gray.point(lambda v: 255 if v <= cut else 0).filter(ImageFilter.MaxFilter(3))
+        mask = ImageChops.multiply(mask, bars)
     piece.putalpha(mask)
     return piece, (x0, y0)
+
+
+def _split(gray: Image.Image, mask: Image.Image) -> int:
+    """The brightness that best splits the pixels inside `mask` into dark and light (Otsu)."""
+    hist = gray.histogram(mask)
+    total = sum(hist)
+    if not total:
+        return 0
+    everything = sum(i * n for i, n in enumerate(hist))
+    best, cut, below, below_sum = -1.0, 0, 0, 0.0
+    for t in range(256):
+        below += hist[t]
+        below_sum += t * hist[t]
+        if below in (0, total):
+            continue
+        dark, light = below_sum / below, (everything - below_sum) / (total - below)
+        spread = below * (total - below) * (dark - light) ** 2
+        if spread > best:
+            best, cut = spread, t
+    return cut
 
 
 def light(size: tuple[int, int], level: float = 1.0, color=(1.0, 1.0, 1.0), glow: dict | None = None):

@@ -3,7 +3,8 @@
 Runs only when render.pictures is `puppet` (stickfleet.yaml), after the voice. For each place of the script it
 draws the place's picture (the same picture the stills pipeline draws, stages/stills.py _place) and has
 Claude map it into a stage (puppet/stage.py: the floor, the spots, the light, what's in the foreground).
-It builds the main character's puppet once per channel (channels/<id>/puppet/hero/) and each cast member's
+It builds the main character's puppet once per channel (channels/<id>/puppet/hero/), each of the channel's
+crowd extras once per channel (channels/<id>/puppet/the-dead/), each cast member's
 once per video (media/<video>/puppets/<slug>/) from their cast picture, and asks Claude which props the script
 uses (prompts/inventory.md); props already in the channel's library (channels/<id>/props/) are reused, the
 rest are painted on one sheet and cut into it. What was made is written to videos.assets_json, and the sheets
@@ -23,7 +24,7 @@ from pathlib import Path
 from core import db
 from core.stage import run_video_stage
 from puppet import parts, props
-from puppet.stage import Stage, grid, overlay
+from puppet.stage import VERSION as STAGE_VERSION, Stage, grid, overlay
 from stages import stills
 
 log = logging.getLogger("stickfleet.assets")
@@ -58,6 +59,8 @@ def _work(ctx, conn, video) -> None:
         picture = stills._place(ctx, conn, video, channel, spot, 0)
         assets["stages"][spot["id"]] = str(_stage(ctx, conn, video, channel, spot, picture))
     assets["puppets"]["hero"] = str(_hero(ctx, conn, video, channel))
+    for kind, wanted in channel.extras.items():
+        assets["puppets"][parts.slug(kind)] = str(_extra(ctx, conn, video, channel, kind, wanted))
     inventory = ctx.llm.inventory(channel, _cast_text(outline), _script_text(conn, video, places),
                                   sorted(props.load_library(props_dir(ctx, channel)).parts),
                                   ctx.meter(conn, video, NAME, "the props list"))
@@ -77,8 +80,8 @@ def props_dir(ctx, channel) -> Path:
 
 def _stage(ctx, conn, video, channel, spot: dict, picture: Path) -> Path:
     out = picture.with_suffix(".stage.json")
-    if out.exists():
-        return out
+    if out.exists() and Stage.load(out).version >= STAGE_VERSION:   # a map made before the mapping changed is
+        return out                                                   # made again (a job, no cost)
     gridded = grid(picture, picture.with_suffix(".grid.jpg"))
     data = ctx.llm.map_stage(channel, spot["name"], gridded, ctx.meter(conn, video, NAME, f"the map of {spot['name']}"))
     stage = Stage.from_percent(picture, data)
@@ -93,6 +96,14 @@ def _hero(ctx, conn, video, channel) -> Path:
         return folder
     wanted = channel.puppet or parts.HERO_PARTS
     return _puppet(ctx, conn, video, channel, folder, Path(channel.character_ref), wanted, 1.0, "the main character")
+
+
+def _extra(ctx, conn, video, channel, kind: str, wanted: dict) -> Path:
+    """A crowd's puppet (the channel's `extras`: the dead, strangers), painted once for the channel in its style."""
+    folder = ctx.config.data_dir / "channels" / channel.id / "puppet" / parts.slug(kind)
+    if (folder / "puppet.json").exists():
+        return folder
+    return _puppet(ctx, conn, video, channel, folder, Path(channel.character_ref), wanted, 1.0, kind)
 
 
 def _cast_puppet(ctx, conn, video, channel, member: dict, scale: float) -> Path:

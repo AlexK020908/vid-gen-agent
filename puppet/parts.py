@@ -36,6 +36,8 @@ HERO_PARTS = {  # what the sheet asks for, by part; a channel's YAML `puppet:` o
     "brace": "the knee brace alone, upright, with no leg inside it",
 }
 LOOK_PARTS = ("brace", "cane")  # painted with the puppet, drawn only while the person's look in the story has them
+DEAD = "the dead"               # the channel extra whose head and hands someone takes when their look turns them
+TURNED = re.compile(r"\b(one of the dead|zombie|undead)\b", re.IGNORECASE)
 
 
 @dataclass
@@ -63,11 +65,18 @@ class Puppet:
     def in_slot(self, slot: str) -> Part | None:
         return next((p for p in self.parts.values() if p.slot == slot), None)
 
-    def wearing(self, look: str) -> "Puppet":
+    def wearing(self, look: str, dead: "Puppet | None" = None) -> "Puppet":
         """The puppet as the story has them in a scene: a brace or a cane only while their look names it, since
-        an injury belongs to one story, not to the character."""
+        an injury belongs to one story, not to the character; and with the head and hands of `dead` (the
+        channel's dead) once their look makes them one of the dead, still in their own clothes."""
         kept = {name: p for name, p in self.parts.items()
                 if name not in LOOK_PARTS or re.search(rf"\b{name}\b", look, re.IGNORECASE)}
+        if dead is not None and TURNED.search(look):
+            for name in ("head", "head_side", "hand"):
+                if name in dead.parts:
+                    kept[name] = dead.parts[name]
+                else:
+                    kept.pop(name, None)      # the dead's front head, not the living side head
         return Puppet(self.folder, kept, self.scale)
 
     @classmethod

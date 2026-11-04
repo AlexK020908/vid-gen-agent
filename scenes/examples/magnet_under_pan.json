@@ -1,0 +1,165 @@
+{
+ "length": 4.4,
+ "set": "sky_counter",
+ "cast": {
+  "stand": {
+   "type": "prop",
+   "prop": "ring_stand",
+   "on": "set",
+   "at": [
+    0,
+    0
+   ],
+   "facing": 0
+  },
+  "magnet": {
+   "type": "prop",
+   "prop": "horseshoe_magnet",
+   "to": "motor:mouth",
+   "by": "tail",
+   "facing": 0
+  },
+  "motor": {
+   "type": "prop",
+   "prop": "motor",
+   "on": "set",
+   "at": [
+    -0.301,
+    0
+   ],
+   "facing": 0
+  },
+  "pan": {
+   "type": "prop",
+   "prop": "iron_pan",
+   "on": "stand",
+   "by": "base",
+   "onto": "top",
+   "facing": 28
+  }
+ },
+ "happens": [
+  {
+   "do": "spin",
+   "t": 0,
+   "to": 4.4,
+   "prop": "magnet",
+   "axis": "x",
+   "about": "axle",
+   "rate": 1.0
+  },
+  {
+   "do": "lit",
+   "t": 0.5,
+   "to": 1.15,
+   "on": "magnet",
+   "color": "cream",
+   "strength": 1.05,
+   "cover": 0.9,
+   "fade": 0.08,
+   "only": [
+    "upper",
+    "lower",
+    "tip_up",
+    "tip_down"
+   ]
+  },
+  {
+   "do": "lit",
+   "t": 1.88,
+   "to": 2.5,
+   "on": "pan",
+   "color": "yellow",
+   "strength": 1.0,
+   "cover": 0.8,
+   "fade": 0.08,
+   "only": [
+    "body"
+   ]
+  },
+  {
+   "do": "flow",
+   "t": 2.7,
+   "on": "pan:base",
+   "side": "under",
+   "color": "green",
+   "radii": [
+    0.035,
+    0.055,
+    0.075
+   ],
+   "arcs": 3,
+   "arc": 95,
+   "pulses": 1,
+   "speed": 1.4,
+   "steady": 3,
+   "peak": 30
+  },
+  {
+   "do": "lit",
+   "t": 2.7,
+   "on": "pan:floor",
+   "color": "red",
+   "radius": 0.125,
+   "strength": 1.0,
+   "fade": 0.5,
+   "only": [
+    "body"
+   ]
+  }
+ ],
+ "shots": [
+  {
+   "t": 0,
+   "on": "magnet:axle",
+   "frame": 0.34,
+   "angle": [
+    0,
+    3
+   ],
+   "lens": 24,
+   "square": true
+  },
+  {
+   "t": 1.5,
+   "on": "stand:top",
+   "frame": 0.66,
+   "angle": [
+    0,
+    10
+   ],
+   "lens": 24,
+   "square": true,
+   "push": 0.03
+  },
+  {
+   "t": 2.6,
+   "on": "pan:floor",
+   "frame": 0.42,
+   "angle": [
+    0,
+    66
+   ],
+   "lens": 24,
+   "square": true,
+   "push": 0.03
+  }
+ ],
+ "captions": [
+  {
+   "t": 0,
+   "to": 1.5,
+   "text": "Spin a magnet under"
+  },
+  {
+   "t": 1.5,
+   "to": 2.6,
+   "text": "an iron pan"
+  },
+  {
+   "t": 2.6,
+   "to": 4.4,
+   "text": "and the pan gets hot"
+  }
+ ]
+}

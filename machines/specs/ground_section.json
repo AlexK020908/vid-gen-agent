@@ -1,0 +1,419 @@
+{
+ "name": "the ground in section",
+ "steps": [
+  "the ground"
+ ],
+ "parts": [
+  {
+   "id": "layer1",
+   "kind": "box",
+   "size": [
+    80.0,
+    14.0,
+    0.3
+   ],
+   "material": "soil_mid",
+   "at": [
+    0,
+    0,
+    -0.18
+   ],
+   "cut": true
+  },
+  {
+   "id": "layer2",
+   "kind": "box",
+   "size": [
+    80.0,
+    14.0,
+    2.2
+   ],
+   "material": "soil_top",
+   "at": [
+    0,
+    0,
+    -1.4300000000000002
+   ],
+   "cut": true
+  },
+  {
+   "id": "layer3",
+   "kind": "box",
+   "size": [
+    80.0,
+    14.0,
+    1.6
+   ],
+   "material": "soil_low",
+   "at": [
+    0,
+    0,
+    -3.33
+   ],
+   "cut": true
+  },
+  {
+   "id": "layer4",
+   "kind": "box",
+   "size": [
+    80.0,
+    14.0,
+    2.0
+   ],
+   "material": "soil_deep",
+   "at": [
+    0,
+    0,
+    -5.130000000000001
+   ],
+   "cut": true
+  },
+  {
+   "id": "layer5",
+   "kind": "box",
+   "size": [
+    80.0,
+    14.0,
+    1.4
+   ],
+   "material": "soil_low",
+   "at": [
+    0,
+    0,
+    -6.830000000000001
+   ],
+   "cut": true
+  },
+  {
+   "id": "layer6",
+   "kind": "box",
+   "size": [
+    80.0,
+    14.0,
+    6.0
+   ],
+   "material": "soil_deep",
+   "at": [
+    0,
+    0,
+    -10.530000000000001
+   ],
+   "cut": true
+  },
+  {
+   "id": "barrier1",
+   "kind": "box",
+   "size": [
+    7.2,
+    0.15,
+    0.5
+   ],
+   "material": "barrier_stripes",
+   "at": [
+    0,
+    -3.5,
+    0.55
+   ]
+  },
+  {
+   "id": "post10",
+   "kind": "cylinder",
+   "r": 0.05,
+   "h": 0.8,
+   "material": "white_paint",
+   "at": [
+    -3.24,
+    -3.5,
+    0
+   ]
+  },
+  {
+   "id": "post11",
+   "kind": "cylinder",
+   "r": 0.05,
+   "h": 0.8,
+   "material": "white_paint",
+   "at": [
+    3.24,
+    -3.5,
+    0
+   ]
+  },
+  {
+   "id": "barrier2",
+   "kind": "box",
+   "size": [
+    0.15,
+    7.2,
+    0.5
+   ],
+   "material": "barrier_stripes",
+   "at": [
+    -3.5,
+    0,
+    0.55
+   ]
+  },
+  {
+   "id": "post20",
+   "kind": "cylinder",
+   "r": 0.05,
+   "h": 0.8,
+   "material": "white_paint",
+   "at": [
+    -3.5,
+    -3.24,
+    0
+   ]
+  },
+  {
+   "id": "post21",
+   "kind": "cylinder",
+   "r": 0.05,
+   "h": 0.8,
+   "material": "white_paint",
+   "at": [
+    -3.5,
+    3.24,
+    0
+   ]
+  },
+  {
+   "id": "barrier3",
+   "kind": "box",
+   "size": [
+    0.15,
+    7.2,
+    0.5
+   ],
+   "material": "barrier_stripes",
+   "at": [
+    3.5,
+    0,
+    0.55
+   ]
+  },
+  {
+   "id": "post30",
+   "kind": "cylinder",
+   "r": 0.05,
+   "h": 0.8,
+   "material": "white_paint",
+   "at": [
+    3.5,
+    -3.24,
+    0
+   ]
+  },
+  {
+   "id": "post31",
+   "kind": "cylinder",
+   "r": 0.05,
+   "h": 0.8,
+   "material": "white_paint",
+   "at": [
+    3.5,
+    3.24,
+    0
+   ]
+  },
+  {
+   "id": "cone1",
+   "kind": "cone",
+   "r1": 0.18,
+   "r2": 0.03,
+   "h": 0.7,
+   "material": "orange_paint",
+   "at": [
+    -4.6,
+    -1.0,
+    0
+   ]
+  },
+  {
+   "id": "cone1_band",
+   "kind": "cone",
+   "r1": 0.12,
+   "r2": 0.09,
+   "h": 0.12,
+   "material": "white_paint",
+   "at": [
+    0,
+    0,
+    0.32
+   ],
+   "parent": "cone1"
+  },
+  {
+   "id": "cone2",
+   "kind": "cone",
+   "r1": 0.18,
+   "r2": 0.03,
+   "h": 0.7,
+   "material": "orange_paint",
+   "at": [
+    4.2,
+    2.5,
+    0
+   ]
+  },
+  {
+   "id": "cone2_band",
+   "kind": "cone",
+   "r1": 0.12,
+   "r2": 0.09,
+   "h": 0.12,
+   "material": "white_paint",
+   "at": [
+    0,
+    0,
+    0.32
+   ],
+   "parent": "cone2"
+  },
+  {
+   "id": "cone3",
+   "kind": "cone",
+   "r1": 0.18,
+   "r2": 0.03,
+   "h": 0.7,
+   "material": "orange_paint",
+   "at": [
+    -2.0,
+    5.0,
+    0
+   ]
+  },
+  {
+   "id": "cone3_band",
+   "kind": "cone",
+   "r1": 0.12,
+   "r2": 0.09,
+   "h": 0.12,
+   "material": "white_paint",
+   "at": [
+    0,
+    0,
+    0.32
+   ],
+   "parent": "cone3"
+  }
+ ],
+ "anchors": {
+  "layers": [
+   "layer3",
+   [
+    0,
+    -7,
+    0
+   ]
+  ]
+ },
+ "couple": [],
+ "contacts": [
+  [
+   "post10",
+   "barrier1"
+  ],
+  [
+   "post10",
+   "layer1"
+  ],
+  [
+   "post11",
+   "barrier1"
+  ],
+  [
+   "post11",
+   "layer1"
+  ],
+  [
+   "post20",
+   "barrier2"
+  ],
+  [
+   "post20",
+   "layer1"
+  ],
+  [
+   "post21",
+   "barrier2"
+  ],
+  [
+   "post21",
+   "layer1"
+  ],
+  [
+   "post30",
+   "barrier3"
+  ],
+  [
+   "post30",
+   "layer1"
+  ],
+  [
+   "post31",
+   "barrier3"
+  ],
+  [
+   "post31",
+   "layer1"
+  ],
+  [
+   "cone1",
+   "layer1"
+  ],
+  [
+   "cone2",
+   "layer1"
+  ],
+  [
+   "cone3",
+   "layer1"
+  ],
+  [
+   "layer1",
+   "layer2"
+  ],
+  [
+   "layer2",
+   "layer3"
+  ],
+  [
+   "layer3",
+   "layer4"
+  ],
+  [
+   "layer4",
+   "layer5"
+  ],
+  [
+   "layer5",
+   "layer6"
+  ],
+  [
+   "barrier1",
+   "barrier2"
+  ],
+  [
+   "barrier1",
+   "barrier3"
+  ],
+  [
+   "post10",
+   "barrier2"
+  ],
+  [
+   "post11",
+   "barrier3"
+  ],
+  [
+   "post20",
+   "barrier1"
+  ],
+  [
+   "post30",
+   "barrier1"
+  ]
+ ]
+}

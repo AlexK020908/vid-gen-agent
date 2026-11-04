@@ -1,0 +1,13 @@
+{
+ "name": "Walt",
+ "gender": "male",
+ "preset": "Otto",
+ "age": 68,
+ "hair": "Thin Side Comb",
+ "hair_color": "grey",
+ "eyes": "grey",
+ "outfit": "Frosty_Evening",
+ "footwear": "HG_Leather_Dress_Shoe",
+ "face_hair": "Groomed_Beard_1",
+ "keys": {"Stylized": 0.3, "Eye Scale": 0.3}
+}

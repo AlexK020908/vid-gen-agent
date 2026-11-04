@@ -1,0 +1,192 @@
+{
+ "what": "an induction hob with its glass off, showing the coil inside",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "floor",
+    "kind": "box",
+    "size": [
+     0.74,
+     0.52,
+     0.006
+    ],
+    "at": [
+     0,
+     0,
+     0.003
+    ],
+    "material": {
+     "color": [
+      0.03,
+      0.03,
+      0.033
+     ],
+     "metal": 0.6,
+     "rough": 0.45
+    }
+   },
+   {
+    "id": "wall_f",
+    "kind": "box",
+    "size": [
+     0.74,
+     0.008,
+     0.049
+    ],
+    "at": [
+     0,
+     -0.256,
+     0.0305
+    ],
+    "material": {
+     "color": [
+      0.03,
+      0.03,
+      0.033
+     ],
+     "metal": 0.6,
+     "rough": 0.45
+    }
+   },
+   {
+    "id": "wall_b",
+    "kind": "box",
+    "size": [
+     0.74,
+     0.008,
+     0.049
+    ],
+    "at": [
+     0,
+     0.256,
+     0.0305
+    ],
+    "material": {
+     "color": [
+      0.03,
+      0.03,
+      0.033
+     ],
+     "metal": 0.6,
+     "rough": 0.45
+    }
+   },
+   {
+    "id": "wall_l",
+    "kind": "box",
+    "size": [
+     0.008,
+     0.52,
+     0.049
+    ],
+    "at": [
+     -0.366,
+     0,
+     0.0305
+    ],
+    "material": {
+     "color": [
+      0.03,
+      0.03,
+      0.033
+     ],
+     "metal": 0.6,
+     "rough": 0.45
+    }
+   },
+   {
+    "id": "wall_r",
+    "kind": "box",
+    "size": [
+     0.008,
+     0.52,
+     0.049
+    ],
+    "at": [
+     0.366,
+     0,
+     0.0305
+    ],
+    "material": {
+     "color": [
+      0.03,
+      0.03,
+      0.033
+     ],
+     "metal": 0.6,
+     "rough": 0.45
+    }
+   },
+   {
+    "id": "plate",
+    "kind": "cylinder",
+    "r": 0.13,
+    "h": 0.004,
+    "at": [
+     0,
+     0.012,
+     0.006
+    ],
+    "segments": 96,
+    "material": {
+     "color": [
+      0.05,
+      0.05,
+      0.055
+     ],
+     "metal": 0.5,
+     "rough": 0.5
+    }
+   },
+   {
+    "id": "core",
+    "kind": "cylinder",
+    "r": 0.024,
+    "h": 0.016,
+    "at": [
+     0,
+     0.012,
+     0.01
+    ],
+    "segments": 48,
+    "bevel": 0.002,
+    "material": {
+     "color": [
+      0.07,
+      0.07,
+      0.075
+     ],
+     "metal": 0.8,
+     "rough": 0.35
+    }
+   },
+   {
+    "id": "coil",
+    "kind": "spiral",
+    "r_in": 0.033,
+    "r_out": 0.112,
+    "turns": 9,
+    "wire": 0.0062,
+    "at": [
+     0,
+     0.012,
+     0.0145
+    ],
+    "material": "copper"
+   }
+  ]
+ },
+ "spots": {
+  "burner": [
+   0,
+   0.012,
+   0.063
+  ],
+  "coil": [
+   0,
+   0.012,
+   0.0145
+  ]
+ }
+}

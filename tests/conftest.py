@@ -46,7 +46,10 @@ def no_real_youtube(monkeypatch):
         overrides = dict(overrides or {})
         overrides["youtube"] = {"mode": "stub", **(overrides.get("youtube") or {})}
         overrides["render"] = {"pictures": "generative", **(overrides.get("render") or {})}
-        return real_load(root, data_dir, overrides)
+        loaded = real_load(root, data_dir, overrides)
+        # the fleet the tests are written against: a real channel added to channels/ mustn't change what they do
+        loaded.channels = {cid: c for cid, c in loaded.channels.items() if cid == "zombie"}
+        return loaded
 
     monkeypatch.setattr(config, "load", load)
     monkeypatch.setattr(context, "load", load)

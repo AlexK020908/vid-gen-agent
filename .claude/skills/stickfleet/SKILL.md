@@ -1,6 +1,6 @@
 ---
 name: stickfleet
-description: Run the Stick Fleet YouTube channels from this chat and do Claude's part of the work. Use when the owner asks what's waiting, wants a video started, reviewed, approved or published, or when Stick Fleet jobs are waiting (an outline, a script, a review, a flagged scene's rewrite, titles, topic ideas, picture checks, place maps, part names, a props list, scene sheets). Covers the job loop, writing a script in parts, handing reviews to the critic agent and looking jobs to the worker agent, and what needs the owner's yes.
+description: Run the Stick Fleet YouTube channels from this chat and do Claude's part of the work. Use when the owner asks what's waiting, wants a video started, reviewed, approved or published, or when Stick Fleet jobs are waiting (an outline, a script, a review, a flagged scene's rewrite, titles, topic ideas, picture checks, place maps, part names, a props list, scene sheets, and a 3D short's cast, models, direction and shot checks). Covers the job loop, writing a script in parts, handing reviews to the critic agent and looking jobs to the worker agent, and what needs the owner's yes.
 ---
 
 # Stick Fleet
@@ -19,11 +19,15 @@ owner to start `uv run python run.py serve` in `stickfleet/`, then run `/mcp` to
 - `review` gives a waiting card in full. Show the owner what they decide on: the outline's beats, the script file
   to open (VS Code), the video file to watch, the title and thumbnail options. `news` gives what happened since
   the last look.
-- Then do what the owner says. `approve`, `flag_scenes`, `edit_scene`, `retry`, `publish` and `apply_swap` spend
+- Then do what the owner says. `approve`, `flag_scenes`, `restage`, `edit_scene`, `retry`, `publish` and `apply_swap` spend
   money or change YouTube, and Claude Code asks the owner before each one. Use them only when the owner asks in
   this chat, never to move a video along yourself.
 - What costs money: everything after the script is approved (voice, pictures, clips; about $15 to $28 a video),
-  and flagged scenes being redrawn or re-voiced. The writing and the looking cost nothing.
+  flagged scenes being redrawn or re-voiced, and `restage` (a puppet video staged again after a staging fix:
+  cents for new props and crowd puppets, then a looking job per map, the props list and every scene). A puppet
+  scene flagged visual with no note is just drawn again from its sheet, for free. The writing and the looking
+  cost nothing.
+- Videos are watched in a desktop player (Movies & TV, VLC): VS Code's built-in player shows them without sound.
 - After the script is approved, a video waits on Claude Code's looking jobs before its pictures are done (below):
   keep the worker going until the render card arrives.
 
@@ -88,3 +92,30 @@ generative pictures: one or two picture checks per still, set change and look, i
 - After a server restart an answer is only checked as JSON; the stage's own checks run when it's used, and a
   failure comes back as a new job showing "Your earlier reply" and "What was wrong with it".
 - Don't touch the database or `data/` by hand. Everything goes through the tools.
+
+## A character short (`format: character`)
+
+A channel with this format makes vertical 3D shorts with no code per video: you write data, and fixed code stages it.
+
+- Outline and script jobs as usual, from `prompts/character/`, with the critic agent. The script is short lines.
+- After the voice, a `cast` job in the main chat: who and what the short needs. A person or thing that isn't made yet is
+  got: a `source` job (choose a model from a sheet of pictures) and a `thing` job (check its sheet) go to the worker agent.
+  Nothing there spends money. A thing no free model will do for is left out, and the owner's told what generating one costs.
+- A `direct` job in the main chat: the whole short in the scene language, timed to the voice's words. Its brief has the
+  language, and it's checked as it comes in. Read every problem it lists: they say exactly what to fix.
+- **The owner's standard, for every short: precision, physical boundaries, no bad glows or placements. They shouldn't have to
+  point any of this out.** Build anything geometric from `parts` rather than downloading it. Say what a thing is `on`, or fixed `to`, never a height
+  by hand. `spin` on an axis the lens can see, `slide` to set something down, `wear` for a hat. Glow goes on a surface (`lit`) or in
+  thin lines (`flow`, `rings`), never as a ball of light. The camera stays square and level, and a cut is a clear change. Staging is
+  measured from the meshes: a scene with something passing through something, hanging unsaid, or blocking the lens comes back refused,
+  with the reason. Before showing the owner anything, compare it with the reference at full size, and judge motion from consecutive
+  frames through the film's own camera, never from a still or a test angle.
+- If the channel has the `character` gate, a card waits on the owner with the people's and things' sheets (`approve` gate
+  `character`, or `revise` with a note to direct it again).
+- A `film` job goes to the worker agent: a sheet of one frame per shot. What it finds goes back as a `direct` revise, once.
+- The render card has the MP4 and a frame sheet, and only a title to pick. A flag with a note directs it again and keeps
+  the voice. There's nothing else to spend after the voice.
+
+## Other skills here
+
+`remotion-best-practices` (Remotion's own) is for changing the code in `render/remotion/`, such as how captions are drawn. It isn't how a video gets made: videos go through the pipeline above, so when the owner asks for a video, don't open Remotion Studio or start a project as that skill says. `blender-motion-state-inspection` (from ECC) is for when a person or animal in a render looks twisted, floats, slides or faces the wrong way: measure before changing anything.

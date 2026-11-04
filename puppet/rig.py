@@ -156,3 +156,4 @@ WALK = [  # an even walk, no cane
                 r_fore=4, bob=0.012)),
 ]
 CYCLES = {"limp": LIMP, "walk": WALK}
+INSIDE = "inside"   # not a pose: in a vehicle or a building at a spot, so not drawn until the next action

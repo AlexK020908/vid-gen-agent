@@ -1,0 +1,32 @@
+{
+ "length": 7.0,
+ "set": "sky_set",
+ "cast": {
+  "walt": {"type": "person", "character": "walt", "at": [0, 0], "facing": 0, "stance": "Idle_relaxed"},
+  "bird": {"type": "prop", "prop": "low_poly_eagle", "at": [5.5, 7.0, 3.6], "facing": 140, "size": 0.45}
+ },
+ "happens": [
+  {"do": "go", "t": 0.5, "prop": "bird", "through": [[2.6, 3.0, 3.1], [-0.9, 1.0, 2.5], "walt:crown"], "over": 3.2,
+   "move": "Flying", "then": "Idle", "speed": 0.9, "lands": true, "ends_facing": 0},
+  {"do": "gaze", "t": 0.3, "who": "walt", "x": -0.6, "y": 0.6},
+  {"do": "expression", "t": 2.0, "who": "walt", "name": "curious"},
+  {"do": "gaze", "t": 2.6, "who": "walt", "x": 0.0, "y": 0.9},
+  {"do": "expression", "t": 3.7, "who": "walt", "name": "surprised"},
+  {"do": "knock", "t": 3.7, "who": "walt", "size": 4, "axis": [1, 0, 0]},
+  {"do": "gaze", "t": 4.8, "who": "walt", "x": 0.0, "y": 0.2},
+  {"do": "expression", "t": 5.2, "who": "walt", "name": "smile"}
+ ],
+ "shots": [
+  {"t": 0, "on": "walt:eyes", "frame": 0.55, "angle": [12, -8], "lens": 26, "push": 0.05},
+  {"t": 1.2, "on": "bird:", "frame": 1.6, "angle": [20, 4], "lens": 28, "follow": true, "fstop": 0},
+  {"t": 2.6, "on": "walt:body", "frame": 3.1, "angle": [-35, -6], "lens": 24, "fstop": 0},
+  {"t": 3.75, "on": "walt:crown", "frame": 0.85, "angle": [18, 4], "lens": 26, "push": 0.06},
+  {"t": 5.2, "on": "walt:eyes", "frame": 0.72, "angle": [-14, -4], "lens": 24, "push": 0.06}
+ ],
+ "captions": [
+  {"t": 0.0, "to": 1.2, "text": "Stand very still"},
+  {"t": 1.2, "to": 2.6, "text": "and a bird sees a tree"},
+  {"t": 3.75, "to": 5.2, "text": "not a person"},
+  {"t": 5.2, "to": 7.0, "text": "until you blink"}
+ ]
+}

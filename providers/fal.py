@@ -36,6 +36,7 @@ STILL_SIZE, THUMB_SIZE, PERSON_SIZE = (1920, 1080), (1280, 720), (1024, 1536)
 REUPLOAD_S = 3600
 WAIT_S = 300        # the longest one picture may take, queue included
 CLIP_WAIT_S = 1200  # clips take minutes, more when fal is busy
+BLANK = 225         # a strip along an edge with no pixel darker than this (of 255) is blank, not painted
 
 
 def _fix(problems: str) -> str:
@@ -225,7 +226,31 @@ class FalImages(_Fal):
         content = self._download(images[0]["url"])
         out.parent.mkdir(parents=True, exist_ok=True)
         with Image.open(io.BytesIO(content)) as img:
-            ImageOps.fit(img.convert("RGB"), size, Image.Resampling.LANCZOS).save(out)
+            ImageOps.fit(trim_blank(img.convert("RGB")), size, Image.Resampling.LANCZOS).save(out)
+
+
+def trim_blank(img: Image.Image, lightest: int = BLANK, least: int = 8) -> Image.Image:
+    """The picture without a blank white strip along an edge, which the model sometimes leaves (video 5, scene 21:
+    126 px across the bottom; scenes 3 and 22 were redrawn for it), so fitting it to size fills the frame with the
+    painting. A strip is rows or columns with no pixel darker than `lightest`, at least `least` of them."""
+    gray = img.convert("L")
+    w, h = gray.size
+
+    def run(lines, box) -> int:
+        n = 0
+        for i in lines:
+            if gray.crop(box(i)).getextrema()[0] <= lightest:
+                break
+            n += 1
+        return n if n >= least else 0
+
+    top = run(range(h), lambda y: (0, y, w, y + 1))
+    bottom = run(range(h - 1, top - 1, -1), lambda y: (0, y, w, y + 1))
+    left = run(range(w), lambda x: (x, 0, x + 1, h))
+    right = run(range(w - 1, left - 1, -1), lambda x: (x, 0, x + 1, h))
+    if not (top or bottom or left or right) or top + bottom >= h // 2 or left + right >= w // 2:
+        return img
+    return img.crop((left, top, w - right, h - bottom))
 
 
 class FalVideo(_Fal):

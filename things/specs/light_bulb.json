@@ -1,0 +1,6 @@
+{
+ "what": "a light bulb",
+ "source": {"kind": "sketchfab", "uid": "36898e66c1d941efa24d7d6aea915a0b"},
+ "meters": 0.14,
+ "spots": {"glass": [0, 0, 0.02]}
+}

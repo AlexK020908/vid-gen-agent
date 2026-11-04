@@ -7,6 +7,9 @@ provider sends them back for one more try. These numbers also fill the prompts' 
 from __future__ import annotations
 
 import re
+from pathlib import Path
+
+from puppet.stage import Stage, inside
 
 BEATS = (8, 10)
 HERO_BEATS = (3, 4)
@@ -18,6 +21,13 @@ SCENE_WORDS_OK = (25, 45)       # what passes: a line a few words off isn't wort
 TOTAL_WORDS = 1750              # asked for: about 12 minutes at 150 words a minute, with the pauses between scenes
 TOTAL_WORDS_OK = (1500, 2000)   # passes: about 10 to 14 minutes
 WPM = 150                       # elevenlabs.speed slows the voices to about this; their own pace is 160 to 170
+# A character short: 30 to 60 seconds, read slowly (prompts/character/)
+SHORT_BEATS = (3, 6)
+SHORT_LINES = (4, 14)
+SHORT_LINE_WORDS = (3, 22)
+SHORT_WORDS = (60, 150)         # what the prompt asks for
+SHORT_WORDS_OK = (50, 165)      # what passes
+SHORT_HOOK_WORDS = 14
 TITLES = 3
 TITLE_MAX = 100                 # YouTube's limit
 DESCRIPTION_CHARS = (150, 900)  # the viewer-facing blurb above the chapters: a short paragraph, not a note or an essay
@@ -343,6 +353,71 @@ def visual_prompt(text: str) -> list[str]:
     return ["the visual_prompt is empty"] if _blank(text) else []
 
 
+def short_outline(data: dict) -> list[str]:
+    """A character short's outline (prompts/character/outline.md)."""
+    out = []
+    if _blank(data.get("hook")) or words(data["hook"]) > SHORT_HOOK_WORDS:
+        out.append(f"the hook has to be there, in {SHORT_HOOK_WORDS} words at most")
+    if _blank(data.get("fact")):
+        out.append("the fact has to be there, with where it's known from")
+    lo, hi = SHORT_BEATS
+    if not lo <= len(data.get("beats") or []) <= hi:
+        out.append(f"there are {len(data.get('beats') or [])} beats; it needs {lo} to {hi}")
+    for n, b in enumerate(data.get("beats") or [], 1):
+        if _blank(b.get("title")) or _blank(b.get("summary")):
+            out.append(f"beat {n} needs a title and a summary")
+    if _blank(data.get("ending")):
+        out.append("the ending has to be there")
+    return out
+
+
+def short_script(scenes: list[dict], outline: dict) -> list[str]:
+    """A character short's lines (prompts/character/script.md)."""
+    out = []
+    lo, hi = SHORT_LINES
+    if not lo <= len(scenes) <= hi:
+        out.append(f"there are {len(scenes)} lines; it needs {lo} to {hi}")
+    beats, last = len(outline["beats"]), 0
+    for n, s in enumerate(scenes, 1):
+        count = words(s.get("narration") or "")
+        if not SHORT_LINE_WORDS[0] <= count <= SHORT_LINE_WORDS[1]:
+            out.append(f"line {n} is {count} words; keep it to {SHORT_LINE_WORDS[0]} to {SHORT_LINE_WORDS[1]}")
+        if "\u2014" in (s.get("narration") or ""):
+            out.append(f"line {n} has an em dash; a voice reads those badly")
+        if not 1 <= s.get("beat", 0) <= beats:
+            out.append(f"line {n} says beat {s.get('beat')}; the outline has {beats}")
+        elif s["beat"] < last:
+            out.append(f"line {n} goes back to beat {s['beat']}: beats go in order")
+        else:
+            last = s["beat"]
+    missing = sorted(set(range(1, beats + 1)) - {s.get("beat") for s in scenes})
+    if missing:
+        out.append(f"beats {missing} have no line")
+    total = sum(words(s.get("narration") or "") for s in scenes)
+    if not SHORT_WORDS_OK[0] <= total <= SHORT_WORDS_OK[1]:
+        out.append(f"it's {total} words in all; keep it to {SHORT_WORDS[0]} to {SHORT_WORDS[1]}")
+    return out
+
+
+def thing_look(data: dict, clips: dict) -> list[str]:
+    """What the look at a thing's sheet says to change (prompts/character/thing.md). `clips` are what the file really has."""
+    out = []
+    if not isinstance(data.get("right_thing"), bool):
+        out.append("right_thing has to be true or false")
+    tilt = data.get("tilt")
+    if not (isinstance(tilt, list) and len(tilt) == 2):
+        out.append("tilt has to be [x, y] degrees")
+    if not (isinstance(data.get("meters"), (int, float)) and data["meters"] > 0):
+        out.append("meters has to be its longest side in real life")
+    moves = data.get("moves") or {}
+    for name, move in moves.items():
+        if not isinstance(move, dict) or move.get("clip") not in clips:
+            out.append(f"move {name}: its clip has to be one of {', '.join(clips) or 'none: this model has no clips'}")
+    if data.get("rest") and data["rest"] not in (moves or clips):
+        out.append(f"rest {data['rest']!r} isn't one of its moves")
+    return out
+
+
 def narration(text: str) -> list[str]:
     if _blank(text):
         return ["the narration is empty"]
@@ -452,30 +527,26 @@ def stage_map(data: dict) -> list[str]:
     for s in spots:
         if not (0 <= s["x"] <= 100 and 0 <= s["y"] <= 100):
             problems.append(f"spot {s['name']} is outside the picture")
+    measure = Stage(Path(), (100, 100), [(p["x"], p["y"], p["height"]) for p in floor], {}, {}) if floor else None
     for o in data.get("occluders") or []:
-        if not 3 <= len(o.get("polygon") or []) <= 10:
+        polygon = [(p["x"], p["y"]) for p in o.get("polygon") or []]
+        if not 3 <= len(polygon) <= 10:
             problems.append(f"occluder {o.get('name')} needs a polygon of 4 to 8 points")
-        if any(not (0 <= p["x"] <= 100 and 0 <= p["y"] <= 100) for p in o.get("polygon") or []):
+        if any(not (0 <= x <= 100 and 0 <= y <= 100) for x, y in polygon):
             problems.append(f"occluder {o.get('name')} has a point outside the picture")
         for s in spots:
-            if s["y"] < o.get("base_y", 0) and _inside(s["x"], s["y"], [(p["x"], p["y"]) for p in o.get("polygon") or []]):
-                problems.append(f"spot {s['name']} is behind {o.get('name')}: whoever stands there would be hidden by it. "
-                                "Move the spot to open floor beside it, or drop it")
+            if o.get("see_through") or not (s["y"] < o.get("base_y", 0) and inside(s["x"], s["y"], polygon)):
+                continue
+            # behind a low wall a person's head and shoulders show over it (the slope beyond the back wall): fine
+            head = s["y"] - (measure.height_at(s["x"], s["y"]) if measure else 0)
+            if min(y for _, y in polygon) <= head + 0.25 * (s["y"] - head):
+                problems.append(f"spot {s['name']} is behind {o.get('name')}, which is solid and taller than a person "
+                                "there: whoever stands there would be hidden by it. Move the spot to open floor beside it, "
+                                "or drop it")
     light = data.get("light") or {}
     if not (0 <= light.get("x", -1) <= 100 and 0 <= light.get("y", -1) <= 100):
         problems.append("the light is outside the picture")
     return problems
-
-
-def _inside(x: float, y: float, polygon: list[tuple[float, float]]) -> bool:
-    """Ray casting: is the point inside the polygon?"""
-    inside = False
-    n = len(polygon)
-    for i in range(n):
-        (x1, y1), (x2, y2) = polygon[i], polygon[(i + 1) % n]
-        if (y1 > y) != (y2 > y) and x < (x2 - x1) * (y - y1) / ((y2 - y1) or 1e-9) + x1:
-            inside = not inside
-    return inside
 
 
 def parts_map(data: dict, names: list[str]) -> list[str]:
@@ -493,8 +564,8 @@ def inventory(data: dict) -> list[str]:
     """Claude's props list (prompts/inventory.md): short lowercase names, sensible sizes, a known `stands`."""
     problems = []
     names = [p["name"].strip().lower() for p in data.get("props") or []]
-    if len(names) > 12:
-        problems.append(f"{len(names)} props is too many; keep the ones scenes show, at most 12")
+    if len(names) > 16:
+        problems.append(f"{len(names)} props is too many; keep the ones scenes show, at most 16")
     if len(set(names)) != len(names):
         problems.append("a prop is listed twice")
     for p in data.get("props") or []:

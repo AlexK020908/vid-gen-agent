@@ -1,7 +1,12 @@
 """A place as a stage: its picture, where the floor runs and how tall a person stands along it, the named
 spots people stand at, the things in the foreground a person can be behind, and where the light is. Claude
 maps a picture once (prompts/puppet.md, `stage` turn) reading a labelled grid drawn over it; the map is kept
-beside the picture as JSON.
+beside the picture as JSON, with the VERSION of the mapping it was made by, so a map made before the mapping
+changed is made again.
+
+An occluder is solid (a counter: whoever is behind it is hidden by all of it) or `see_through` (a gate, a
+fence, a railing: only its dark bars are drawn over whoever is behind, who shows through the gaps), and spots
+may lie beyond a see-through one (the road outside the gate).
 """
 from __future__ import annotations
 
@@ -12,6 +17,9 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
+VERSION = 3   # 2: see-through occluders and spots beyond them, spots only on floor (video 5); 3: spots beyond a
+              # low wall (video 5's terrace, where the dead and the ladders were beyond the back wall)
+
 
 @dataclass
 class Stage:
@@ -20,8 +28,13 @@ class Stage:
     floor: list[tuple[float, float, float]]   # (x, y, standing height) in pixels, along the main path
     spots: dict[str, tuple[float, float]]     # name -> where the feet go
     light: dict                               # {"x", "y", "warm"} in pixels
-    occluders: list[dict] = field(default_factory=list)  # {"name", "polygon": [(x, y)], "base_y"}: in front of
-                                                          # anything whose feet are above base_y
+    occluders: list[dict] = field(default_factory=list)  # {"name", "polygon": [(x, y)], "base_y", "see_through"}:
+                                                          # in front of anything whose feet are above base_y
+    version: int = VERSION
+
+    def behind(self, x: float, y: float) -> dict | None:
+        """The occluder a point on the floor is behind, if any."""
+        return next((o for o in self.occluders if y < o["base_y"] and inside(x, y, o["polygon"])), None)
 
     def spot(self, name: str) -> tuple[float, float]:
         try:
@@ -54,7 +67,8 @@ class Stage:
     def save(self, path: Path) -> None:
         data = {"picture": str(self.picture), "size": list(self.size), "floor": [list(p) for p in self.floor],
                 "spots": {k: list(v) for k, v in self.spots.items()}, "light": self.light,
-                "occluders": [{**o, "polygon": [list(p) for p in o["polygon"]]} for o in self.occluders]}
+                "occluders": [{**o, "polygon": [list(p) for p in o["polygon"]]} for o in self.occluders],
+                "version": self.version}
         Path(path).write_text(json.dumps(data, indent=1), encoding="utf-8")
 
     @classmethod
@@ -62,7 +76,8 @@ class Stage:
         data = json.loads(Path(path).read_text(encoding="utf-8"))
         return cls(Path(data["picture"]), tuple(data["size"]), [tuple(p) for p in data["floor"]],
                    {k: tuple(v) for k, v in data["spots"].items()}, data["light"],
-                   [{**o, "polygon": [tuple(p) for p in o["polygon"]]} for o in data.get("occluders", [])])
+                   [{**o, "polygon": [tuple(p) for p in o["polygon"]]} for o in data.get("occluders", [])],
+                   int(data.get("version", 1)))
 
     @classmethod
     def from_percent(cls, picture: Path, data: dict) -> "Stage":
@@ -76,8 +91,18 @@ class Stage:
                  "warm": bool(data["light"]["warm"])}
         occluders = [{"name": o["name"].strip().lower().replace(" ", "_"),
                       "polygon": [(p["x"] * w / 100, p["y"] * h / 100) for p in o["polygon"]],
-                      "base_y": o["base_y"] * h / 100} for o in data.get("occluders") or []]
+                      "base_y": o["base_y"] * h / 100, "see_through": bool(o.get("see_through"))}
+                     for o in data.get("occluders") or []]
         return cls(Path(picture), (w, h), floor, spots, light, occluders)
+
+
+def inside(x: float, y: float, polygon) -> bool:
+    """Whether a point is inside a polygon (even-odd rule)."""
+    hit = False
+    for (x0, y0), (x1, y1) in zip(polygon, polygon[1:] + polygon[:1]):
+        if (y0 > y) != (y1 > y) and x < x0 + (y - y0) * (x1 - x0) / (y1 - y0):
+            hit = not hit
+    return hit
 
 
 def grid(picture: Path, out: Path, step: int = 10) -> Path:

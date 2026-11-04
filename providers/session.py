@@ -5,7 +5,8 @@ Every call builds its prompt, schema and checks in providers/claude.py; the requ
 answers over MCP (core/jobs.py). The first time a stage asks, the request is stored and the stage parks; once the
 session's answer has passed the checks, the stage runs again and gets it back as Claude's reply.
 
-The looking jobs (LOOKING: picture checks, stage maps, part names, the props list, scene sheets) carry pictures or
+The looking jobs (LOOKING: picture checks, stage maps, part names, the props list, scene sheets, and a 3D short's
+models and shots) carry pictures or
 come one per scene, so the session hands them to its `worker` agent (.claude/agents/worker.md) and keeps them out of
 the main chat. The writing and the reviews stay in the main chat and the `critic` agent.
 """
@@ -18,7 +19,7 @@ from core import cards, db, jobs
 from core.errors import Stopped
 from providers.claude import WHAT, ClaudeLLM
 
-LOOKING = ("picture", "map", "parts", "inventory", "sheet")  # job kinds the worker agent does
+LOOKING = ("picture", "map", "parts", "inventory", "sheet", "source", "thing", "film")  # job kinds the worker agent does
 
 
 class SessionLLM(ClaudeLLM):

@@ -99,7 +99,8 @@ def poll(ctx, channel, now: float | None = None) -> list[dict]:
         videos, unknown = competitors.stub(channel.competitors, now), []
     else:
         videos, unknown = competitors.fetch(ctx, channel.competitors, float(_setting(ctx, "recent_days", 90)),
-                                            int(float(_setting(ctx, "min_minutes", 8)) * 60))
+                                            0 if channel.max_seconds else int(float(_setting(ctx, "min_minutes", 8)) * 60),
+                                            channel.max_seconds)
     simulated = int(source == "stub")
     with ctx.connect() as conn, db.tx(conn):
         for v in videos:

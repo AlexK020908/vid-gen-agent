@@ -92,12 +92,12 @@ class ElevenLabsTTS:
         if not voice or voice.startswith("elevenlabs_voice_"):
             raise FinalError(f"set voice_id in channels/{channel.id}.yaml to an ElevenLabs voice ID (in ElevenLabs: "
                              "Voices, open the voice, copy its ID), then Retry")
-        body: dict = {"text": text, "model_id": self.model}
+        body: dict = {"text": text, "model_id": getattr(channel, "voice_model", "") or self.model}
         if before:
             body["previous_text"] = before
         if after:
             body["next_text"] = after
-        voice_settings = self._settings(voice)
+        voice_settings = self._settings(voice, getattr(channel, "voice_speed", 0.0))
         if voice_settings:
             body["voice_settings"] = voice_settings
         data = self._call("POST", API.format(voice_id=voice), params={"output_format": self.output_format},
@@ -108,17 +108,18 @@ class ElevenLabsTTS:
         words = words_from(data.get("alignment") or data.get("normalized_alignment"), text, duration_ms)
         return {"duration_ms": duration_ms, "words": words}, self.price(text)
 
-    def _settings(self, voice: str) -> dict | None:
+    def _settings(self, voice: str, speed: float = 0.0) -> dict | None:
         """elevenlabs.voice_settings as written; else the voice's own at elevenlabs.speed; else None (the voice's
         own, as they are)."""
         if self.voice_settings:
             return self.voice_settings
-        if self.speed == 1:
+        speed = speed or self.speed
+        if speed == 1:
             return None
         if voice not in self._own:
             self._own[voice] = {k: v for k, v in self._call("GET", SETTINGS.format(voice_id=voice)).items()
                                 if v is not None}
-        return {**self._own[voice], "speed": self.speed}
+        return {**self._own[voice], "speed": speed}
 
     def _call(self, method: str, url: str, **kwargs) -> dict:
         for attempt in range(RETRIES + 1):

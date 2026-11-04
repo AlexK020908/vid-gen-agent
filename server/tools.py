@@ -26,7 +26,7 @@ from PIL import Image
 from core import actions, cards, db, jobs
 from core.errors import ActionError
 
-ASK = ("approve", "flag_scenes", "edit_scene", "retry", "publish", "apply_swap")
+ASK = ("approve", "flag_scenes", "restage", "edit_scene", "retry", "publish", "go_public_now", "apply_swap")
 
 STATE_TEXT = {
     "new": "writing the outline",
@@ -118,6 +118,8 @@ def card_summary(card: dict) -> dict:
                 "youtube_mode": card["youtube_mode"]}
     if kind == "error":
         return {"card": "error", "state": card["state"], "error": card["error"]}
+    if kind == "character":
+        return {"card": "character", "people": list(card["people"]), "things": list(card["things"])}
     return _brief(card)
 
 
@@ -297,9 +299,20 @@ def make_tools(ctx) -> dict[str, tuple[types.Tool, Callable[[dict], Any]]]:
                               for s in card["scenes"]]}
             note = ("\nThe thumbnails follow, in order. contact_sheet shows the scenes' pictures. Approving needs a "
                     "title and a thumbnail picked (pick).")
+            if card["frames_url"]:
+                out["frame_sheet"] = media(card["frames_url"])
+                note = "\nA short has no thumbnail: approving needs a title picked (pick). Its frame sheet follows."
+                thumbs = [row["frames_path"]]
+                out.pop("thumbnails"), out.pop("thumbnail_texts"), out.pop("highlight_reel")
             return types.CallToolResult(content=[
                 types.TextContent(type="text", text=head + json.dumps(out, indent=1) + note),
                 *[_picture(ctx.abs(p)) for p in thumbs]])
+        if kind == "character":
+            sheets = [Path(p) for p in (*card["people"].values(), *card["things"].values()) if Path(p).exists()]
+            note = "\nTheir sheets follow, in order. Approve to film it, or revise with a note to direct it again."
+            return types.CallToolResult(content=[
+                types.TextContent(type="text", text=head + json.dumps(card, indent=1) + note),
+                *[_picture(p) for p in sheets]])
         if kind == "publish":
             out = {**card, "thumbnail": media(card["thumbnail"]), "goes_public": _local(card["publish_at"])}
             content: list = [types.TextContent(type="text", text=head + json.dumps(out, indent=1))]
@@ -392,7 +405,8 @@ def make_tools(ctx) -> dict[str, tuple[types.Tool, Callable[[dict], Any]]]:
         return {"outline": f"Approved the outline of #{vid}. The script is written next." + yours("The script"),
                 "script": f"Approved the script of #{vid}. The voice, pictures and clips are being made; the render "
                           "card comes when the video is put together.",
-                "render": f"Approved the render of #{vid}. The publish card is waiting: review it, then publish."}[gate]
+                "render": f"Approved the render of #{vid}. The publish card is waiting: review it, then publish.",
+                "character": f"Approved the cast of #{vid}. It's being filmed; the render card comes when that's done."}[gate]
 
     def revise(args: dict) -> str:
         actions.revise(ctx, video_of(args), args["gate"], args["note"])
@@ -422,11 +436,22 @@ def make_tools(ctx) -> dict[str, tuple[types.Tool, Callable[[dict], Any]]]:
         jobs_too = yours("Each scene's rewrite") if args.get("note") else ""
         return f"Sent scenes {listed} back for {what}. A new render card comes when they're redone." + jobs_too
 
+    def restage(args: dict) -> str:
+        vid = video_of(args)
+        actions.restage(ctx, vid)
+        if str(ctx.config.render.get("pictures", "generative")).lower() == "puppet":
+            made = ("Staging the whole video again: maps made before the mapping changed and the props list come back "
+                    "as looking jobs, then a sheet per scene; new props or crowd puppets are painted (cents).")
+        else:
+            made = ("Painting the whole video again: every still, each looked at by a picture check (looking jobs), "
+                    "then the clips the script chose.")
+        return made + " A new render card comes when it's put together again."
+
     def edit_scene(args: dict) -> str:
         vid, idx = video_of(args), args["idx"]
-        actions.edit_scene(ctx, vid, idx, args.get("visual_prompt"), args.get("narration"))
-        if state_of(vid) == "blocked":
-            return f"Saved scene {idx}. The video is still blocked; retry it to go on."
+        actions.edit_scene(ctx, vid, idx, args.get("visual_prompt"), args.get("narration"), args.get("motion"))
+        if state_of(vid) in ("blocked", "failed"):
+            return f"Saved scene {idx}. The video is still {state_of(vid)}; retry it to go on."
         return f"Saved scene {idx}; it's being regenerated as written."
 
     def pick(args: dict) -> str:
@@ -466,6 +491,12 @@ def make_tools(ctx) -> dict[str, tuple[types.Tool, Callable[[dict], Any]]]:
         live = ctx.config.youtube.get("mode", "stub") == "live"
         where = "Uploading it to YouTube as private" if live else "Publishing in practice mode (nothing is uploaded)"
         return f"{where}; it goes public {_local(row['publish_at'])}. news says when it's scheduled."
+
+    def go_public_now(args: dict) -> str:
+        vid = video_of(args)
+        actions.go_public_now(ctx, vid)
+        return ("It's public on YouTube now. Within a few minutes the app sees it, marks it live and posts the link; "
+                "its 48 h and 7 d metrics count from now.")
 
     def retry(args: dict) -> str:
         vid = video_of(args)
@@ -541,10 +572,11 @@ def make_tools(ctx) -> dict[str, tuple[types.Tool, Callable[[dict], Any]]]:
          obj({"count": {"type": "integer", "minimum": 1, "maximum": 6}}, channel=True), suggest_topics),
         ("approve", "Approve the outline, script or render card, when the owner says to. Approving the script starts "
          "the paid voice, pictures and clips; approving the render needs a title and thumbnail picked first.",
-         video({"gate": {"type": "string", "enum": ["outline", "script", "render"]}}, ("gate",)), approve),
+         video({"gate": {"type": "string", "enum": ["outline", "script", "render", "character"]}}, ("gate",)), approve),
         ("revise", "Send the outline or script back to be rewritten, with a note saying what to change. For small "
          "outline changes (move, cut, rename a beat) use edit_outline.",
-         video({"gate": gate, "note": {"type": "string"}}, ("gate", "note")), revise),
+         video({"gate": {"type": "string", "enum": ["outline", "script", "character"]}, "note": {"type": "string"}},
+               ("gate", "note")), revise),
         ("regenerate", "Write the waiting outline or script again from scratch with the current prompts/ files, "
          "keeping every note given so far. Edits made to the waiting one are lost.",
          video({"gate": gate}, ("gate",)), regenerate),
@@ -557,10 +589,17 @@ def make_tools(ctx) -> dict[str, tuple[types.Tool, Callable[[dict], Any]]]:
                 "kind": {"type": "string", "enum": list(actions.FLAG_KINDS)},
                 "note": {"type": "string", "description": "What's wrong / what to change."}}, ("idxs", "kind")),
          flag_scenes),
-        ("edit_scene", "Rewrite one scene's picture prompt and/or narration exactly as given and regenerate it. "
-         "This is also the fix for a blocked scene. Costs money.",
-         video({"idx": {"type": "integer"}, "visual_prompt": {"type": "string"}, "narration": {"type": "string"}},
-               ("idx",)), edit_scene),
+        ("restage", "Make the whole video's pictures again, keeping the voice, the way render.pictures is set now "
+         "(at render review, or when it failed): after the picture pipeline was fixed, or switched. Puppet: maps made "
+         "before the mapping changed, the props list and every scene's sheet come back as looking jobs, and new props "
+         "or crowd puppets are painted (cents). Painted: every still is painted again (about 4 cents each, with a "
+         "picture check for each) and the script's clips made (about 90 cents each). Costs money.", video(), restage),
+        ("edit_scene", "Rewrite one scene's picture prompt and/or narration exactly as given and regenerate it, "
+         "and/or set its motion (kenburns: a still with a slow pan; clip: animated). A motion change alone keeps the "
+         "picture: a clip scene made kenburns drops its clip. At render review, or when the video is blocked or "
+         "failed (then retry). This is also the fix for a blocked scene. Costs money.",
+         video({"idx": {"type": "integer"}, "visual_prompt": {"type": "string"}, "narration": {"type": "string"},
+                "motion": {"type": "string", "enum": ["kenburns", "clip"]}}, ("idx",)), edit_scene),
         ("pick", "At render review, choose a title option and/or thumbnail option (numbered from 1), or set a "
          "custom title.",
          video({"title_idx": {"type": "integer", "minimum": 1}, "thumb_idx": {"type": "integer", "minimum": 1},
@@ -573,6 +612,8 @@ def make_tools(ctx) -> dict[str, tuple[types.Tool, Callable[[dict], Any]]]:
          update_publish),
         ("publish", "Publish an approved video, when the owner says to: it's uploaded as private and scheduled to "
          "go public at its time (live YouTube mode), or written out in practice mode.", video(), publish),
+        ("go_public_now", "Make a video that's scheduled on YouTube public now instead of at its go-public time, "
+         "when the owner says to. Changes YouTube.", video(), go_public_now),
         ("retry", "Retry a failed or blocked video from where it stopped.", video(), retry),
         ("stop_writing", "Stop an outline or script being written or rewritten, e.g. when the owner wants to change "
          "the note they sent. The video goes back to its card.", video(), stop_writing),

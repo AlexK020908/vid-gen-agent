@@ -21,6 +21,7 @@ import logging
 from pathlib import Path
 from typing import Callable
 
+from core import formats
 from core.errors import FinalError
 from providers import checks, prompts
 from providers.llm import Meter
@@ -29,7 +30,8 @@ log = logging.getLogger("stickfleet.claude")
 
 WHAT = {"outline": "outline", "script": "script", "regen": "scene fix", "titles": "titles", "topic": "topic ideas",
         "critic": "review", "picture": "picture check", "map": "stage map", "parts": "part names",
-        "inventory": "props list", "sheet": "scene sheet"}
+        "inventory": "props list", "sheet": "scene sheet", "cast": "list of what the short needs",
+        "source": "choice of a model", "thing": "check of a model", "direct": "direction", "film": "look at the shots"}
 PICTURE_VALUES = ("idx", "label", "shot", "before", "narration", "visual_prompt", "people", "what", "images")  # picture.md
 SHOWN = 25           # problems listed in a retry turn
 FIX = ("That reply has problems the pipeline checks for:\n{problems}\n\n"
@@ -72,7 +74,8 @@ STAGE = _obj({"seen": STR,  # puppet/stage.py: where people stand in a place and
               "floor": {"type": "array", "items": _obj({"x": NUM, "y": NUM, "height": NUM})},
               "spots": {"type": "array", "items": _obj({"name": STR, "x": NUM, "y": NUM, "what": STR})},
               "occluders": {"type": "array", "items": _obj(
-                  {"name": STR, "polygon": {"type": "array", "items": _obj({"x": NUM, "y": NUM})}, "base_y": NUM})},
+                  {"name": STR, "polygon": {"type": "array", "items": _obj({"x": NUM, "y": NUM})}, "base_y": NUM,
+                   "see_through": {"type": "boolean"}})},
               "light": _obj({"x": NUM, "y": NUM, "warm": {"type": "boolean"}})})
 PARTS = _obj({"seen": STR, "parts": {"type": "array", "items": _obj(
     {"name": STR, "box": {"type": "integer"}, "faces": {"type": "string", "enum": ["left", "right", "front"]}})}})
@@ -83,14 +86,34 @@ SHEET = _obj({  # puppet/sheet.py: one scene staged
     "figures": {"type": "array", "items": _obj(
         {"who": STR, "actions": {"type": "array", "items": _ACTION},
          "attached": {"type": "array", "items": _obj({"joint": STR, "prop": STR, "angle": NUM})}})},
-    "set": {"type": "array", "items": _obj({"place": STR, "at": STR, "angle": NUM, "remove": STR})},
+    "crowds": {"type": "array", "items": _obj(
+        {"who": STR, "count": {"type": "integer"}, "from_ms": {"type": "integer"}, "to_ms": {"type": "integer"},
+         "do": STR, "start": STR, "end": STR, "at": STR, "facing": STR})},
+    "set": {"type": "array", "items": _obj({"place": STR, "at": STR, "angle": NUM, "lift": NUM, "remove": STR})},
     "camera": {"type": "array", "items": _obj({"at_ms": {"type": "integer"}, "center": STR, "zoom": NUM})},
     "light": _obj({"time": STR, "lamp": STR})})
 INVENTORY = _obj({  # prompts/inventory.md: the props a script uses and how big each cast member is
     "props": {"type": "array", "items": _obj({"name": STR, "draw": STR, "height": NUM, "stands": STR})},
     "people": {"type": "array", "items": _obj({"name": STR, "scale": NUM})}})
 SHEET_VALUES = ("idx", "label", "shot", "duration_ms", "place_name", "words", "visual_prompt", "set_change", "looks",
-                "people", "stage", "props", "poses", "cycles", "previous", "state")
+                "people", "crowds", "stage", "props", "poses", "cycles", "previous", "state")
+SHORT_OUTLINE = _obj({"hook": STR, "fact": STR,  # prompts/character/: a character short (core/formats.py)
+                      "beats": {"type": "array", "items": _obj({"title": STR, "summary": STR})}, "ending": STR})
+SHORT_SCRIPT = _obj({"scenes": {"type": "array", "items": _obj({"beat": {"type": "integer"}, "narration": STR, "shows": STR})}})
+SHORT_TITLES = _obj({"titles": {"type": "array", "items": STR}, "description": STR})
+ANY = {"type": "object"}
+SHORT_CAST = _obj({
+    "people": {"type": "array", "items": _obj({"id": STR, "plays": STR, "spec": ANY})},
+    "things": {"type": "array", "items": {"type": "object", "additionalProperties": False, "required": ["id", "what", "search", "meters", "moves"],
+                                          "properties": {"id": STR, "what": STR, "search": STR, "meters": NUM, "moves": {"type": "boolean"},
+                                                         "parts": {"type": "array", "items": ANY}, "spots": ANY}}}})
+SOURCE = _obj({"seen": STR, "choice": {"type": "integer"}, "why": STR})
+THING_LOOK = _obj({"seen": STR, "right_thing": {"type": "boolean"}, "turn": NUM,
+                   "tilt": {"type": "array", "items": NUM}, "meters": NUM, "rest": STR, "moves": ANY, "spots": ANY,
+                   "problems": NAMES})
+DIRECTION = {"type": "object", "additionalProperties": False, "required": ["scenes"],
+             "properties": {"scenes": {"type": "array", "items": ANY}, "marks": {"type": "array", "items": ANY}}}
+FILM = _obj({"seen": STR, "problems": {"type": "array", "items": _obj({"shot": STR, "what": STR, "fix": STR})}})
 CRITIQUE = _obj({"verdict": {"type": "string", "enum": ["fine", "revise"]},  # prompts/critic.md, core/review.py
                  "problems": {"type": "array", "items": _obj({"where": STR, "what": STR, "fix": STR})}})
 
@@ -121,14 +144,18 @@ def _tidy_sheet(data: dict) -> dict:
     for f in data.get("figures") or []:
         actions = [{k: v for k, v in a.items() if v not in ("", None)} for a in f.get("actions") or []]
         figures.append({"who": f.get("who", "").strip(), "actions": actions, "attached": list(f.get("attached") or [])})
+    crowds = [{k: v for k, v in c.items() if v not in ("", None)} for c in data.get("crowds") or []]
     changes = []
     for c in data.get("set") or []:
         if c.get("remove"):
             changes.append({"remove": c["remove"]})
         elif c.get("place"):
-            changes.append({"place": c["place"], "at": c.get("at", ""), "angle": float(c.get("angle") or 0.0)})
+            change = {"place": c["place"], "at": c.get("at", ""), "angle": float(c.get("angle") or 0.0)}
+            if c.get("lift"):
+                change["lift"] = float(c["lift"])
+            changes.append(change)
     light = data.get("light") or {}
-    return {"figures": figures, "set": changes, "camera": list(data.get("camera") or []),
+    return {"figures": figures, "crowds": crowds, "set": changes, "camera": list(data.get("camera") or []),
             "light": {"time": str(light.get("time", "")).strip().lower(), "lamp": str(light.get("lamp") or "").strip()}}
 
 
@@ -158,6 +185,8 @@ class ClaudeLLM:
 
     def outline(self, channel, topic: str, notes: list[str], previous: dict | None, meter: Meter,
                 sequel: dict | None = None) -> dict:
+        if channel.format == formats.CHARACTER:
+            return self._short_outline(channel, topic, notes, previous, meter)
         values = {"idea": topic, "notes": prompts.notes_text(notes),
                   "previous": prompts.outline_text(previous) if previous else "",
                   "part": sequel["part"] if sequel else 1, "story_so_far": sequel["story"] if sequel else ""}
@@ -174,6 +203,8 @@ class ClaudeLLM:
 
     def script(self, channel, outline: dict, notes: list[str], previous: dict | None, meter: Meter,
                progress: Callable[[int], None] | None = None, earlier_places: str = "") -> dict:
+        if channel.format == formats.CHARACTER:
+            return self._short_script(channel, outline, notes, previous, meter, progress)
         values = {"outline": prompts.outline_text(outline), "notes": prompts.notes_text(notes),
                   "previous": prompts.script_text(previous) if previous else "",
                   "earlier_places": earlier_places or "(none: this is the first part)"}
@@ -212,6 +243,10 @@ class ClaudeLLM:
         values = {"topic": outline["topic"], "outline": prompts.outline_text(outline),
                   "series": (f"This is Part {part} of a series: end every title with \" (Part {part})\"." if part > 1
                              else "This is a standalone video or the first part of a series.")}
+        if channel.format == formats.CHARACTER:
+            data = self._ask("titles", "character/titles.md", "", channel, values, SHORT_TITLES,
+                             lambda d: checks.titles(d["titles"]) + checks.description(d["description"]), meter)
+            return {"titles": [t.strip() for t in data["titles"]], "thumb_texts": [], "description": data["description"].strip()}
         data = self._ask("titles", "titles.md", "", channel, values, TITLES,
                          lambda d: (checks.titles(d["titles"]) + checks.thumb_texts(d["thumb_texts"])
                                     + checks.description(d["description"])), meter)
@@ -223,7 +258,8 @@ class ClaudeLLM:
         values = {"competitors": prompts.competitors_text(hits), "taken": prompts.taken_text(taken), "count": count,
                   "families": ", ".join(families) or "(none yet)", "held": ", ".join(held) or "(none)",
                   "winner": prompts.winner_text(winner) if winner else ""}
-        data = self._ask("topic", "topic.md", "winner" if winner else "competitors", channel, values, TOPICS,
+        file = "character/topic.md" if channel.format == formats.CHARACTER else "topic.md"
+        data = self._ask("topic", file, "winner" if winner else "competitors", channel, values, TOPICS,
                          lambda d: checks.topics(d["topics"], count, len(hits), taken, held), meter)
         return [{"title": t["title"].strip(), "why": t["why"].strip(), "family": t["family"].strip().lower(),
                  "based_on": t["based_on"]} for t in data["topics"]]
@@ -253,7 +289,8 @@ class ClaudeLLM:
 
     def critique(self, channel, kind: str, values: dict, meter: Meter) -> dict:
         filled = {"outline": "", "script": "", **values}
-        data = self._ask("critic", "critic.md", kind, channel, filled, CRITIQUE, checks.critique, meter)
+        file = "character/critic.md" if channel.format == formats.CHARACTER else "critic.md"
+        data = self._ask("critic", file, kind, channel, filled, CRITIQUE, checks.critique, meter)
         return {"verdict": data["verdict"],
                 "problems": [{k: p[k].strip() for k in ("where", "what", "fix")} for p in data["problems"]]}
 
@@ -268,6 +305,65 @@ class ClaudeLLM:
                          checks.inventory, meter)
         return {"props": [{**p, "name": p["name"].strip().lower()} for p in data["props"]],
                 "people": [{"name": p["name"].strip(), "scale": float(p["scale"])} for p in data["people"]]}
+
+    # --- a character short (core/formats.py, prompts/character/) --------------------------------
+
+    def _short_outline(self, channel, topic: str, notes: list[str], previous: dict | None, meter: Meter) -> dict:
+        values = {"idea": topic, "notes": prompts.notes_text(notes),
+                  "previous": prompts.outline_text(previous) if previous else ""}
+        data = self._ask("outline", "character/outline.md", "revise" if previous else "new", channel, values, SHORT_OUTLINE,
+                         checks.short_outline, meter)
+        beats = [{"label": f"Beat {n}", "title": b["title"].strip(), "summary": b["summary"].strip(), "skill": "",
+                  "hero": False, "cast": []} for n, b in enumerate(data["beats"], 1)]
+        return {"topic": topic, "hook": data["hook"].strip(), "fact": data["fact"].strip(), "backstory": "", "cast": [],
+                "tracker": [], "beats": beats, "ending": data["ending"].strip()}
+
+    def _short_script(self, channel, outline: dict, notes: list[str], previous: dict | None, meter: Meter,
+                      progress: Callable[[int], None] | None) -> dict:
+        values = {"outline": prompts.outline_text(outline), "notes": prompts.notes_text(notes),
+                  "previous": prompts.script_text(previous) if previous else ""}
+        data = self._ask("script", "character/script.md", "revise" if previous else "new", channel, values, SHORT_SCRIPT,
+                         lambda d: checks.short_script(d["scenes"], outline), meter, _SceneCounter(progress) if progress else None)
+        scenes = [{"idx": n, "beat_idx": s["beat"] - 1, "label": f"Beat {s['beat']}", "place": "", "cast": [],
+                   "narration": s["narration"].strip(), "move": "", "tracker": [], "set_change": "", "looks": [],
+                   "shot": "close-up", "visual_prompt": s["shows"].strip(), "motion": "kenburns"}
+                  for n, s in enumerate(data["scenes"], 1)]
+        return {"places": [], "scenes": scenes}
+
+    def cast_short(self, channel, values: dict, check: Callable[[dict], list[str]], meter: Meter) -> dict:
+        filled = {**values, "outline": prompts.outline_text(values["outline"]), "notes": prompts.notes_text(values["notes"])}
+        return self._ask("cast", "character/cast.md", "", channel, filled, SHORT_CAST, check, meter)
+
+    def pick_thing(self, channel, want: dict, hits: list[dict], sheet, rejected: list[str], meter: Meter) -> dict:
+        listed = "\n".join(f"{n}. {h['title']} by {h['by']}: {h['license']}, {h['moves']} moves, {h['faces']} faces"
+                           for n, h in enumerate(hits, 1))
+        values = {"what": want["what"], "meters": want["meters"], "moves": bool(want.get("moves")), "hits": listed,
+                  "rejected": ", ".join(rejected) or "none"}
+        return self._ask("source", "character/source.md", "", channel, values, SOURCE,
+                         lambda d: [] if 0 <= d["choice"] <= len(hits) else [f"choice has to be 0 to {len(hits)}"], meter,
+                         images=[Path(sheet)])
+
+    def check_thing(self, channel, want: dict, manifest: dict, sheet, round_n: int, meter: Meter) -> dict:
+        clips = "; ".join(f"{n} (frames {c['from']} to {c['to']})" for n, c in manifest["clips"].items()) or "none"
+        values = {"what": want["what"], "meters": want["meters"], "moves": bool(want.get("moves")),
+                  "size": " x ".join(str(round(v, 3)) for v in manifest["size"]), "clips": clips,
+                  "materials": ", ".join(manifest.get("materials") or []) or "none", "round": round_n}
+        return self._ask("thing", "character/thing.md", "", channel, values, THING_LOOK,
+                         lambda d: checks.thing_look(d, manifest["clips"]), meter, images=[Path(sheet)])
+
+    def direct(self, channel, values: dict, check: Callable[[dict], list[str]], meter: Meter) -> dict:
+        notes, previous = values["notes"], values.get("previous")
+        turn = "revise" if previous and notes else "new"
+        filled = {**values, "outline": prompts.outline_text(values["outline"]), "notes": prompts.notes_text(notes),
+                  "previous": json.dumps(previous, indent=1) if previous else ""}
+        return self._ask("direct", "character/direct.md", turn, channel, filled, DIRECTION, check, meter)
+
+    def check_film(self, channel, shots: str, sheet, meter: Meter) -> list[dict]:
+        data = self._ask("film", "character/film.md", "", channel, {"shots": shots}, FILM,
+                         lambda d: [] if isinstance(d["problems"], list) else ["problems isn't a list"], meter,
+                         images=[Path(sheet)])
+        log.info("the look at the shots: seen %r, problems %r", data["seen"], data["problems"])
+        return data["problems"]
 
     @staticmethod
     def _scene_values(scene: dict, note: str) -> dict:

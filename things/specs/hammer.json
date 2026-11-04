@@ -1,0 +1,25 @@
+{
+ "what": "a hammer",
+ "source": {
+  "kind": "sketchfab",
+  "uid": "eb371236ff14403dabb065506ac124eb"
+ },
+ "meters": 0.35,
+ "turn": 247,
+ "tilt": [
+  -30,
+  -60
+ ],
+ "spots": {
+  "grip": [
+   0.005,
+   -0.02,
+   -0.095
+  ],
+  "end": [
+   -0.005,
+   -0.068,
+   0.158
+  ]
+ }
+}

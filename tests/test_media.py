@@ -27,7 +27,7 @@ from core.engine import Engine
 from core.errors import FinalError
 from providers import prompts
 from providers.elevenlabs import ElevenLabsTTS, words_from
-from providers.fal import FalImages, FalVideo
+from providers.fal import FalImages, FalVideo, trim_blank
 from providers.images import CAPTION_FILL, StubImages
 from providers.tts import StubTTS
 from render import ffmpeg
@@ -288,6 +288,18 @@ def test_still_sends_the_reference_and_comes_back_1080p(ctx, tmp_path):
     assert "Draw version 2" in fake.calls[-1]["prompt"]
     with Image.open(tmp_path / "t.png") as img:
         assert img.size == (1280, 720)
+
+
+def test_a_blank_strip_the_model_left_is_trimmed():
+    """Video 5, scene 21: the picture came back with a blank white strip 126 px tall along the bottom."""
+    painted = Image.new("RGB", (1920, 1080), (200, 180, 160))
+    painted.paste((255, 255, 255), (0, 954, 1920, 1080))
+    assert trim_blank(painted).size == (1920, 954)
+    painted.paste((40, 40, 40), (900, 1000, 920, 1010))                  # a dark mark: painted, not blank
+    assert trim_blank(painted).size == (1920, 1010)                      # trimmed only below it
+    snowy = Image.new("RGB", (1920, 1080), (200, 180, 160))
+    snowy.paste((250, 250, 250), (0, 1076, 1920, 1080))                 # a thin light edge isn't a strip
+    assert trim_blank(snowy).size == (1920, 1080)
 
 
 def test_places_and_cast_are_drawn_once_then_sent_with_each_still(ctx, tmp_path):

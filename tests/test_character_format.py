@@ -1,0 +1,610 @@
+"""Phases 28 and 36 (CHARACTERS.md, SHORTS.md): a `format` per channel, and the agent directing a short from a topic, with the
+story channel beside it unchanged. The writing, voice and pictures are stubs; Remotion is real. $0."""
+import json
+from dataclasses import replace
+from datetime import datetime, timezone
+from pathlib import Path
+from types import SimpleNamespace
+from unittest import mock
+
+import pytest
+from PIL import Image
+
+from core import actions, config, db, formats, metadata
+from core.context import make_ctx
+from core.engine import Engine
+from providers import checks, prompts
+from providers.claude import ClaudeLLM
+from providers.elevenlabs import ElevenLabsTTS
+from providers.llm import NoMeter
+from render import ffmpeg, remotion_render
+from scenes import direction as short
+from stages import direct, film
+from things import get
+from things import spec as thing_spec
+from youtube import client, competitors
+
+CFG = config.load()
+needs_remotion = pytest.mark.skipif(remotion_render.missing() is not None, reason="Remotion isn't installed")
+
+
+def _channels(*pairs):
+    return SimpleNamespace(channels={cid: SimpleNamespace(id=cid, format=fmt) for cid, fmt in pairs})
+
+
+def test_a_stage_only_claims_the_channels_its_for():
+    story = _channels(("zombie", "story"))
+    assert formats.condition(story, "stills") == ""         # one format: the same query it always ran
+    assert formats.condition(story, "film") == "AND 0"
+    both = _channels(("zombie", "story"), ("shorts", "character"))
+    assert formats.condition(both, "stills") == "AND channel_id IN ('zombie')"
+    assert formats.condition(both, "film", "v.channel_id") == "AND v.channel_id IN ('shorts')"
+    assert formats.condition(both, "voice") == ""
+
+
+def test_every_stage_belongs_to_a_format():
+    from stages import ALL
+    named = {s for stages in formats.STAGES.values() for s in stages}
+    assert {s.NAME for s in ALL} == named
+
+
+def test_a_channel_says_its_format_and_a_wrong_one_is_refused():
+    assert CFG.channels["zombie"].format == "story"
+    made = config._channel(CFG.root, {"id": "x", "name": "X", "scenario_family": "", "character_ref": "c.png", "style_prompt": "",
+                                      "format": "Character", "voice_model": "eleven_v4", "max_seconds": 60})
+    assert (made.format, made.voice_model, made.max_seconds) == ("character", "eleven_v4", 60)
+    with pytest.raises(ValueError, match="format must be one of story, character"):
+        config._channel(CFG.root, {"id": "x", "name": "X", "scenario_family": "", "character_ref": "c.png", "style_prompt": "",
+                                   "format": "mime"})
+
+
+def test_a_channels_own_voice_model_is_used(tmp_path, monkeypatch):
+    tts = ElevenLabsTTS(CFG)
+    sent = []
+
+    def fake_call(method, url, **kwargs):
+        if "json" not in kwargs:           # asking for the voice's own settings
+            return {}
+        sent.append(kwargs["json"])
+        return {"audio_base64": ""}
+
+    monkeypatch.setattr(tts, "_call", fake_call)
+    monkeypatch.setattr(ffmpeg, "duration_ms", lambda path: 1000)
+    channel = SimpleNamespace(id="x", voice_id="abc", voice_model="eleven_v4")
+    tts.speak(channel, "Hello.", tmp_path / "a.mp3")
+    tts.speak(SimpleNamespace(id="y", voice_id="abc", voice_model=""), "Hello.", tmp_path / "b.mp3")
+    assert sent[0]["model_id"] == "eleven_v4" and sent[1]["model_id"] == tts.model
+
+
+def test_a_shorts_channel_keeps_shorts_and_a_long_channel_keeps_long_videos(monkeypatch):
+    def fake_run(ctx, name, request):
+        if name == "channels.list":
+            return {"items": [{"id": "UC1", "snippet": {"title": "C"}, "contentDetails": {"relatedPlaylists": {"uploads": "U"}}}]}
+        if name == "playlistItems.list":
+            return {"items": [{"contentDetails": {"videoId": v, "videoPublishedAt": "2099-01-01T00:00:00Z"}} for v in ("short", "long")]}
+        return {"items": [{"id": v, "snippet": {"title": v, "publishedAt": "2099-01-01T00:00:00Z"}, "statistics": {"viewCount": "5"},
+                           "contentDetails": {"duration": d}} for v, d in (("short", "PT45S"), ("long", "PT12M"))]}
+
+    monkeypatch.setattr(client, "public_service", lambda ctx: mock.MagicMock())
+    monkeypatch.setattr(client, "run", fake_run)
+    assert [v["youtube_id"] for v in competitors.fetch(None, ["UC1"], 90, 480)[0]] == ["long"]
+    assert [v["youtube_id"] for v in competitors.fetch(None, ["UC1"], 90, 0, 60)[0]] == ["short"]
+
+
+def test_several_slots_a_week_never_land_two_on_one_time():
+    now = datetime(2026, 11, 2, 12, tzinfo=timezone.utc)     # a Monday
+    slots = ["Tue 15:00 UTC", "Thu 15:00 UTC"]
+    first = metadata.free_slot(slots, [], now)
+    second = metadata.free_slot(slots, [first], now)
+    third = metadata.free_slot(slots, [first, second], now)
+    assert [datetime.fromtimestamp(t, timezone.utc).day for t in (first, second, third)] == [3, 5, 10]
+
+
+def test_a_shorts_description_has_its_credits_and_no_chapters_heading():
+    text = metadata.description({"hook": "h"}, [], True, blurb="What it shows.", credits=['"Gull" by Maker'])
+    assert "Chapters" not in text and '"Gull" by Maker' in text and metadata.DISCLOSURE in text
+    assert "Chapters" in metadata.description({"hook": "h"}, [{"t_ms": 0, "title": "One"}], False)
+
+
+# --- the short's clock ---------------------------------------------------------------------------------------------------
+
+LINES = short.lines([{"idx": 1, "narration": "A bird, up high.", "shows": "a gull", "duration_ms": 2000,
+                      "words": [{"word": "A", "start_ms": 0, "end_ms": 200}, {"word": "bird,", "start_ms": 200, "end_ms": 700},
+                                {"word": "up", "start_ms": 900, "end_ms": 1100}, {"word": "high.", "start_ms": 1100, "end_ms": 1900}]},
+                     {"idx": 2, "narration": "It dives.", "duration_ms": 1000,
+                      "words": [{"word": "It", "start_ms": 0, "end_ms": 300}, {"word": "dives.", "start_ms": 300, "end_ms": 900}]}],
+                    [500, 500])
+PERSON = {"type": "person", "character": "walt", "at": [0, 0], "stance": "Idle_relaxed"}
+
+
+def _scene(begin, end, **more):
+    return {"from": begin, "to": end, "set": "sky_set", "cast": {"walt": PERSON}, "happens": [],
+            "shots": [{"t": begin, "on": "walt:eyes", "frame": 0.6}], **more}
+
+
+def test_the_voice_sets_the_clock():
+    assert LINES["total"] == 4.0
+    assert LINES["lines"][1]["from"] == 2.5 and LINES["lines"][1]["words"][1]["t"] == 2.8
+
+
+def test_captions_come_from_the_voice_a_few_words_at_a_time():
+    said = short.captions(LINES)
+    assert [c["text"] for c in said] == ["A bird,", "up high.", "It dives."]   # broken after the comma
+    assert said[0]["from"] == 0 and said[1]["from"] == 0.9
+    assert all(a["to"] <= b["from"] for a, b in zip(said, said[1:]))
+
+
+def test_a_scene_comes_into_its_own_time():
+    scene = _scene(2.5, 4.0, happens=[{"do": "expression", "t": 3.0, "who": "walt", "name": "happy"},
+                                      {"do": "glow", "t": 2.5, "to": 3.5, "who": "walt", "on": "jaw", "color": "red"}])
+    scene["shots"] = [{"t": 2.5, "on": "walt:eyes", "frame": 0.6}, {"t": 3.2, "on": "walt:mouth", "frame": 0.4}]
+    mine = short.local(scene)
+    assert mine["length"] == 1.5 and "from" not in mine and "to" not in mine
+    assert [s["t"] for s in mine["shots"]] == [0, 0.7]
+    assert mine["happens"][0]["t"] == 0.5 and mine["happens"][1]["to"] == 1.0
+
+
+def test_scenes_have_to_cover_the_short_exactly():
+    good = {"scenes": [_scene(0, 2.5), _scene(2.5, 4.0)]}
+    check = lambda d: short.check(d, 4.0, ["walt"], ["Idle_relaxed"], {})
+    assert check(good) == []
+    assert "they have to meet" in " ".join(check({"scenes": [_scene(0, 2.0), _scene(2.5, 4.0)]}))
+    assert "the short ends at" in " ".join(check({"scenes": [_scene(0, 2.5)]}))
+    assert "don't write captions" in " ".join(check({"scenes": [_scene(0, 4.0, captions=[])]}))
+    assert "needs from and to" in " ".join(check({"scenes": [{"set": "gym"}]}))
+    assert check({"scenes": []})
+    wrong = _scene(0, 4.0)
+    wrong["cast"] = {"walt": {**PERSON, "character": "nia"}}
+    assert "character" in " ".join(check({"scenes": [wrong]}))       # only who it cast
+
+
+def test_every_line_gets_room_and_a_question_gets_more():
+    scenes = [{"narration": "Why?", "beat_idx": 0}, {"narration": "One.", "beat_idx": 0}, {"narration": "Two.", "beat_idx": 0},
+              {"narration": "But three.", "beat_idx": 1}]
+    assert short.pauses(scenes) == [short.LONG_PAUSE_MS, short.PAUSE_MS, short.LONG_PAUSE_MS, short.LAST_PAUSE_MS]
+    assert short.PAUSE_MS >= 500                              # the owner's floor
+
+
+def _tone(path, seconds, start_hz, end_hz, rate=44100):
+    """A voice-like tone whose pitch glides, as a wav."""
+    import array
+    import math
+    import wave
+    data, phase = array.array("h"), 0.0
+    for i in range(int(seconds * rate)):
+        phase += 2 * math.pi * (start_hz + (end_hz - start_hz) * i / (seconds * rate)) / rate
+        data.append(int(12000 * math.sin(phase)))
+    with wave.open(str(path), "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes(data.tobytes())
+    return path
+
+
+def test_a_question_that_rises_is_told_from_one_that_doesnt(tmp_path):
+    from render import narration
+    rising = narration.question_lift(_tone(tmp_path / "up.wav", 1.2, 120, 190))
+    flat = narration.question_lift(_tone(tmp_path / "flat.wav", 1.2, 140, 140))
+    assert rising > 1.05 and flat == pytest.approx(1.0, abs=0.02)
+    assert narration.question_lift(_tone(tmp_path / "short.wav", 0.1, 140, 140)) is None   # too little to say
+
+
+def test_a_line_is_cut_to_its_speech_and_its_words_move_with_it(tmp_path):
+    from render import narration
+    voiced = _tone(tmp_path / "a.wav", 1.0, 140, 140)
+    padded = tmp_path / "padded.wav"
+    ffmpeg.run(["-f", "lavfi", "-t", "0.5", "-i", "anullsrc=r=44100:cl=mono", "-i", voiced, "-filter_complex", "[0:a][1:a]concat=n=2:v=0:a=1", padded])
+    final, got = narration.trimmed(padded, {"words": [{"word": "Hi", "start_ms": 500, "end_ms": 1400}]})
+    assert got["duration_ms"] == pytest.approx(1090, abs=60)
+    assert got["words"][0]["start_ms"] <= 40 and final.exists()
+
+
+def test_a_channels_own_pace_is_used(tmp_path, monkeypatch):
+    tts = ElevenLabsTTS(CFG)
+    sent = []
+
+    def fake_call(method, url, **kwargs):
+        if "json" not in kwargs:
+            return {"stability": 0.5}
+        sent.append(kwargs["json"]["voice_settings"]["speed"])
+        return {"audio_base64": ""}
+
+    monkeypatch.setattr(tts, "_call", fake_call)
+    monkeypatch.setattr(ffmpeg, "duration_ms", lambda path: 1000)
+    tts.speak(SimpleNamespace(id="x", voice_id="abc", voice_model="", voice_speed=1.05), "Hi.", tmp_path / "a.mp3")
+    tts.speak(SimpleNamespace(id="y", voice_id="abc", voice_model="", voice_speed=0.0), "Hi.", tmp_path / "b.mp3")
+    assert sent == [1.05, tts.speed]
+
+
+def test_a_frame_on_the_sheet_is_paired_with_what_is_being_said_right_then():
+    """Found on the first real short: a shot starting just after a line was labelled with that line, and the looker believed it."""
+    assert film._being_said(LINES, 0.8) == '"A bird, [this frame] up high."'
+    assert film._being_said(LINES, 2.2) == "(a pause between lines)"
+    assert film._being_said(LINES, 2.6) == '"It [this frame] dives."'
+
+
+def test_a_look_takes_the_frame_in_the_middle_of_every_shot():
+    scene = {"length": 4.0, "shots": [{"t": 0}, {"t": 1.0}, {"t": 3.0}]}
+    assert film._middle_frames(scene) == [16, 61, 106]
+
+
+# --- what Claude's asked ---------------------------------------------------------------------------------------------------
+
+class Answers(ClaudeLLM):
+    """The prompts and checks as they are, with the replies given."""
+
+    def __init__(self, replies):
+        super().__init__(CFG)
+        self.replies, self.asked = list(replies), []
+
+    def _call(self, kind, system, messages, schema, meter, on_text, verify, verify_part=None):
+        self.asked.append((kind, system, messages))
+        text = json.dumps(self.replies.pop(0))
+        problems = verify(text)
+        assert not problems, problems
+        return text
+
+
+SHORTS = replace(CFG.channels["zombie"], id="shorts", name="Small Facts", format="character", gates=["render"], path=None,
+                 scenario_family="one surprising true thing a viewer can see happen")
+OUTLINE = {"hook": "Why don't woodpeckers get headaches?", "fact": "Their beaks flex. Source: a 2022 study in Current Biology.",
+           "beats": [{"title": "The hit", "summary": "A beak strikes."}, {"title": "The force", "summary": "A glow."},
+                     {"title": "The answer", "summary": "It bends."}], "ending": "Your head doesn't."}
+
+
+def test_a_short_gets_its_own_prompts_and_the_cards_shape():
+    llm = Answers([OUTLINE])
+    got = llm.outline(SHORTS, "Woodpeckers", [], None, NoMeter())
+    assert "vertical 3D short" in llm.asked[0][1] and "survival" not in llm.asked[0][1]
+    assert got["fact"].startswith("Their beaks") and got["beats"][0]["label"] == "Beat 1" and got["tracker"] == []
+    text = prompts.outline_text(got)
+    assert "Fact: Their beaks" in text and "Skill:" not in text
+
+
+def test_a_script_comes_back_as_lines_the_voice_stage_can_read():
+    lines = [{"beat": b, "narration": " ".join(["word"] * 14) + ".", "shows": "a beak"} for b in (1, 1, 2, 2, 3)]
+    outline = Answers([OUTLINE]).outline(SHORTS, "Woodpeckers", [], None, NoMeter())
+    got = Answers([{"scenes": lines}]).script(SHORTS, outline, [], None, NoMeter())
+    assert len(got["scenes"]) == 5 and got["places"] == []
+    assert got["scenes"][2]["beat_idx"] == 1 and got["scenes"][2]["visual_prompt"] == "a beak" and got["scenes"][2]["motion"] in checks.MOTIONS
+
+
+@pytest.mark.parametrize("change, says", [
+    (lambda s: s[:2], "lines"),
+    (lambda s: [{**s[0], "narration": "too short"}, *s[1:]], "line 1 is 2 words"),
+    (lambda s: [{**s[0], "narration": s[0]["narration"] + " — now"}, *s[1:]], "em dash"),
+    (lambda s: [{**s[0], "beat": 9}, *s[1:]], "line 1 says beat 9"),
+    (lambda s: [*s[:-1], {**s[-1], "beat": 1}], "goes back"),
+    (lambda s: [x for x in s if x["beat"] != 2], "have no line"),
+])
+def test_a_bad_short_script_is_refused_with_the_reason(change, says):
+    lines = [{"beat": b, "narration": " ".join(["word"] * 14) + ".", "shows": "x"} for b in (1, 1, 2, 2, 3)]
+    assert checks.short_script(lines, {"beats": [{}, {}, {}]}) == []
+    assert says in " ".join(checks.short_script(change(lines), {"beats": [{}, {}, {}]}))
+
+
+def test_every_prompt_for_a_short_fills_without_a_stray_placeholder():
+    values = {"idea": "", "notes": "", "previous": "", "outline": "", "script": "", "topic": "", "series": "", "lines": "",
+              "people": "", "things": "", "built_in": "", "character_format": "", "thing_format": "", "what": "", "meters": 1, "moves": True,
+              "hits": "", "rejected": "", "size": "", "clips": "", "materials": "", "round": 1, "total": 1, "stances": "",
+              "language": "", "example": "", "shots": "", "competitors": "", "taken": "", "families": "", "held": "", "count": 1,
+              "winner": ""}
+    for file, turns in (("outline", ("new", "revise")), ("script", ("new", "revise")), ("critic", ("outline", "script")),
+                        ("titles", ("",)), ("topic", ("competitors", "winner")), ("cast", ("",)), ("source", ("",)),
+                        ("thing", ("",)), ("direct", ("new", "revise")), ("film", ("",))):
+        for turn in turns:
+            system, user = prompts.render(CFG.root, f"character/{file}.md", turn, SHORTS, values)
+            assert system and user
+
+
+def test_a_look_can_only_name_what_the_file_really_has():
+    base = {"right_thing": True, "tilt": [0, 0], "meters": 1, "moves": {}, "rest": ""}
+    assert checks.thing_look(base, {"Fly": {}}) == []
+    assert "its clip has to be" in " ".join(checks.thing_look({**base, "moves": {"f": {"clip": "Run"}}}, {"Fly": {}}))
+    assert "isn't one of its moves" in " ".join(checks.thing_look({**base, "rest": "Sit"}, {"Fly": {}}))
+
+
+# --- getting what a short asks for ----------------------------------------------------------------------------------------
+
+class Looker:
+    """The looks, answered as given."""
+
+    def __init__(self, right=(True,)):
+        self.right, self.picks = list(right), 0
+
+    def pick_thing(self, channel, want, hits, sheet, rejected, meter):
+        self.picks += 1
+        return {"seen": "", "choice": len(rejected) + 1 if len(rejected) < len(hits) else 0, "why": ""}
+
+    def check_thing(self, channel, want, manifest, sheet, round_n, meter):
+        return {"seen": "", "right_thing": self.right.pop(0), "turn": 90 if round_n == 1 else 0, "tilt": [0, 0],
+                "meters": want["meters"], "rest": "", "moves": {}, "spots": {"head": [0, -0.1, 0.1]}, "problems": []}
+
+
+def _getting(tmp_path, monkeypatch, llm, hits):
+    monkeypatch.setattr(thing_spec, "SPECS", tmp_path / "specs")
+    (tmp_path / "specs").mkdir()
+    monkeypatch.setattr(direct, "_search", lambda ctx, video, tid, words: {"hits": hits, "sheet": "s.png"})
+    built = []
+
+    def fake_build(config, tid, spend=False, say=print, spec=None):
+        built.append(spec)
+        return {"id": tid, "folder": tmp_path, "sheet": "t.png", "manifest": {"clips": {}, "size": [1, 1, 1]}}
+
+    monkeypatch.setattr(direct.thing_build, "build", fake_build)
+    said = []
+    ctx = SimpleNamespace(llm=llm, config=None, media=lambda vid: tmp_path / "media",
+                          events=SimpleNamespace(emit=lambda *a, **k: said.append(k.get("text"))))
+    return ctx, built, said
+
+
+HITS = [{"title": "Toy gull", "source": {"kind": "polyhaven", "asset": "toy"}}, {"title": "Gull", "source": {"kind": "polyhaven", "asset": "gull"}}]
+WANT = {"id": "gull", "what": "a gull", "search": "gull", "meters": 1.2, "moves": True}
+
+
+def test_a_wrong_model_is_turned_down_and_the_next_is_tried_and_put_right(tmp_path, monkeypatch):
+    ctx, built, said = _getting(tmp_path, monkeypatch, Looker([False, True, True]), HITS)
+    assert direct._get_thing(ctx, None, {"id": 1}, SHORTS, WANT, lambda what: NoMeter()) == "gull"
+    kept = thing_spec.load(thing_spec.path_for("gull"))
+    assert kept["source"]["asset"] == "gull" and kept["turn"] == 90 and kept["spots"]["head"] == [0, -0.1, 0.1]
+    assert kept["meters"] == 1.2 and said == []
+
+
+def test_a_thing_nothing_free_will_do_for_is_left_out_and_the_owner_told(tmp_path, monkeypatch):
+    ctx, built, said = _getting(tmp_path, monkeypatch, Looker([False, False]), HITS)
+    assert direct._get_thing(ctx, None, {"id": 1}, SHORTS, WANT, lambda what: NoMeter()) is None
+    assert not thing_spec.path_for("gull").exists()
+    assert "No free model would do" in said[0] and str(get.GENERATE["usd"]) in said[0]
+
+
+def test_what_a_short_needs_is_asked_once_though_the_library_grows(tmp_path):
+    """Found on the first real short: getting the first thing changed the library, so running again asked a new question."""
+    ctx, calls = SimpleNamespace(media=lambda vid: tmp_path), []
+    ask = lambda: calls.append(1) or {"people": [], "things": []}    # noqa: E731
+    direct._asked_once(ctx, {"id": 1}, [], ask)
+    direct._asked_once(ctx, {"id": 1}, [], ask)
+    assert len(calls) == 1
+    direct._asked_once(ctx, {"id": 1}, ["someone older"], ask)      # the owner's note is a new question
+    assert len(calls) == 2
+
+
+class Parks(Looker):
+    """A look that waits on the session the first time it's asked each thing, as a real job does."""
+
+    def __init__(self, right):
+        super().__init__(right)
+        self.asked, self.looks = set(), []
+
+    def _waits(self, key):
+        if key not in self.asked:
+            self.asked.add(key)
+            raise WaitsForSession
+
+    def pick_thing(self, channel, want, hits, sheet, rejected, meter):
+        self._waits(("pick", tuple(rejected)))
+        return super().pick_thing(channel, want, hits, sheet, rejected, meter)
+
+    def check_thing(self, channel, want, manifest, sheet, round_n, meter):
+        self._waits(("look", round_n))
+        self.looks.append(round_n)
+        return super().check_thing(channel, want, manifest, sheet, round_n, meter)
+
+
+class WaitsForSession(Exception):
+    pass
+
+
+def test_a_thing_carries_on_where_it_was_when_the_stage_runs_again(tmp_path, monkeypatch):
+    ctx, built, said = _getting(tmp_path, monkeypatch, Parks([True, True]), HITS)
+    got = None
+    for _ in range(6):                    # each wait, the stage runs again from the top
+        try:
+            got = direct._get_thing(ctx, None, {"id": 1}, SHORTS, WANT, lambda what: NoMeter())
+            break
+        except WaitsForSession:
+            continue
+    assert got == "gull"
+    assert ctx.llm.looks == [1, 2]        # looked at once, then once more as it was put right, and never again
+    kept = thing_spec.load(thing_spec.path_for("gull"))
+    assert kept["turn"] == 90 and kept["source"]["asset"] == "toy"
+    turns = [s.get("turn") for s in built]
+    assert None not in turns[turns.index(90):]                # once it's put right, it's never rebuilt the old way
+
+
+def test_nothing_generated_is_ever_chosen_without_the_owner(tmp_path):
+    source = {"kind": "generate", "prompt": "a gull"}
+    with pytest.raises(RuntimeError, match="yes"):
+        get.fetch(CFG, source, tmp_path)
+
+
+# --- end to end ------------------------------------------------------------------------------------------------------------
+
+def _fleet(tmp_path, gates=("outline", "script", "character", "render")):
+    ctx = make_ctx(data_dir=tmp_path, overrides={
+        "mode": "stub", "stub": {"scenes": 3}, "engine": {"retry_backoff_s": 0}, "topics": {"competitors": "off"},
+        "render": {"engine": "ffmpeg"}})
+    ctx.config.channels["shorts"] = replace(SHORTS, gates=list(gates), youtube={"category_id": 27, "tags": ["facts"]})
+    with ctx.connect() as conn:
+        db.sync_channels(conn, ctx.config.channels)
+    return ctx
+
+
+def _video(ctx, vid):
+    with ctx.connect() as conn:
+        return db.get_video(conn, vid)
+
+
+def _cards(ctx, vid):
+    with ctx.connect() as conn:
+        return [json.loads(r["card_json"])["kind"] for r in conn.execute(
+            "SELECT card_json FROM messages WHERE video_id = ? AND card_json IS NOT NULL ORDER BY id", (vid,))]
+
+
+@pytest.mark.skipif(remotion_render.missing() is not None, reason="Remotion isn't installed")
+def test_a_short_runs_from_a_topic_to_published_with_the_story_channel_untouched(tmp_path):
+    ctx = _fleet(tmp_path)
+    vid = actions.new_video(ctx, "shorts", "Why woodpeckers don't get headaches")
+    story = actions.new_video(ctx, "zombie", "Day 1 to Day 30 in a flooded subway")
+    Engine(ctx).run_until_idle()
+    actions.approve(ctx, vid, "outline")
+    Engine(ctx).run_until_idle()
+    actions.approve(ctx, vid, "script")
+    Engine(ctx).run_until_idle()
+
+    video = _video(ctx, vid)                                   # voiced, titled and directed, and waiting on the cast
+    assert video["state"] == "generating" and "character" in _cards(ctx, vid)
+    direction = json.loads(video["direction_json"])
+    assert direction["approved"] is False and direction["people"] and video["video_path"] is None
+    with ctx.connect() as conn:
+        scenes = db.scenes_for(conn, vid)
+    assert {s["state"] for s in scenes} == {"ok"} and all(s["still_path"] is None for s in scenes)
+    assert json.loads(video["thumbs_json"])["thumbs"] == []    # no thumbnails on a short
+
+    actions.approve(ctx, vid, "character")
+    Engine(ctx).run_until_idle()
+    video = _video(ctx, vid)
+    assert video["state"] == "assembled" and _cards(ctx, vid)[-1] == "render"
+    made = ctx.abs(video["video_path"])
+    assert made.exists() and abs(ffmpeg.duration_ms(made) - video["duration_ms"]) < 200
+    assert Image.open(ctx.abs(video["frames_path"])).width > 0
+    assert "Duration" in ffmpeg.probe(made) and "Audio" in ffmpeg.probe(made)   # the voice is on it
+
+    with pytest.raises(Exception, match="pick a title first"):   # only a title to pick
+        actions.approve(ctx, vid, "render")
+    actions.pick(ctx, vid, title_idx=0)
+    actions.approve(ctx, vid, "render")
+    actions.request_publish(ctx, vid)
+    Engine(ctx).run_until_idle()
+    video = _video(ctx, vid)
+    assert video["state"] == "scheduled"
+    meta = json.loads(video["publish_json"])
+    assert meta["thumbnail"] is None and meta["category_id"] == "27" and "facts" in meta["tags"] and "Chapters" not in meta["description"]
+
+    other = _video(ctx, story)                                 # the story video stops at its own gate, as ever
+    assert other["state"] == "outlined" and other["direction_json"] is None
+
+
+def test_a_note_on_the_cast_directs_it_again_with_the_note(tmp_path):
+    ctx = _fleet(tmp_path)
+    vid = actions.new_video(ctx, "shorts", "Why woodpeckers don't get headaches")
+    Engine(ctx).run_until_idle()
+    actions.approve(ctx, vid, "outline")
+    Engine(ctx).run_until_idle()
+    actions.approve(ctx, vid, "script")
+    Engine(ctx).run_until_idle()
+    actions.revise(ctx, vid, "character", "someone older")
+    with ctx.connect() as conn:
+        assert db.notes(conn, vid, "direct") == ["someone older"]
+    assert _video(ctx, vid)["direction_json"] is None
+    Engine(ctx).run_until_idle()
+    assert json.loads(_video(ctx, vid)["direction_json"])["approved"] is False
+    assert _cards(ctx, vid).count("character") == 2
+
+
+def test_at_the_render_card_a_flag_directs_it_again_but_keeps_the_voice(tmp_path):
+    ctx = _fleet(tmp_path, gates=("outline", "script", "render"))
+    vid = actions.new_video(ctx, "shorts", "Why woodpeckers don't get headaches")
+    with ctx.connect() as conn, db.tx(conn):
+        script = [{"idx": 1, "beat_idx": 0, "label": "Beat 1", "narration": "A line.", "visual_prompt": "x", "motion": "kenburns"}]
+        db.update_video(conn, vid, outline_json=json.dumps({"topic": "t", "hook": "h", "ending": "e", "beats": [{"label": "Beat 1", "title": "t", "summary": "s", "skill": "", "hero": False, "cast": []}]}),
+                        script_json=json.dumps(script))
+        db.transition(conn, vid, "new", "scripted")
+        actions.start_generating(conn, vid)
+        conn.execute("UPDATE scenes SET state = 'ok', audio_path = 'a.mp3', duration_ms = 1000 WHERE video_id = ?", (vid,))
+        db.update_video(conn, vid, direction_json=json.dumps({"scenes": [], "approved": True}), direction_draft_json=json.dumps({"looked": True}))
+        db.transition(conn, vid, "generating", "assembled")
+    with pytest.raises(Exception, match="voice stays"):
+        actions.flag_scenes(ctx, vid, [1], "narration", "shorter")
+    with pytest.raises(Exception, match="flag its lines"):
+        actions.edit_scene(ctx, vid, 1, narration="new")
+    actions.flag_scenes(ctx, vid, [1], "visual", "the bird's too small")
+    video = _video(ctx, vid)
+    assert video["state"] == "generating" and video["direction_json"] is None
+    assert json.loads(video["direction_draft_json"])["looked"] is False     # looked at afresh
+    with ctx.connect() as conn:
+        assert db.notes(conn, vid, "direct") == ["On lines 1: the bird's too small"]
+        assert db.scenes_for(conn, vid)[0]["audio_path"] == "a.mp3"
+
+
+# --- filming for real, on a stand-in person -----------------------------------------------------------------------------------
+
+def _directed(ctx, vid, scene):
+    """A short with its voice and direction done, one line long, as stages/direct.py leaves it."""
+    outline = {"topic": "t", "hook": "h", "ending": "e", "beats": [{"label": "Beat 1", "title": "t", "summary": "s", "skill": "", "hero": False, "cast": []}]}
+    audio = ctx.media(vid) / "line.mp3"
+    audio.parent.mkdir(parents=True, exist_ok=True)
+    ffmpeg.run(["-f", "lavfi", "-i", "anullsrc=r=44100:cl=mono", "-t", "1.5", audio])
+    with ctx.connect() as conn, db.tx(conn):
+        db.update_video(conn, vid, outline_json=json.dumps(outline), script_json=json.dumps(
+            [{"idx": 1, "beat_idx": 0, "label": "Beat 1", "narration": "A line.", "visual_prompt": "x", "motion": "kenburns"}]))
+        db.transition(conn, vid, "new", "scripted")
+        actions.start_generating(conn, vid)
+        conn.execute("UPDATE scenes SET state = 'ok', audio_path = ?, duration_ms = 1500, words_json = ? WHERE video_id = ?",
+                     (ctx.rel(audio), json.dumps([{"word": "A", "start_ms": 0, "end_ms": 400}, {"word": "line.", "start_ms": 400, "end_ms": 1400}]), vid))
+        db.update_video(conn, vid, direction_json=json.dumps({"scenes": [scene], "people": ["walt"], "things": [], "credits": [], "look": 0, "approved": True}))
+    return outline
+
+
+def _really_filming(tmp_path, monkeypatch):
+    ctx = _fleet(tmp_path, gates=("outline", "script", "render"))
+    monkeypatch.setattr(film, "_stub", lambda c: False)
+    with ctx.connect() as conn, db.tx(conn):
+        conn.execute("SELECT 1")
+    return ctx
+
+
+@pytest.mark.skipif(remotion_render.missing() is not None, reason="Remotion isn't installed")
+def test_a_short_is_really_filmed_after_its_shots_are_looked_at(tmp_path, monkeypatch):
+    from render import blender_render, clips
+    from test_characters import _fake_person
+    if blender_render.missing(CFG) or clips.missing(CFG):
+        pytest.skip("needs Blender and the free clips")
+    ctx = _really_filming(tmp_path, monkeypatch)
+    ctx.config.blender["samples"] = 1
+    person = _fake_person(tmp_path / "made")
+    target = ctx.config.data_dir / "characters" / "walt"
+    target.mkdir(parents=True)
+    for f in person.iterdir():
+        (target / f.name).write_bytes(f.read_bytes())
+    catalog = clips.catalog(CFG)
+    monkeypatch.setattr(clips, "catalog", lambda c: catalog)
+    looks = []
+    real_check = ctx.llm.check_film
+    monkeypatch.setattr(ctx.llm, "check_film", lambda channel, shots, sheet, meter: looks.append((shots, sheet)) or real_check(channel, shots, sheet, meter))
+    vid = actions.new_video(ctx, "shorts", "t")
+    scene = {"from": 0, "to": 2.7, "set": "sky_set", "cast": {"walt": {"type": "person", "character": "walt", "at": [0, 0], "stance": "Idle_relaxed"}},
+             "happens": [{"do": "expression", "t": 0.5, "who": "walt", "name": "shocked"}],
+             "shots": [{"t": 0, "on": "walt:eyes", "frame": 0.6}, {"t": 1.2, "on": "walt:mouth", "frame": 0.4}]}
+    _directed(ctx, vid, scene)
+    Engine(ctx).run_until_idle()
+    video = _video(ctx, vid)
+    assert video["state"] == "assembled", video["error"]
+    assert looks and 'A line.' in looks[0][0] and Path(looks[0][1]).exists()   # two frames looked at, with their line
+    assert ffmpeg.duration_ms(ctx.abs(video["video_path"])) == pytest.approx(2700, abs=200)
+    assert not list((ctx.media(vid) / "film").glob("*/frames"))                  # the big pictures don't stay
+
+
+def test_what_a_look_finds_doesnt_ask_again_what_the_short_needs():
+    notes = [f"{direct.LOOK_NOTE}shot 3: too far", "someone older"]
+    assert [n for n in notes if not n.startswith(direct.LOOK_NOTE)] == ["someone older"]
+
+
+def test_what_a_look_finds_sends_it_back_once_and_only_once(tmp_path, monkeypatch):
+    ctx = _really_filming(tmp_path, monkeypatch)
+    vid = actions.new_video(ctx, "shorts", "t")
+    scene = {"from": 0, "to": 2.7, "set": "sky_set", "cast": {"walt": {"type": "person", "character": "walt", "at": [0, 0], "stance": "Idle_relaxed"}},
+             "happens": [], "shots": [{"t": 0, "on": "walt:eyes", "frame": 0.6}]}
+    _directed(ctx, vid, scene)
+
+    def refused(*args, **kwargs):
+        raise ValueError("strike: walt stands too far from the door to reach it")
+
+    monkeypatch.setattr(film.filming, "film", refused)
+    with ctx.connect() as conn:
+        video = db.get_video(conn, vid)
+        film._work(ctx, conn, video)
+        video = db.get_video(conn, vid)
+        assert video["direction_json"] is None                                   # back to the director
+        assert "stands too far" in db.notes(conn, vid, "direct")[0]
+        assert json.loads(video["direction_draft_json"])["looked"] is True       # and not looked at again after this

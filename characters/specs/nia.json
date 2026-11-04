@@ -1,0 +1,14 @@
+{
+ "name": "Nia",
+ "gender": "female",
+ "preset": "Maya",
+ "age": 28,
+ "hair": "Bob Short",
+ "hair_color": "black",
+ "eyes": "dark_brown",
+ "outfit": "Relaxed_Weekday",
+ "footwear": "HG_Leather_Sneakers_Female",
+ "lipstick": 0.6,
+ "clothes": {"TSHIRT": [0.62, 0.16, 0.10]},
+ "keys": {"Stylized": 0.3, "Eye Scale": 0.4}
+}

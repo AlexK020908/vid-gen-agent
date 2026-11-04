@@ -1,0 +1,1484 @@
+{
+ "name": "diesel pile hammer",
+ "steps": [
+  "an iron block",
+  "split into a ram and an anvil",
+  "the anvil's flange",
+  "a cylinder between them",
+  "explosives inside",
+  "guide rods",
+  "explosives through the port",
+  "a fuel injector, gasoline and a spark plug",
+  "diesel"
+ ],
+ "parts": [
+  {
+   "id": "pile",
+   "kind": "tube",
+   "r_out": 0.3,
+   "r_in": 0.26,
+   "h": 30.0,
+   "material": "pile_paint",
+   "at": [
+    0,
+    0,
+    -30
+   ],
+   "segments": 48,
+   "joint": {
+    "type": "slide",
+    "axis": "z",
+    "min": -20,
+    "max": 0,
+    "rest": 0
+   }
+  },
+  {
+   "id": "pile_plug",
+   "kind": "cylinder",
+   "r": 0.26,
+   "h": 0.5,
+   "material": "dark_steel",
+   "at": [
+    0,
+    0,
+    29.3
+   ],
+   "parent": "pile"
+  },
+  {
+   "id": "hammer",
+   "kind": "group",
+   "parent": "pile",
+   "at": [
+    0,
+    0,
+    30
+   ]
+  },
+  {
+   "id": "block",
+   "kind": "cylinder",
+   "r": 0.65,
+   "h": 1.75,
+   "material": "steel",
+   "bevel": 0.04,
+   "segments": 72,
+   "parent": "hammer",
+   "steps": [
+    1,
+    1
+   ],
+   "joint": {
+    "type": "slide",
+    "axis": "z",
+    "min": 0,
+    "max": 30,
+    "rest": 0
+   }
+  },
+  {
+   "id": "block_eye",
+   "kind": "torus",
+   "major": 0.11,
+   "minor": 0.03,
+   "material": "steel",
+   "at": [
+    0,
+    0,
+    1.82
+   ],
+   "axis": "X",
+   "parent": "block"
+  },
+  {
+   "id": "split_line",
+   "kind": "tube",
+   "r_out": 0.656,
+   "r_in": 0.63,
+   "h": 0.03,
+   "material": "safety_yellow",
+   "at": [
+    0,
+    0,
+    0.525
+   ],
+   "segments": 72,
+   "parent": "block"
+  },
+  {
+   "id": "anvil",
+   "kind": "lathe",
+   "material": "steel",
+   "parent": "hammer",
+   "steps": [
+    2,
+    null
+   ],
+   "cut": true,
+   "segments": 72,
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.65,
+     0
+    ],
+    [
+     0.65,
+     0.505
+    ],
+    [
+     0.63,
+     0.525
+    ],
+    [
+     0.5,
+     0.525
+    ],
+    [
+     0.35,
+     0.47500000000000003
+    ],
+    [
+     0.15,
+     0.445
+    ],
+    [
+     0,
+     0.44
+    ]
+   ]
+  },
+  {
+   "id": "ram",
+   "kind": "cylinder",
+   "r": 0.65,
+   "h": 1.225,
+   "material": "steel",
+   "bevel": 0.04,
+   "segments": 72,
+   "at": [
+    0,
+    0,
+    0.525
+   ],
+   "parent": "hammer",
+   "steps": [
+    2,
+    null
+   ],
+   "joint": {
+    "type": "slide",
+    "axis": "z",
+    "min": 0,
+    "max": 30,
+    "rest": 0,
+    "check": [
+     0,
+     3.1
+    ]
+   }
+  },
+  {
+   "id": "ram_eye",
+   "kind": "torus",
+   "major": 0.1,
+   "minor": 0.028,
+   "material": "steel",
+   "at": [
+    0,
+    0,
+    1.2850000000000001
+   ],
+   "axis": "X",
+   "parent": "ram"
+  },
+  {
+   "id": "flange",
+   "kind": "cylinder",
+   "r": 1.5,
+   "h": 0.12,
+   "material": "dark_steel",
+   "bevel": 0.015,
+   "segments": 128,
+   "parent": "hammer",
+   "steps": [
+    3,
+    null
+   ],
+   "cut": true
+  },
+  {
+   "id": "socket1",
+   "kind": "cylinder",
+   "r": 0.11,
+   "h": 0.12,
+   "material": "safety_yellow",
+   "bevel": 0.01,
+   "segments": 32,
+   "at": [
+    -1.3,
+    0,
+    0.12
+   ],
+   "parent": "hammer",
+   "steps": [
+    3,
+    null
+   ],
+   "cut": true
+  },
+  {
+   "id": "socket2",
+   "kind": "cylinder",
+   "r": 0.11,
+   "h": 0.12,
+   "material": "safety_yellow",
+   "bevel": 0.01,
+   "segments": 32,
+   "at": [
+    1.3,
+    0,
+    0.12
+   ],
+   "parent": "hammer",
+   "steps": [
+    3,
+    null
+   ],
+   "cut": true
+  },
+  {
+   "id": "socket3",
+   "kind": "cylinder",
+   "r": 0.11,
+   "h": 0.12,
+   "material": "safety_yellow",
+   "bevel": 0.01,
+   "segments": 32,
+   "at": [
+    0,
+    -1.3,
+    0.12
+   ],
+   "parent": "hammer",
+   "steps": [
+    3,
+    null
+   ],
+   "cut": true
+  },
+  {
+   "id": "socket4",
+   "kind": "cylinder",
+   "r": 0.11,
+   "h": 0.12,
+   "material": "safety_yellow",
+   "bevel": 0.01,
+   "segments": 32,
+   "at": [
+    0,
+    1.3,
+    0.12
+   ],
+   "parent": "hammer",
+   "steps": [
+    3,
+    null
+   ],
+   "cut": true
+  },
+  {
+   "id": "cyl_slide",
+   "kind": "group",
+   "parent": "hammer",
+   "steps": [
+    4,
+    null
+   ],
+   "joint": {
+    "type": "slide",
+    "axis": "x",
+    "min": -8,
+    "max": 0,
+    "rest": 0
+   }
+  },
+  {
+   "id": "cyl_drop",
+   "kind": "group",
+   "parent": "cyl_slide",
+   "joint": {
+    "type": "slide",
+    "axis": "z",
+    "min": 0,
+    "max": 3,
+    "rest": 0
+   }
+  },
+  {
+   "id": "port_hole_l",
+   "kind": "cylinder",
+   "r": 0.075,
+   "h": 0.4,
+   "at": [
+    -0.5800000000000001,
+    0,
+    0.775
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "helper": true,
+   "segments": 32,
+   "parent": "cyl_drop"
+  },
+  {
+   "id": "port_hole_r",
+   "kind": "cylinder",
+   "r": 0.075,
+   "h": 0.4,
+   "at": [
+    0.5800000000000001,
+    0,
+    0.775
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "helper": true,
+   "segments": 32,
+   "parent": "cyl_drop"
+  },
+  {
+   "id": "cylinder",
+   "kind": "tube",
+   "r_out": 0.78,
+   "r_in": 0.675,
+   "h": 1.2937500000000002,
+   "material": "safety_yellow",
+   "segments": 96,
+   "at": [
+    0,
+    0,
+    0.12
+   ],
+   "parent": "cyl_drop",
+   "cut": true,
+   "subtract": [
+    "port_hole_l",
+    "port_hole_r"
+   ]
+  },
+  {
+   "id": "lip_low",
+   "kind": "tube",
+   "r_out": 0.8500000000000001,
+   "r_in": 0.76,
+   "h": 0.1,
+   "material": "safety_yellow",
+   "segments": 96,
+   "at": [
+    0,
+    0,
+    0.12
+   ],
+   "parent": "cyl_drop",
+   "cut": true
+  },
+  {
+   "id": "lip_high",
+   "kind": "tube",
+   "r_out": 0.8500000000000001,
+   "r_in": 0.76,
+   "h": 0.1,
+   "material": "safety_yellow",
+   "segments": 96,
+   "at": [
+    0,
+    0,
+    1.3137500000000002
+   ],
+   "parent": "cyl_drop",
+   "cut": true
+  },
+  {
+   "id": "port_ring_l",
+   "kind": "tube",
+   "r_out": 0.13,
+   "r_in": 0.075,
+   "h": 0.08,
+   "material": "safety_yellow",
+   "segments": 32,
+   "at": [
+    -0.77,
+    0,
+    0.775
+   ],
+   "rot": [
+    0,
+    -90,
+    0
+   ],
+   "parent": "cyl_drop"
+  },
+  {
+   "id": "port_ring_r",
+   "kind": "tube",
+   "r_out": 0.13,
+   "r_in": 0.075,
+   "h": 0.08,
+   "material": "safety_yellow",
+   "segments": 32,
+   "at": [
+    0.77,
+    0,
+    0.775
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "parent": "cyl_drop"
+  },
+  {
+   "id": "explosive",
+   "kind": "cylinder",
+   "r": 0.30375,
+   "h": 0.25,
+   "material": "hazard_stripes",
+   "bevel": 0.015,
+   "at": [
+    0,
+    0,
+    0.47500000000000003
+   ],
+   "parent": "hammer",
+   "steps": [
+    5,
+    5
+   ],
+   "joint": {
+    "type": "slide",
+    "axis": "z",
+    "min": 0,
+    "max": 4,
+    "rest": 0
+   }
+  },
+  {
+   "id": "explosive_cap",
+   "kind": "cylinder",
+   "r": 0.07,
+   "h": 0.06,
+   "material": "red_paint",
+   "at": [
+    0,
+    0,
+    0.25
+   ],
+   "parent": "explosive"
+  },
+  {
+   "id": "rod_l",
+   "kind": "cylinder",
+   "r": 0.075,
+   "h": 6.0975,
+   "material": "glass_rod",
+   "segments": 32,
+   "at": [
+    -1.3,
+    0,
+    0.24
+   ],
+   "parent": "hammer",
+   "steps": [
+    6,
+    null
+   ],
+   "joint": {
+    "type": "stretch",
+    "axis": "z",
+    "min": 0.05,
+    "max": 6.0975,
+    "rest": 6.0975
+   }
+  },
+  {
+   "id": "ear_l",
+   "kind": "box",
+   "size": [
+    0.26,
+    0.26,
+    0.24
+   ],
+   "material": "safety_yellow",
+   "bevel": 0.02,
+   "at": [
+    -1.0270000000000001,
+    0,
+    1.0750000000000002
+   ],
+   "parent": "ram",
+   "steps": [
+    6,
+    null
+   ]
+  },
+  {
+   "id": "sleeve_l",
+   "kind": "tube",
+   "r_out": 0.15,
+   "r_in": 0.087,
+   "h": 0.26,
+   "material": "safety_yellow",
+   "segments": 32,
+   "at": [
+    -1.3,
+    0,
+    0.9450000000000001
+   ],
+   "parent": "ram",
+   "steps": [
+    6,
+    null
+   ]
+  },
+  {
+   "id": "rod_r",
+   "kind": "cylinder",
+   "r": 0.075,
+   "h": 6.0975,
+   "material": "glass_rod",
+   "segments": 32,
+   "at": [
+    1.3,
+    0,
+    0.24
+   ],
+   "parent": "hammer",
+   "steps": [
+    6,
+    null
+   ],
+   "joint": {
+    "type": "stretch",
+    "axis": "z",
+    "min": 0.05,
+    "max": 6.0975,
+    "rest": 6.0975
+   }
+  },
+  {
+   "id": "ear_r",
+   "kind": "box",
+   "size": [
+    0.26,
+    0.26,
+    0.24
+   ],
+   "material": "safety_yellow",
+   "bevel": 0.02,
+   "at": [
+    1.0270000000000001,
+    0,
+    1.0750000000000002
+   ],
+   "parent": "ram",
+   "steps": [
+    6,
+    null
+   ]
+  },
+  {
+   "id": "sleeve_r",
+   "kind": "tube",
+   "r_out": 0.15,
+   "r_in": 0.087,
+   "h": 0.26,
+   "material": "safety_yellow",
+   "segments": 32,
+   "at": [
+    1.3,
+    0,
+    0.9450000000000001
+   ],
+   "parent": "ram",
+   "steps": [
+    6,
+    null
+   ]
+  },
+  {
+   "id": "collar",
+   "kind": "tube",
+   "r_out": 0.8450000000000001,
+   "r_in": 0.65,
+   "h": 0.30625,
+   "material": "safety_yellow",
+   "segments": 96,
+   "at": [
+    0,
+    0,
+    0.9187500000000001
+   ],
+   "parent": "ram",
+   "steps": [
+    6,
+    null
+   ]
+  },
+  {
+   "id": "crossbar",
+   "kind": "box",
+   "size": [
+    3.4125,
+    0.4,
+    0.3
+   ],
+   "material": "safety_yellow",
+   "bevel": 0.02,
+   "at": [
+    0,
+    0,
+    6.487500000000001
+   ],
+   "parent": "hammer",
+   "steps": [
+    6,
+    null
+   ]
+  },
+  {
+   "id": "pulley",
+   "kind": "sphere",
+   "r": 0.22,
+   "material": "dark_steel",
+   "at": [
+    0,
+    0,
+    0.36
+   ],
+   "parent": "crossbar"
+  },
+  {
+   "id": "startup_cable",
+   "kind": "cylinder",
+   "r": 0.015,
+   "h": 1.0,
+   "material": "rubber",
+   "at": [
+    0,
+    0,
+    -0.15
+   ],
+   "rot": [
+    180,
+    0,
+    0
+   ],
+   "segments": 12,
+   "parent": "crossbar",
+   "joint": {
+    "type": "stretch",
+    "axis": "z",
+    "min": 0.05,
+    "max": 4.1795,
+    "rest": 0.5
+   }
+  },
+  {
+   "id": "startup",
+   "kind": "group",
+   "at": [
+    0,
+    0,
+    -0.15
+   ],
+   "parent": "crossbar",
+   "joint": {
+    "type": "slide",
+    "axis": "z",
+    "min": -4.1795,
+    "max": -0.05,
+    "rest": -0.5
+   }
+  },
+  {
+   "id": "startup_hook",
+   "kind": "box",
+   "size": [
+    0.16,
+    0.12,
+    0.22
+   ],
+   "material": "hazard_stripes",
+   "bevel": 0.01,
+   "at": [
+    0,
+    0,
+    -0.11
+   ],
+   "parent": "startup"
+  },
+  {
+   "id": "canister",
+   "kind": "cylinder",
+   "r": 0.31200000000000006,
+   "h": 0.34,
+   "material": "red_paint",
+   "bevel": 0.02,
+   "segments": 48,
+   "at": [
+    -1.15,
+    0,
+    0.775
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "parent": "hammer",
+   "steps": [
+    7,
+    7
+   ],
+   "joint": {
+    "type": "slide",
+    "axis": "y",
+    "min": -1.2,
+    "max": 0,
+    "rest": 0
+   }
+  },
+  {
+   "id": "canister_cap",
+   "kind": "cylinder",
+   "r": 0.28200000000000003,
+   "h": 0.04,
+   "material": "red_paint",
+   "at": [
+    0,
+    0,
+    -0.04
+   ],
+   "parent": "canister"
+  },
+  {
+   "id": "injector",
+   "kind": "cylinder",
+   "r": 0.06,
+   "h": 0.22,
+   "material": "chrome",
+   "segments": 24,
+   "at": [
+    -0.9500000000000001,
+    0,
+    0.775
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "parent": "hammer",
+   "steps": [
+    8,
+    null
+   ]
+  },
+  {
+   "id": "can",
+   "kind": "box",
+   "size": [
+    0.42,
+    0.26,
+    0.73
+   ],
+   "material": "red_paint",
+   "bevel": 0.03,
+   "at": [
+    -1.95,
+    0,
+    0.485
+   ],
+   "parent": "hammer",
+   "steps": [
+    8,
+    null
+   ]
+  },
+  {
+   "id": "can_cap",
+   "kind": "cylinder",
+   "r": 0.05,
+   "h": 0.07,
+   "material": "black_steel",
+   "at": [
+    0.1,
+    0,
+    0.365
+   ],
+   "parent": "can"
+  },
+  {
+   "id": "can_label",
+   "kind": "box",
+   "size": [
+    0.34,
+    0.01,
+    0.16
+   ],
+   "material": "black_steel",
+   "at": [
+    0,
+    -0.133,
+    0.05
+   ],
+   "parent": "can"
+  },
+  {
+   "id": "can_word",
+   "kind": "text",
+   "body": "GASOLINE",
+   "height": 0.06,
+   "depth": 0.004,
+   "material": "safety_yellow",
+   "at": [
+    0,
+    -0.14,
+    0.05
+   ],
+   "parent": "can",
+   "steps": [
+    8,
+    8
+   ]
+  },
+  {
+   "id": "can_word_diesel",
+   "kind": "text",
+   "body": "DIESEL",
+   "height": 0.07,
+   "depth": 0.004,
+   "material": "white_paint",
+   "at": [
+    0,
+    -0.14,
+    0.05
+   ],
+   "parent": "can",
+   "steps": [
+    9,
+    null
+   ]
+  },
+  {
+   "id": "fuel_pipe",
+   "kind": "pipe",
+   "r": 0.025,
+   "bend": 0.08,
+   "material": "safety_yellow",
+   "parent": "hammer",
+   "steps": [
+    8,
+    null
+   ],
+   "path": [
+    [
+     -1.74,
+     0,
+     0.75
+    ],
+    [
+     -1.45,
+     -0.2,
+     0.95
+    ],
+    [
+     -1.2,
+     -0.2,
+     0.775
+    ],
+    [
+     -0.9500000000000001,
+     0,
+     0.775
+    ]
+   ]
+  },
+  {
+   "id": "spark_plug",
+   "kind": "lathe",
+   "material": "white_paint",
+   "segments": 24,
+   "at": [
+    0.8300000000000001,
+    0,
+    0.775
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "parent": "hammer",
+   "steps": [
+    8,
+    8
+   ],
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.05,
+     0
+    ],
+    [
+     0.05,
+     0.06
+    ],
+    [
+     0.035,
+     0.08
+    ],
+    [
+     0.035,
+     0.2
+    ],
+    [
+     0.015,
+     0.22
+    ],
+    [
+     0,
+     0.22
+    ]
+   ]
+  },
+  {
+   "id": "coil",
+   "kind": "box",
+   "size": [
+    0.16,
+    0.16,
+    0.3
+   ],
+   "material": "black_steel",
+   "bevel": 0.01,
+   "at": [
+    1.95,
+    0.3,
+    0.27
+   ],
+   "parent": "hammer",
+   "steps": [
+    8,
+    8
+   ]
+  },
+  {
+   "id": "battery",
+   "kind": "box",
+   "size": [
+    0.3,
+    0.2,
+    0.22
+   ],
+   "material": "black_steel",
+   "bevel": 0.01,
+   "at": [
+    2.0,
+    -0.35,
+    0.23
+   ],
+   "parent": "hammer",
+   "steps": [
+    8,
+    8
+   ]
+  },
+  {
+   "id": "spark_wire",
+   "kind": "pipe",
+   "r": 0.012,
+   "bend": 0.1,
+   "material": "red_paint",
+   "parent": "hammer",
+   "steps": [
+    8,
+    8
+   ],
+   "path": [
+    [
+     1.05,
+     0,
+     0.775
+    ],
+    [
+     1.45,
+     -0.2,
+     0.875
+    ],
+    [
+     1.75,
+     -0.1,
+     0.5
+    ],
+    [
+     1.95,
+     0.3,
+     0.42
+    ]
+   ]
+  },
+  {
+   "id": "battery_cable",
+   "kind": "pipe",
+   "r": 0.012,
+   "bend": 0.06,
+   "material": "black_steel",
+   "parent": "hammer",
+   "steps": [
+    8,
+    8
+   ],
+   "path": [
+    [
+     1.95,
+     0.22,
+     0.2
+    ],
+    [
+     1.98,
+     0,
+     0.2
+    ],
+    [
+     2.0,
+     -0.25,
+     0.34
+    ]
+   ]
+  }
+ ],
+ "anchors": {
+  "block": [
+   "block",
+   [
+    0.65,
+    0,
+    1.05
+   ]
+  ],
+  "ram": [
+   "ram",
+   [
+    0.65,
+    0,
+    0.6125
+   ]
+  ],
+  "anvil": [
+   "anvil",
+   [
+    0.65,
+    0,
+    0.2
+   ]
+  ],
+  "cylinder": [
+   "cylinder",
+   [
+    -0.78,
+    0,
+    0.9703125000000001
+   ]
+  ],
+  "pile_top": [
+   "pile",
+   [
+    0.3,
+    0,
+    29.6
+   ]
+  ],
+  "pile_low": [
+   "pile",
+   [
+    0.2,
+    -0.22,
+    3.5
+   ]
+  ],
+  "tip": [
+   "pile",
+   [
+    0,
+    -0.3,
+    0.05
+   ]
+  ],
+  "rod_r": [
+   "rod_r",
+   [
+    -0.075,
+    0,
+    2.0
+   ]
+  ],
+  "coil": [
+   "coil",
+   [
+    0,
+    -0.08,
+    0.1
+   ]
+  ],
+  "port_r": [
+   "port_ring_r",
+   [
+    0,
+    0,
+    0.08
+   ]
+  ],
+  "port_l": [
+   "port_ring_l",
+   [
+    0,
+    0,
+    0.08
+   ]
+  ],
+  "rod": [
+   "rod_l",
+   [
+    0.075,
+    0,
+    2.0
+   ]
+  ],
+  "collar": [
+   "collar",
+   [
+    0.8450000000000001,
+    0,
+    0.15
+   ]
+  ],
+  "injector": [
+   "injector",
+   [
+    0,
+    -0.055,
+    0.02
+   ]
+  ],
+  "spark_plug": [
+   "spark_plug",
+   [
+    0,
+    0,
+    0.2
+   ]
+  ],
+  "can": [
+   "can",
+   [
+    0,
+    -0.13,
+    0.05
+   ]
+  ],
+  "explosive": [
+   "explosive",
+   [
+    0.3,
+    0,
+    0.12
+   ]
+  ],
+  "canister": [
+   "canister",
+   [
+    0,
+    -0.26,
+    0.3
+   ]
+  ],
+  "chamber": [
+   "anvil",
+   [
+    0,
+    0.2,
+    0.675
+   ]
+  ]
+ },
+ "couple": [
+  {
+   "type": "follow",
+   "driver": "startup",
+   "driven": "startup_cable",
+   "ratio": -1.0
+  }
+ ],
+ "contacts": [
+  [
+   "block",
+   "pile"
+  ],
+  [
+   "anvil",
+   "pile"
+  ],
+  [
+   "flange",
+   "pile"
+  ],
+  [
+   "flange",
+   "anvil"
+  ],
+  [
+   "ram",
+   "anvil"
+  ],
+  [
+   "cylinder",
+   "flange"
+  ],
+  [
+   "cylinder",
+   "anvil"
+  ],
+  [
+   "lip_low",
+   "anvil"
+  ],
+  [
+   "lip_low",
+   "cylinder"
+  ],
+  [
+   "lip_high",
+   "cylinder"
+  ],
+  [
+   "lip_low",
+   "flange"
+  ],
+  [
+   "port_ring_l",
+   "cylinder"
+  ],
+  [
+   "port_ring_r",
+   "cylinder"
+  ],
+  [
+   "explosive",
+   "anvil"
+  ],
+  [
+   "explosive",
+   "ram"
+  ],
+  [
+   "pile_plug",
+   "anvil"
+  ],
+  [
+   "pile_plug",
+   "flange"
+  ],
+  [
+   "rod_l",
+   "socket1"
+  ],
+  [
+   "rod_r",
+   "socket2"
+  ],
+  [
+   "crossbar",
+   "rod_l"
+  ],
+  [
+   "crossbar",
+   "rod_r"
+  ],
+  [
+   "ear_l",
+   "sleeve_l"
+  ],
+  [
+   "ear_r",
+   "sleeve_r"
+  ],
+  [
+   "ear_l",
+   "collar"
+  ],
+  [
+   "ear_r",
+   "collar"
+  ],
+  [
+   "sleeve_l",
+   "collar"
+  ],
+  [
+   "sleeve_r",
+   "collar"
+  ],
+  [
+   "pulley",
+   "crossbar"
+  ],
+  [
+   "startup_cable",
+   "crossbar"
+  ],
+  [
+   "startup_hook",
+   "crossbar"
+  ],
+  [
+   "startup_cable",
+   "pulley"
+  ],
+  [
+   "startup_cable",
+   "startup_hook"
+  ],
+  [
+   "canister",
+   "port_ring_l"
+  ],
+  [
+   "canister",
+   "cylinder"
+  ],
+  [
+   "canister",
+   "lip_low"
+  ],
+  [
+   "injector",
+   "port_ring_l"
+  ],
+  [
+   "injector",
+   "cylinder"
+  ],
+  [
+   "can",
+   "flange"
+  ],
+  [
+   "fuel_pipe",
+   "can"
+  ],
+  [
+   "fuel_pipe",
+   "injector"
+  ],
+  [
+   "fuel_pipe",
+   "port_ring_l"
+  ],
+  [
+   "fuel_pipe",
+   "lip_low"
+  ],
+  [
+   "spark_plug",
+   "port_ring_r"
+  ],
+  [
+   "spark_plug",
+   "cylinder"
+  ],
+  [
+   "coil",
+   "flange"
+  ],
+  [
+   "battery",
+   "flange"
+  ],
+  [
+   "spark_wire",
+   "spark_plug"
+  ],
+  [
+   "spark_wire",
+   "coil"
+  ],
+  [
+   "battery_cable",
+   "coil"
+  ],
+  [
+   "battery_cable",
+   "battery"
+  ],
+  [
+   "can_label",
+   "can"
+  ],
+  [
+   "can_word",
+   "can_label"
+  ],
+  [
+   "can_word_diesel",
+   "can_label"
+  ],
+  [
+   "can_word",
+   "can"
+  ],
+  [
+   "can_word_diesel",
+   "can"
+  ],
+  [
+   "canister_cap",
+   "canister"
+  ],
+  [
+   "startup_hook",
+   "ram_eye"
+  ],
+  [
+   "socket1",
+   "flange"
+  ],
+  [
+   "socket2",
+   "flange"
+  ],
+  [
+   "socket3",
+   "flange"
+  ],
+  [
+   "socket4",
+   "flange"
+  ]
+ ]
+}

@@ -81,6 +81,7 @@ class FakeYouTube:
             raise self.fail[method].pop(0)
         return {
             "videos.insert": {"id": "yt123"},
+            "videos.update": {},
             "thumbnails.set": {},
             "captions.insert": {"id": "cap1"},
             "playlistItems.insert": {"id": "pli1"},
@@ -200,6 +201,28 @@ def test_publish_sequence_then_live(ctx):
     yt.privacy = "public"
     with ctx.connect() as conn:
         db.update_video(conn, vid, lease_until=None)
+    run(ctx)
+    assert get(ctx, vid)["state"] == "live"
+    assert "Video is live: https://youtu.be/yt123" in texts(ctx, vid)
+
+
+def test_a_scheduled_video_goes_public_now(ctx):
+    """Video 5: scheduled four days out, and the owner wanted it up now."""
+    vid = ready_to_publish(ctx)
+    with pytest.raises(ActionError, match="only a video scheduled"):
+        actions.go_public_now(ctx, vid)
+    connect(ctx)
+    actions.request_publish(ctx, vid)
+    run(ctx)
+    yt = ctx.youtube_fake
+    yt.calls.clear()
+    actions.go_public_now(ctx, vid)
+    assert yt.methods() == ["videos.list", "videos.update"]
+    update = yt.calls[1][1]
+    assert update["part"] == "status" and update["body"]["id"] == "yt123"
+    assert update["body"]["status"]["privacyStatus"] == "public" and "publishAt" not in update["body"]["status"]
+    assert get(ctx, vid)["publish_at"] <= time.time()
+    yt.privacy = "public"
     run(ctx)
     assert get(ctx, vid)["state"] == "live"
     assert "Video is live: https://youtu.be/yt123" in texts(ctx, vid)

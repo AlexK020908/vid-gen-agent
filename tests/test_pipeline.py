@@ -336,6 +336,27 @@ def test_edit_scene_prompt_and_line_redoes_both(ctx):
     assert after["still_path"] != before["still_path"] and after["audio_path"] != before["audio_path"]
 
 
+def test_an_edited_prompt_gets_a_new_picture_and_a_clip_scene_can_become_a_still(ctx):
+    """Video 5: an edit reset the scene's regen count, so the redraw was named like the scene's first picture, still on
+    disk, and that old picture was kept. And clips of crowds came out smeared, so a clip scene can be made a still."""
+    vid = actions.new_video(ctx, "zombie", "Edit twice")
+    to_render_review(ctx, vid)
+    actions.flag_scenes(ctx, vid, [2], "visual", "brighter")
+    run(ctx)
+    flagged = scenes(ctx, vid)[2]
+    actions.edit_scene(ctx, vid, 2, visual_prompt="stick figure on the roof at dawn")
+    run(ctx)
+    edited = scenes(ctx, vid)[2]
+    assert edited["still_path"] not in (flagged["still_path"], None) and ctx.abs(edited["still_path"]).exists()
+
+    clip = next(s for s in scenes(ctx, vid).values() if s["motion"] == "clip")
+    actions.edit_scene(ctx, vid, clip["idx"], motion="kenburns")
+    run(ctx)
+    still = scenes(ctx, vid)[clip["idx"]]
+    assert video(ctx, vid)["state"] == "assembled"
+    assert still["motion"] == "kenburns" and still["clip_path"] is None and still["still_path"] == clip["still_path"]
+
+
 def test_edit_outline(ctx):
     vid = actions.new_video(ctx, "zombie", "Edits")
     run(ctx)

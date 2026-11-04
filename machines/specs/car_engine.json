@@ -1,0 +1,1633 @@
+{
+ "name": "four-cylinder car engine",
+ "steps": [
+  "the engine"
+ ],
+ "parts": [
+  {
+   "id": "bore1",
+   "kind": "cylinder",
+   "r": 0.041,
+   "h": 0.19,
+   "at": [
+    -0.195,
+    0,
+    0.17
+   ],
+   "helper": true,
+   "segments": 48
+  },
+  {
+   "id": "dome1",
+   "kind": "sphere",
+   "r": 0.041,
+   "at": [
+    -0.195,
+    0,
+    0.36
+   ],
+   "helper": true,
+   "segments": 32
+  },
+  {
+   "id": "liner1",
+   "kind": "tube",
+   "r_out": 0.0412,
+   "r_in": 0.0395,
+   "h": 0.17,
+   "material": "bright_steel",
+   "segments": 48,
+   "at": [
+    -0.195,
+    0,
+    0.19
+   ],
+   "cut": true
+  },
+  {
+   "id": "bore2",
+   "kind": "cylinder",
+   "r": 0.041,
+   "h": 0.19,
+   "at": [
+    -0.065,
+    0,
+    0.17
+   ],
+   "helper": true,
+   "segments": 48
+  },
+  {
+   "id": "dome2",
+   "kind": "sphere",
+   "r": 0.041,
+   "at": [
+    -0.065,
+    0,
+    0.36
+   ],
+   "helper": true,
+   "segments": 32
+  },
+  {
+   "id": "liner2",
+   "kind": "tube",
+   "r_out": 0.0412,
+   "r_in": 0.0395,
+   "h": 0.17,
+   "material": "bright_steel",
+   "segments": 48,
+   "at": [
+    -0.065,
+    0,
+    0.19
+   ],
+   "cut": true
+  },
+  {
+   "id": "bore3",
+   "kind": "cylinder",
+   "r": 0.041,
+   "h": 0.19,
+   "at": [
+    0.065,
+    0,
+    0.17
+   ],
+   "helper": true,
+   "segments": 48
+  },
+  {
+   "id": "dome3",
+   "kind": "sphere",
+   "r": 0.041,
+   "at": [
+    0.065,
+    0,
+    0.36
+   ],
+   "helper": true,
+   "segments": 32
+  },
+  {
+   "id": "liner3",
+   "kind": "tube",
+   "r_out": 0.0412,
+   "r_in": 0.0395,
+   "h": 0.17,
+   "material": "bright_steel",
+   "segments": 48,
+   "at": [
+    0.065,
+    0,
+    0.19
+   ],
+   "cut": true
+  },
+  {
+   "id": "bore4",
+   "kind": "cylinder",
+   "r": 0.041,
+   "h": 0.19,
+   "at": [
+    0.195,
+    0,
+    0.17
+   ],
+   "helper": true,
+   "segments": 48
+  },
+  {
+   "id": "dome4",
+   "kind": "sphere",
+   "r": 0.041,
+   "at": [
+    0.195,
+    0,
+    0.36
+   ],
+   "helper": true,
+   "segments": 32
+  },
+  {
+   "id": "liner4",
+   "kind": "tube",
+   "r_out": 0.0412,
+   "r_in": 0.0395,
+   "h": 0.17,
+   "material": "bright_steel",
+   "segments": 48,
+   "at": [
+    0.195,
+    0,
+    0.19
+   ],
+   "cut": true
+  },
+  {
+   "id": "crankcase",
+   "kind": "box",
+   "size": [
+    0.54,
+    0.17,
+    0.17
+   ],
+   "at": [
+    0,
+    0,
+    0.105
+   ],
+   "helper": true
+  },
+  {
+   "id": "block",
+   "kind": "box",
+   "size": [
+    0.58,
+    0.2,
+    0.42
+   ],
+   "material": "dark_steel",
+   "at": [
+    0,
+    0,
+    0.21
+   ],
+   "cut": true,
+   "bevel": 0.004,
+   "subtract": [
+    "bore1",
+    "bore2",
+    "bore3",
+    "bore4",
+    "dome1",
+    "dome2",
+    "dome3",
+    "dome4",
+    "crankcase"
+   ]
+  },
+  {
+   "id": "crank",
+   "kind": "group",
+   "at": [
+    0,
+    0,
+    0.1
+   ],
+   "joint": {
+    "type": "spin",
+    "axis": "x"
+   }
+  },
+  {
+   "id": "journal1",
+   "kind": "cylinder",
+   "r": 0.014,
+   "h": 0.088,
+   "material": "black_steel",
+   "at": [
+    -0.31,
+    0,
+    0
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "segments": 32,
+   "parent": "crank"
+  },
+  {
+   "id": "journal2",
+   "kind": "cylinder",
+   "r": 0.014,
+   "h": 0.076,
+   "material": "black_steel",
+   "at": [
+    -0.168,
+    0,
+    0
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "segments": 32,
+   "parent": "crank"
+  },
+  {
+   "id": "journal3",
+   "kind": "cylinder",
+   "r": 0.014,
+   "h": 0.076,
+   "material": "black_steel",
+   "at": [
+    -0.038000000000000006,
+    0,
+    0
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "segments": 32,
+   "parent": "crank"
+  },
+  {
+   "id": "journal4",
+   "kind": "cylinder",
+   "r": 0.014,
+   "h": 0.076,
+   "material": "black_steel",
+   "at": [
+    0.092,
+    0,
+    0
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "segments": 32,
+   "parent": "crank"
+  },
+  {
+   "id": "journal5",
+   "kind": "cylinder",
+   "r": 0.014,
+   "h": 0.088,
+   "material": "black_steel",
+   "at": [
+    0.222,
+    0,
+    0
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "segments": 32,
+   "parent": "crank"
+  },
+  {
+   "id": "crankpin1",
+   "kind": "cylinder",
+   "r": 0.012,
+   "h": 0.028,
+   "material": "black_steel",
+   "at": [
+    -0.20900000000000002,
+    0,
+    0.03
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "segments": 24,
+   "parent": "crank"
+  },
+  {
+   "id": "web1a",
+   "kind": "box",
+   "size": [
+    0.012,
+    0.05,
+    0.075
+   ],
+   "material": "black_steel",
+   "bevel": 0.004,
+   "at": [
+    -0.216,
+    0,
+    0.015
+   ],
+   "parent": "crank"
+  },
+  {
+   "id": "web1b",
+   "kind": "box",
+   "size": [
+    0.012,
+    0.05,
+    0.075
+   ],
+   "material": "black_steel",
+   "bevel": 0.004,
+   "at": [
+    -0.17400000000000002,
+    0,
+    0.015
+   ],
+   "parent": "crank"
+  },
+  {
+   "id": "piston1",
+   "kind": "lathe",
+   "material": "bright_steel",
+   "segments": 48,
+   "at": [
+    -0.195,
+    0,
+    0.245
+   ],
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0385,
+     0
+    ],
+    [
+     0.0385,
+     0.046
+    ],
+    [
+     0.036,
+     0.05
+    ],
+    [
+     0,
+     0.05
+    ]
+   ],
+   "joint": {
+    "type": "slide",
+    "axis": "z",
+    "min": -0.06,
+    "max": 0,
+    "rest": 0
+   }
+  },
+  {
+   "id": "rod1",
+   "kind": "group",
+   "parent": "piston1",
+   "at": [
+    0,
+    0,
+    0.015
+   ],
+   "joint": {
+    "type": "hinge",
+    "axis": "x",
+    "min": -30,
+    "max": 30,
+    "rest": 0
+   }
+  },
+  {
+   "id": "rodbar1",
+   "kind": "box",
+   "size": [
+    0.014,
+    0.016,
+    0.13
+   ],
+   "material": "bright_steel",
+   "bevel": 0.003,
+   "at": [
+    0,
+    0,
+    -0.065
+   ],
+   "parent": "rod1"
+  },
+  {
+   "id": "valve1in",
+   "kind": "lathe",
+   "material": "bright_steel",
+   "segments": 24,
+   "at": [
+    -0.217,
+    0.0,
+    0.356
+   ],
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.012,
+     0
+    ],
+    [
+     0.01,
+     0.004
+    ],
+    [
+     0.0035,
+     0.012
+    ],
+    [
+     0.0035,
+     0.11
+    ],
+    [
+     0,
+     0.11
+    ]
+   ]
+  },
+  {
+   "id": "valve1ex",
+   "kind": "lathe",
+   "material": "bright_steel",
+   "segments": 24,
+   "at": [
+    -0.17300000000000001,
+    0.0,
+    0.356
+   ],
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.012,
+     0
+    ],
+    [
+     0.01,
+     0.004
+    ],
+    [
+     0.0035,
+     0.012
+    ],
+    [
+     0.0035,
+     0.11
+    ],
+    [
+     0,
+     0.11
+    ]
+   ]
+  },
+  {
+   "id": "plug1",
+   "kind": "lathe",
+   "material": "white_paint",
+   "segments": 24,
+   "at": [
+    -0.195,
+    0,
+    0.395
+   ],
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.008,
+     0
+    ],
+    [
+     0.008,
+     0.03
+    ],
+    [
+     0.013,
+     0.03
+    ],
+    [
+     0.013,
+     0.05
+    ],
+    [
+     0.009,
+     0.05
+    ],
+    [
+     0.009,
+     0.085
+    ],
+    [
+     0.004,
+     0.09
+    ],
+    [
+     0,
+     0.09
+    ]
+   ]
+  },
+  {
+   "id": "crankpin2",
+   "kind": "cylinder",
+   "r": 0.012,
+   "h": 0.028,
+   "material": "black_steel",
+   "at": [
+    -0.079,
+    0,
+    -0.03
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "segments": 24,
+   "parent": "crank"
+  },
+  {
+   "id": "web2a",
+   "kind": "box",
+   "size": [
+    0.012,
+    0.05,
+    0.075
+   ],
+   "material": "black_steel",
+   "bevel": 0.004,
+   "at": [
+    -0.08600000000000001,
+    0,
+    -0.015
+   ],
+   "parent": "crank"
+  },
+  {
+   "id": "web2b",
+   "kind": "box",
+   "size": [
+    0.012,
+    0.05,
+    0.075
+   ],
+   "material": "black_steel",
+   "bevel": 0.004,
+   "at": [
+    -0.044,
+    0,
+    -0.015
+   ],
+   "parent": "crank"
+  },
+  {
+   "id": "piston2",
+   "kind": "lathe",
+   "material": "bright_steel",
+   "segments": 48,
+   "at": [
+    -0.065,
+    0,
+    0.245
+   ],
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0385,
+     0
+    ],
+    [
+     0.0385,
+     0.046
+    ],
+    [
+     0.036,
+     0.05
+    ],
+    [
+     0,
+     0.05
+    ]
+   ],
+   "joint": {
+    "type": "slide",
+    "axis": "z",
+    "min": -0.06,
+    "max": 0,
+    "rest": 0
+   }
+  },
+  {
+   "id": "rod2",
+   "kind": "group",
+   "parent": "piston2",
+   "at": [
+    0,
+    0,
+    0.015
+   ],
+   "joint": {
+    "type": "hinge",
+    "axis": "x",
+    "min": -30,
+    "max": 30,
+    "rest": 0
+   }
+  },
+  {
+   "id": "rodbar2",
+   "kind": "box",
+   "size": [
+    0.014,
+    0.016,
+    0.13
+   ],
+   "material": "bright_steel",
+   "bevel": 0.003,
+   "at": [
+    0,
+    0,
+    -0.065
+   ],
+   "parent": "rod2"
+  },
+  {
+   "id": "valve2in",
+   "kind": "lathe",
+   "material": "bright_steel",
+   "segments": 24,
+   "at": [
+    -0.087,
+    0.0,
+    0.356
+   ],
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.012,
+     0
+    ],
+    [
+     0.01,
+     0.004
+    ],
+    [
+     0.0035,
+     0.012
+    ],
+    [
+     0.0035,
+     0.11
+    ],
+    [
+     0,
+     0.11
+    ]
+   ]
+  },
+  {
+   "id": "valve2ex",
+   "kind": "lathe",
+   "material": "bright_steel",
+   "segments": 24,
+   "at": [
+    -0.043000000000000003,
+    0.0,
+    0.356
+   ],
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.012,
+     0
+    ],
+    [
+     0.01,
+     0.004
+    ],
+    [
+     0.0035,
+     0.012
+    ],
+    [
+     0.0035,
+     0.11
+    ],
+    [
+     0,
+     0.11
+    ]
+   ]
+  },
+  {
+   "id": "plug2",
+   "kind": "lathe",
+   "material": "white_paint",
+   "segments": 24,
+   "at": [
+    -0.065,
+    0,
+    0.395
+   ],
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.008,
+     0
+    ],
+    [
+     0.008,
+     0.03
+    ],
+    [
+     0.013,
+     0.03
+    ],
+    [
+     0.013,
+     0.05
+    ],
+    [
+     0.009,
+     0.05
+    ],
+    [
+     0.009,
+     0.085
+    ],
+    [
+     0.004,
+     0.09
+    ],
+    [
+     0,
+     0.09
+    ]
+   ]
+  },
+  {
+   "id": "crankpin3",
+   "kind": "cylinder",
+   "r": 0.012,
+   "h": 0.028,
+   "material": "black_steel",
+   "at": [
+    0.051000000000000004,
+    0,
+    -0.03
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "segments": 24,
+   "parent": "crank"
+  },
+  {
+   "id": "web3a",
+   "kind": "box",
+   "size": [
+    0.012,
+    0.05,
+    0.075
+   ],
+   "material": "black_steel",
+   "bevel": 0.004,
+   "at": [
+    0.044,
+    0,
+    -0.015
+   ],
+   "parent": "crank"
+  },
+  {
+   "id": "web3b",
+   "kind": "box",
+   "size": [
+    0.012,
+    0.05,
+    0.075
+   ],
+   "material": "black_steel",
+   "bevel": 0.004,
+   "at": [
+    0.08600000000000001,
+    0,
+    -0.015
+   ],
+   "parent": "crank"
+  },
+  {
+   "id": "piston3",
+   "kind": "lathe",
+   "material": "bright_steel",
+   "segments": 48,
+   "at": [
+    0.065,
+    0,
+    0.245
+   ],
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0385,
+     0
+    ],
+    [
+     0.0385,
+     0.046
+    ],
+    [
+     0.036,
+     0.05
+    ],
+    [
+     0,
+     0.05
+    ]
+   ],
+   "joint": {
+    "type": "slide",
+    "axis": "z",
+    "min": -0.06,
+    "max": 0,
+    "rest": 0
+   }
+  },
+  {
+   "id": "rod3",
+   "kind": "group",
+   "parent": "piston3",
+   "at": [
+    0,
+    0,
+    0.015
+   ],
+   "joint": {
+    "type": "hinge",
+    "axis": "x",
+    "min": -30,
+    "max": 30,
+    "rest": 0
+   }
+  },
+  {
+   "id": "rodbar3",
+   "kind": "box",
+   "size": [
+    0.014,
+    0.016,
+    0.13
+   ],
+   "material": "bright_steel",
+   "bevel": 0.003,
+   "at": [
+    0,
+    0,
+    -0.065
+   ],
+   "parent": "rod3"
+  },
+  {
+   "id": "valve3in",
+   "kind": "lathe",
+   "material": "bright_steel",
+   "segments": 24,
+   "at": [
+    0.043000000000000003,
+    0.0,
+    0.356
+   ],
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.012,
+     0
+    ],
+    [
+     0.01,
+     0.004
+    ],
+    [
+     0.0035,
+     0.012
+    ],
+    [
+     0.0035,
+     0.11
+    ],
+    [
+     0,
+     0.11
+    ]
+   ]
+  },
+  {
+   "id": "valve3ex",
+   "kind": "lathe",
+   "material": "bright_steel",
+   "segments": 24,
+   "at": [
+    0.087,
+    0.0,
+    0.356
+   ],
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.012,
+     0
+    ],
+    [
+     0.01,
+     0.004
+    ],
+    [
+     0.0035,
+     0.012
+    ],
+    [
+     0.0035,
+     0.11
+    ],
+    [
+     0,
+     0.11
+    ]
+   ]
+  },
+  {
+   "id": "plug3",
+   "kind": "lathe",
+   "material": "white_paint",
+   "segments": 24,
+   "at": [
+    0.065,
+    0,
+    0.395
+   ],
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.008,
+     0
+    ],
+    [
+     0.008,
+     0.03
+    ],
+    [
+     0.013,
+     0.03
+    ],
+    [
+     0.013,
+     0.05
+    ],
+    [
+     0.009,
+     0.05
+    ],
+    [
+     0.009,
+     0.085
+    ],
+    [
+     0.004,
+     0.09
+    ],
+    [
+     0,
+     0.09
+    ]
+   ]
+  },
+  {
+   "id": "crankpin4",
+   "kind": "cylinder",
+   "r": 0.012,
+   "h": 0.028,
+   "material": "black_steel",
+   "at": [
+    0.181,
+    0,
+    0.03
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "segments": 24,
+   "parent": "crank"
+  },
+  {
+   "id": "web4a",
+   "kind": "box",
+   "size": [
+    0.012,
+    0.05,
+    0.075
+   ],
+   "material": "black_steel",
+   "bevel": 0.004,
+   "at": [
+    0.17400000000000002,
+    0,
+    0.015
+   ],
+   "parent": "crank"
+  },
+  {
+   "id": "web4b",
+   "kind": "box",
+   "size": [
+    0.012,
+    0.05,
+    0.075
+   ],
+   "material": "black_steel",
+   "bevel": 0.004,
+   "at": [
+    0.216,
+    0,
+    0.015
+   ],
+   "parent": "crank"
+  },
+  {
+   "id": "piston4",
+   "kind": "lathe",
+   "material": "bright_steel",
+   "segments": 48,
+   "at": [
+    0.195,
+    0,
+    0.245
+   ],
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0385,
+     0
+    ],
+    [
+     0.0385,
+     0.046
+    ],
+    [
+     0.036,
+     0.05
+    ],
+    [
+     0,
+     0.05
+    ]
+   ],
+   "joint": {
+    "type": "slide",
+    "axis": "z",
+    "min": -0.06,
+    "max": 0,
+    "rest": 0
+   }
+  },
+  {
+   "id": "rod4",
+   "kind": "group",
+   "parent": "piston4",
+   "at": [
+    0,
+    0,
+    0.015
+   ],
+   "joint": {
+    "type": "hinge",
+    "axis": "x",
+    "min": -30,
+    "max": 30,
+    "rest": 0
+   }
+  },
+  {
+   "id": "rodbar4",
+   "kind": "box",
+   "size": [
+    0.014,
+    0.016,
+    0.13
+   ],
+   "material": "bright_steel",
+   "bevel": 0.003,
+   "at": [
+    0,
+    0,
+    -0.065
+   ],
+   "parent": "rod4"
+  },
+  {
+   "id": "valve4in",
+   "kind": "lathe",
+   "material": "bright_steel",
+   "segments": 24,
+   "at": [
+    0.17300000000000001,
+    0.0,
+    0.356
+   ],
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.012,
+     0
+    ],
+    [
+     0.01,
+     0.004
+    ],
+    [
+     0.0035,
+     0.012
+    ],
+    [
+     0.0035,
+     0.11
+    ],
+    [
+     0,
+     0.11
+    ]
+   ]
+  },
+  {
+   "id": "valve4ex",
+   "kind": "lathe",
+   "material": "bright_steel",
+   "segments": 24,
+   "at": [
+    0.217,
+    0.0,
+    0.356
+   ],
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.012,
+     0
+    ],
+    [
+     0.01,
+     0.004
+    ],
+    [
+     0.0035,
+     0.012
+    ],
+    [
+     0.0035,
+     0.11
+    ],
+    [
+     0,
+     0.11
+    ]
+   ]
+  },
+  {
+   "id": "plug4",
+   "kind": "lathe",
+   "material": "white_paint",
+   "segments": 24,
+   "at": [
+    0.195,
+    0,
+    0.395
+   ],
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.008,
+     0
+    ],
+    [
+     0.008,
+     0.03
+    ],
+    [
+     0.013,
+     0.03
+    ],
+    [
+     0.013,
+     0.05
+    ],
+    [
+     0.009,
+     0.05
+    ],
+    [
+     0.009,
+     0.085
+    ],
+    [
+     0.004,
+     0.09
+    ],
+    [
+     0,
+     0.09
+    ]
+   ]
+  }
+ ],
+ "anchors": {
+  "piston": [
+   "piston2",
+   [
+    0.0385,
+    0,
+    0.03
+   ]
+  ],
+  "plug": [
+   "plug3",
+   [
+    0.013,
+    0,
+    0.06
+   ]
+  ],
+  "chamber": [
+   "piston2",
+   [
+    0,
+    0,
+    0.08
+   ]
+  ],
+  "crank": [
+   "journal3",
+   [
+    0.014,
+    0,
+    0.05
+   ]
+  ]
+ },
+ "couple": [
+  {
+   "type": "crank",
+   "driver": "crank",
+   "driven": "piston1",
+   "throw": 0.03,
+   "rod": 0.13,
+   "phase": 0
+  },
+  {
+   "type": "rod",
+   "driver": "crank",
+   "driven": "rod1",
+   "throw": 0.03,
+   "rod": 0.13,
+   "phase": 0
+  },
+  {
+   "type": "crank",
+   "driver": "crank",
+   "driven": "piston2",
+   "throw": 0.03,
+   "rod": 0.13,
+   "phase": 180
+  },
+  {
+   "type": "rod",
+   "driver": "crank",
+   "driven": "rod2",
+   "throw": 0.03,
+   "rod": 0.13,
+   "phase": 180
+  },
+  {
+   "type": "crank",
+   "driver": "crank",
+   "driven": "piston3",
+   "throw": 0.03,
+   "rod": 0.13,
+   "phase": 180
+  },
+  {
+   "type": "rod",
+   "driver": "crank",
+   "driven": "rod3",
+   "throw": 0.03,
+   "rod": 0.13,
+   "phase": 180
+  },
+  {
+   "type": "crank",
+   "driver": "crank",
+   "driven": "piston4",
+   "throw": 0.03,
+   "rod": 0.13,
+   "phase": 0
+  },
+  {
+   "type": "rod",
+   "driver": "crank",
+   "driven": "rod4",
+   "throw": 0.03,
+   "rod": 0.13,
+   "phase": 0
+  }
+ ],
+ "contacts": [
+  [
+   "piston1",
+   "block"
+  ],
+  [
+   "piston1",
+   "liner1"
+  ],
+  [
+   "liner1",
+   "block"
+  ],
+  [
+   "valve1in",
+   "block"
+  ],
+  [
+   "valve1ex",
+   "block"
+  ],
+  [
+   "plug1",
+   "block"
+  ],
+  [
+   "rodbar1",
+   "crankpin1"
+  ],
+  [
+   "rodbar1",
+   "piston1"
+  ],
+  [
+   "web1a",
+   "journal1"
+  ],
+  [
+   "web1b",
+   "journal2"
+  ],
+  [
+   "web1a",
+   "crankpin1"
+  ],
+  [
+   "web1b",
+   "crankpin1"
+  ],
+  [
+   "piston2",
+   "block"
+  ],
+  [
+   "piston2",
+   "liner2"
+  ],
+  [
+   "liner2",
+   "block"
+  ],
+  [
+   "valve2in",
+   "block"
+  ],
+  [
+   "valve2ex",
+   "block"
+  ],
+  [
+   "plug2",
+   "block"
+  ],
+  [
+   "rodbar2",
+   "crankpin2"
+  ],
+  [
+   "rodbar2",
+   "piston2"
+  ],
+  [
+   "web2a",
+   "journal2"
+  ],
+  [
+   "web2b",
+   "journal3"
+  ],
+  [
+   "web2a",
+   "crankpin2"
+  ],
+  [
+   "web2b",
+   "crankpin2"
+  ],
+  [
+   "piston3",
+   "block"
+  ],
+  [
+   "piston3",
+   "liner3"
+  ],
+  [
+   "liner3",
+   "block"
+  ],
+  [
+   "valve3in",
+   "block"
+  ],
+  [
+   "valve3ex",
+   "block"
+  ],
+  [
+   "plug3",
+   "block"
+  ],
+  [
+   "rodbar3",
+   "crankpin3"
+  ],
+  [
+   "rodbar3",
+   "piston3"
+  ],
+  [
+   "web3a",
+   "journal3"
+  ],
+  [
+   "web3b",
+   "journal4"
+  ],
+  [
+   "web3a",
+   "crankpin3"
+  ],
+  [
+   "web3b",
+   "crankpin3"
+  ],
+  [
+   "piston4",
+   "block"
+  ],
+  [
+   "piston4",
+   "liner4"
+  ],
+  [
+   "liner4",
+   "block"
+  ],
+  [
+   "valve4in",
+   "block"
+  ],
+  [
+   "valve4ex",
+   "block"
+  ],
+  [
+   "plug4",
+   "block"
+  ],
+  [
+   "rodbar4",
+   "crankpin4"
+  ],
+  [
+   "rodbar4",
+   "piston4"
+  ],
+  [
+   "web4a",
+   "journal4"
+  ],
+  [
+   "web4b",
+   "journal5"
+  ],
+  [
+   "web4a",
+   "crankpin4"
+  ],
+  [
+   "web4b",
+   "crankpin4"
+  ],
+  [
+   "journal1",
+   "block"
+  ],
+  [
+   "journal2",
+   "block"
+  ],
+  [
+   "journal3",
+   "block"
+  ],
+  [
+   "journal4",
+   "block"
+  ],
+  [
+   "journal5",
+   "block"
+  ]
+ ]
+}

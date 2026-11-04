@@ -1,0 +1,186 @@
+{
+ "name": "claw hammer",
+ "steps": [
+  "the hammer"
+ ],
+ "parts": [
+  {
+   "id": "grip",
+   "kind": "group"
+  },
+  {
+   "id": "head",
+   "kind": "group",
+   "at": [
+    -0.27,
+    0,
+    0
+   ],
+   "parent": "grip"
+  },
+  {
+   "id": "face",
+   "kind": "lathe",
+   "material": "steel",
+   "segments": 40,
+   "parent": "head",
+   "points": [
+    [
+     0,
+     -0.055
+    ],
+    [
+     0.0105,
+     -0.055
+    ],
+    [
+     0.0125,
+     -0.053
+    ],
+    [
+     0.0125,
+     -0.03
+    ],
+    [
+     0.0105,
+     -0.02
+    ],
+    [
+     0,
+     -0.02
+    ]
+   ]
+  },
+  {
+   "id": "eye",
+   "kind": "box",
+   "size": [
+    0.032,
+    0.022,
+    0.045
+   ],
+   "material": "black_steel",
+   "bevel": 0.003,
+   "at": [
+    0,
+    0,
+    0.003
+   ],
+   "parent": "head"
+  },
+  {
+   "id": "claw",
+   "kind": "torus",
+   "major": 0.045,
+   "minor": 0.0075,
+   "arc": 75,
+   "axis": "Y",
+   "material": "black_steel",
+   "segments": 24,
+   "at": [
+    0.045,
+    0,
+    0.025
+   ],
+   "rot": [
+    0,
+    -105,
+    0
+   ],
+   "parent": "head"
+  },
+  {
+   "id": "handle",
+   "kind": "lathe",
+   "material": "wood",
+   "segments": 32,
+   "at": [
+    0.012,
+    0,
+    0
+   ],
+   "rot": [
+    0,
+    90,
+    0
+   ],
+   "scale": [
+    1.0,
+    0.75,
+    1.0
+   ],
+   "parent": "head",
+   "points": [
+    [
+     0,
+     0
+    ],
+    [
+     0.0105,
+     0
+    ],
+    [
+     0.0105,
+     0.02
+    ],
+    [
+     0.0125,
+     0.18
+    ],
+    [
+     0.0145,
+     0.26
+    ],
+    [
+     0.0145,
+     0.282
+    ],
+    [
+     0.01,
+     0.288
+    ],
+    [
+     0,
+     0.288
+    ]
+   ]
+  }
+ ],
+ "anchors": {
+  "head": [
+   "eye",
+   [
+    0.016,
+    0,
+    0
+   ]
+  ],
+  "handle": [
+   "handle",
+   [
+    0.015,
+    0,
+    0.15
+   ]
+  ]
+ },
+ "couple": [],
+ "contacts": [
+  [
+   "face",
+   "eye"
+  ],
+  [
+   "claw",
+   "eye"
+  ],
+  [
+   "handle",
+   "eye"
+  ],
+  [
+   "handle",
+   "face"
+  ]
+ ]
+}

@@ -35,9 +35,8 @@ from puppet.stage import Stage
 from render import ffmpeg
 
 OUT_SIZE = (1920, 1080)
-TRANSITION_MS = 450      # settling from one pose into the next
-WOBBLE = 0.003           # the hand-drawn jitter, in H
-WOBBLE_EVERY = 4         # frames
+TRANSITION_MS = 450      # settling from one pose into the next (a figure standing still holds dead still: the
+                         # hand-drawn jitter its joints had read as shaking, video 5)
 LOOK_AT = 0.45           # a camera aimed at a spot looks this far up a figure standing there, in H
 
 
@@ -60,7 +59,7 @@ def _pose(action: dict, p: float, H: float, dist: float, before: rig.Pose, elaps
     if name in rig.CYCLES:
         length = action["to_ms"] - action["from_ms"]
         cycles = max(1, round(dist / (rig.STRIDE * H))) if dist > 1 else max(1, round(length / 700))
-        now = hand(rig.cycle(rig.CYCLES[name], p * cycles))
+        now = hand(rig.cycle(rig.CYCLES[name], p * cycles + float(action.get("phase", 0.0))))  # a crowd's are apart
         return rig.blend(before, now, ease) if ease < 1 else now
     if name not in rig.POSES:
         raise ValueError(f"no pose or cycle called {name!r} (poses: {', '.join(rig.POSES)}; "
@@ -68,10 +67,9 @@ def _pose(action: dict, p: float, H: float, dist: float, before: rig.Pose, elaps
     return rig.blend(before, hand(rig.POSES[name]), ease)
 
 
-def figure_at(stage: Stage, puppet, actions: list[dict], t_ms: float, seed: int = 0,
-              attached: dict | None = None) -> draw.Figure | None:
+def figure_at(stage: Stage, puppet, actions: list[dict], t_ms: float, attached: dict | None = None) -> draw.Figure | None:
     """Where the figure is and how it stands at `t_ms`, walking through its actions in order. None before
-    its first action."""
+    its first action and while it's `inside` something."""
     actions = sorted(actions, key=lambda a: a["from_ms"])
     if not actions or t_ms < actions[0]["from_ms"]:
         return None
@@ -91,12 +89,16 @@ def figure_at(stage: Stage, puppet, actions: list[dict], t_ms: float, seed: int 
         length = max(1.0, a["to_ms"] - a["from_ms"])
         active = i == len(actions) - 1 or t_ms < actions[i + 1]["from_ms"]
         scale = getattr(puppet, "scale", 1.0)
+        if a["do"] == rig.INSIDE:
+            if active:
+                return None
+            continue                      # they come out where they went in, as they were
         if active:
             p = min(1.0, max(0.0, (t_ms - a["from_ms"]) / length))
             now = (pos[0] + (target[0] - pos[0]) * p, pos[1] + (target[1] - pos[1]) * p) if target else pos
             H = stage.height_at(*now) * scale
             pose = _pose(a, p, H, dist, before, t_ms - a["from_ms"], free)
-            return draw.Figure(puppet, pose, now, H, facing, WOBBLE, seed, dict(attached or {}),
+            return draw.Figure(puppet, pose, now, H, facing, dict(attached or {}),
                                str(a.get("look", "")).lower() == "camera")
         if target:
             pos = target
@@ -140,7 +142,7 @@ class Scene:
             self.background = img.convert("RGB")
         self.tint = self._light(sheet.get("light"))
         self.props = sheet.get("props")
-        self.placed = []  # (base y, part, at, H, angle) for what stands in the place
+        self.placed = []  # (base y, part, at, H, angle, ground) for what stands in the place
         for name, placement in (sheet.get("set") or {}).items():
             if not self.props or name not in self.props:
                 raise ValueError(f"the set places {name!r}, which isn't among the props")
@@ -148,9 +150,14 @@ class Scene:
             x, y = _xy(self.stage, placement["at"])
             H = self.stage.height_at(x, y)
             dx, dy = placement.get("offset") or (0, 0)
-            at = (x + dx * H, y + dy * H)
-            self.placed.append((at[1], part, at, H, float(placement.get("angle", 0.0))))
-        self.cutouts = [(o["base_y"], *draw.cutout(self.background, o["polygon"])) for o in self.stage.occluders]
+            ground = (x + dx * H, y + dy * H)
+            at = ground
+            if placement.get("lift"):   # hovering: its shadow stays down, and it stays in the picture (video 5's
+                above = part.pivot[1] / part.image.height * part.height * H        # helicopter went off the top)
+                at = (ground[0], max(ground[1] - float(placement["lift"]) * H, above + 0.03 * self.stage.size[1]))
+            self.placed.append((ground[1], part, at, H, float(placement.get("angle", 0.0)), ground))
+        self.cutouts = [(o["base_y"], *draw.cutout(self.background, o["polygon"], o.get("see_through", False)))
+                        for o in self.stage.occluders]
         self.figure_attachments = {f["who"]: self._attached(f.get("attached")) for f in sheet.get("figures", [])}
 
     def _attached(self, spec: dict | None) -> dict:
@@ -178,11 +185,11 @@ class Scene:
         items: list[tuple[float, int, object]] = []   # (base y, kind, thing): kinds sort cutouts before what
         for base_y, piece, pos in self.cutouts:        # stands at the same height
             items.append((base_y, 0, (piece, pos)))
-        for base_y, part, at, H, angle in self.placed:
-            items.append((base_y, 1, ("prop", part, at, H, angle)))
+        for base_y, part, at, H, angle, ground in self.placed:
+            items.append((base_y, 1, ("prop", part, at, H, angle, ground)))
         figures = []
         for f in self.sheet.get("figures", []):
-            fig = figure_at(self.stage, self.sheet["puppets"][f["who"]], f["actions"], t, seed=i // WOBBLE_EVERY,
+            fig = figure_at(self.stage, self.sheet["puppets"][f["who"]], f["actions"], t,
                             attached=self.figure_attachments.get(f["who"]))
             figures.append(fig)
             if fig:
@@ -195,22 +202,28 @@ class Scene:
                 draw.shadow(frame, thing.feet, thing.height)
                 draw.figure(frame, thing)
             else:
-                _, part, at, H, angle = thing
-                draw.shadow(frame, at, H * part.height * 0.6)
+                _, part, at, H, angle, ground = thing
+                draw.shadow(frame, ground, H * part.height * 0.6)
                 draw.prop(frame, part, at, H, angle)
         frame = draw.lit(frame, self.tint)
         placed = {f["who"]: fig for f, fig in zip(self.sheet.get("figures", []), figures) if fig}
 
-        def locate(key: str, _t: float):
+        def locate(key: str, t_ms: float):
             """Where the camera finds a person; one who hasn't come on yet is looked for where they first stand,
-            so a camera can move to them as they arrive."""
+            so a camera can move to them as they arrive, and one who's inside something at its spot."""
             fig = placed.get(key)
             if fig is None:
                 f = next((f for f in self.sheet.get("figures", []) if f["who"] == key and f["actions"]), None)
-                if f:
-                    fig = figure_at(self.stage, self.sheet["puppets"][key], f["actions"],
-                                    min(a["from_ms"] for a in f["actions"]))
-            return (fig.feet[0], fig.feet[1] - LOOK_AT * fig.height) if fig else None
+                if not f:
+                    return None
+                actions = sorted(f["actions"], key=lambda a: a["from_ms"])
+                now = next((a for a in reversed(actions) if a["from_ms"] <= t_ms), actions[0])
+                if now["do"] == rig.INSIDE:
+                    return _aim(self.stage, now["at"])
+                fig = figure_at(self.stage, self.sheet["puppets"][key], actions, actions[0]["from_ms"])
+                if fig is None:
+                    return _aim(self.stage, actions[0].get("at") or actions[0].get("start"))
+            return (fig.feet[0], fig.feet[1] - LOOK_AT * fig.height)
 
         center, zoom = camera_at(self.stage, self.sheet.get("camera", []), t, locate)
         return draw.view(frame, center, zoom, OUT_SIZE)
