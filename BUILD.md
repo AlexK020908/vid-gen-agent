@@ -44,6 +44,7 @@ The spec is [../plan.md](../plan.md). This file tracks what is built, how it dev
 | 36. The director | `format: character`: the jobs where the agent turns a topic into a script, a cast and scenes in that language, with the critic, look checks and the `character` gate | **Built** (Nov 3, 2026): a stub channel runs from a topic to published, and the real filming path runs on a stand-in person. The jobs haven't yet been done by the agent for real: that's phase 37 (How a character short runs) |
 | 37. One real character short | One short on our own topic, end to end; voice about $0.25, asked first | **Run** (Nov 3 to 4, 2026): #6, "Why woodpeckers don't get headaches", made in this chat on a channel with a working name; voice $0.096. Its abilities are general, but it did need new code, and it found 3 bugs the stand-ins couldn't (What the first real short taught). Waiting on the owner's look at `data/media/v6/film/short.mp4` |
 | 38. Precision | The owner's standard, in code: exact things built from data, placement by contact, a real spin, glow on surfaces and in thin lines only, a level camera, and scenes refused in words when they aren't physically right (The owner's standard) | **Built** (Nov 4, 2026), proved on an internal rebuild of `pan.mov`. Waiting on the owner's look at `data/benchmarks/pan/pan_test.mp4` |
+| 39. What to write | His scripts and upload list measured; the outline gets a shape and a turn, the hook starts in a moment or an "If you..." setup, the reviewer sends back what stops at the answer; pauses by channel. Spec: [What his scripts taught](#what-his-scripts-taught-phase-39-what-to-write) | **Built** (Nov 5, 2026): the woodpecker short rewritten through it, made at both pauses in `data/benchmarks/pace_test/`, voice $0.11; `shorts` is on the fewer pauses, and the reviewer has web search. Finding ideas isn't built |
 
 The code for plan.md's whole build order is complete (weeks 4–6 are running videos, not building); phase 10 is the YouTube tools plan.md lists that no phase has needed yet. What needs your accounts is under "Your turn" in How YouTube works, How Claude writes, How voice, pictures and clips work, and How topics and metrics work.
 
@@ -56,7 +57,7 @@ copy .env.example .env           # ElevenLabs, fal and YouTube keys (no Claude k
 copy claude-settings.json .claude\settings.json   # once, by hand (and into the workspace folder above): the permission prompts
                                  # .claude\skills and .claude\agents are in the repo; the workspace folder above has copies
 uv run python run.py serve       # the engine, and MCP for Claude Code at http://localhost:8000/mcp
-uv run pytest -q                 # 350 tests, ~10 min (the session, looking and puppet ones are slowest), real ffmpeg, Remotion and Blender; Claude's jobs answered in the tests, fake ElevenLabs, fal, Google APIs; $0
+uv run pytest -q                 # 359 tests, ~10 min (the session, looking and puppet ones are slowest), real ffmpeg, Remotion and Blender; Claude's jobs answered in the tests, fake ElevenLabs, fal, Google APIs; $0
 uv run pytest -m live            # 4 tests against real APIs (a voice line, a still, a 3 s clip ~$0.35, competitors' videos, free); skipped without keys
 uv run python run.py demo        # headless run through every gate
 uv run python run.py status
@@ -338,6 +339,41 @@ So the fix went into code, not care. What each fault was, measured:
 - A scene's look files are kept by the scene's JSON, so after changing a thing or the set, clear them.
 - Don't edit `blender/` or `things/specs/` during a full render: each scene reads them fresh.
 - **Not done:** gestures. A person still holds one stance, where the reference's raises a finger. A thermometer, and the reference's fast moves between shots with motion blur. `pan.mov`'s rebuild stays internal: it follows the creator's shots.
+
+## What his scripts taught (phase 39: what to write)
+
+On Nov 4 and 5, 2026 the owner said video generation was in a good place and asked for a pipeline that writes interesting scripts. They believed Zack D "usually begins with a problem and builds up the solution", and offered to paste more of his videos. So it was measured first. Everything's in `data/benchmarks/idea_study/` (gitignored), with its scripts in `scripts/`: the YouTube Data API for titles and views (167 quota units, free), and local Whisper for the words.
+
+**What the numbers say, and what they don't:**
+- The pile hammer and sewer line references, the two that climb problem by problem, have no matching title among the 4,145 uploads returned for `@zackdfilms`. Only induction, cow hoof and the sword are his.
+- Videos from the same quarter differ about 6x (bottom tenth 0.44x his median, top tenth 2.59x), and a rough keyword sort by topic explains under 1% of it.
+- **A blind test on the half of his shorts not studied:** 77 same-quarter pairs of a clear winner and loser, typically 7x apart. A fresh reviewer with no guidance picked the winner 47% of the time. One with rules written from the other half: 45%. The key was audited against the data. So **no idea score goes in** until one beats a coin flip on held-out pairs: it would look rigorous and predict nothing.
+- Everything he posts has already passed his filter, and his subscribers lift it all, so this doesn't show all ideas are equal, and can't separate script, first seconds and luck. The same test on scripts hasn't run: 20 named videos are in `script_sample_key.json`, sealed.
+
+**What his 19 scripts have in common** (his 18 newest, one cut off, plus induction and cow hoof; by reading, so it says how he writes, not what wins):
+- Eight shapes: true story or oddity 5, absurd test 3, fiction or pure story 3, how-to 2, why it happens 2, thought experiment 2, fake invention 1, fix in steps 1. None climbs a ladder.
+- They open mid-action (12) or on "If you..." (6). One opens on a question.
+- Median sentence about 18 words, up to 28 (Whisper's punctuation, so close, not exact). Gaps between sentences: 0.36 s in explainers and true stories, 0.66 s in fiction. Pace 2.76 words a second.
+- The strange thing comes first and the reason after. About 11 of 19 carry on past the answer with another turn.
+
+**What changed, for every short, in prompts and shared checks:**
+- `outline.md`: a `shape` from those the picture can carry, `ladder` included. Fiction and how-to are left out: they need acting, and the channel's premise is true things. A `turn`: what comes after the answer, or `none:` and why. A hook that's a moment or an "If you..." setup, up to 26 words.
+- `providers/checks.py`: the shape has to be a known one, the turn has to be there, and a bare question only opens a `why_it_happens` short. A line can run to 34 words.
+- `script.md`: a sentence runs on while each part leads to the next, and what's strange comes before why.
+- `critic.md`: it sends back a first line where nothing's happening, a reason that comes before the strange thing, and a short that just stops at the answer.
+- `pauses_ms` in a channel's YAML sets its silences. The owner left the choice to judgment after the trial, so `shorts` is on 350, 450 and 600 ms, its reference's explainers. It's only that channel, and only character shorts: the 500 ms floor stays the default. Short #6's direction was timed to the old pauses, so it needs directing again if it's ever filmed again.
+- `.claude/agents/critic.md`: the reviewer has `WebSearch` and `WebFetch`, for every channel, and is told to check each number and named source, about ten searches a review. On the trial, the review took about 10 minutes. The copy in the workspace folder above is updated too.
+
+**Found by trying it, on a rewrite of the woodpecker short** (`data/benchmarks/pace_test/`, voice $0.11):
+- **The reviewer with a web search earned its keep.** The sources were real, but "25 times a second" in short #6 isn't the study team's figure: the one place it turned up is an unattributed article. "Many drum more than twenty" is (Schuppe et al., 2021). It also caught a modelled estimate stated as settled, and "a protein linked to brain damage" missing "in people". So the `critic` agent now has them.
+- **The physics check found the bird with its beak buried in the bark,** as #6 staged it, from before the check existed. A scan's rest pose isn't where its beak meets a surface. Tipping the bird back about its feet fixed it, as data. Its feet are declared `touching`.
+- **The lens check had a bug.** It refused any shot with the lens inside a thing's bounding box and the thing anywhere along the line of sight, even behind the subject. A wide trunk behind a bird got the shot refused. Now only what's in front of the subject counts (`BEHIND_SUBJECT`).
+- **A `count` on `sparks`, and a `strength` on a person's `glow`.** 26 chips off a bird's beak is a bundle of planks in a close shot, and full glow on skin is flat paint.
+- **A count only ticked by hundreds.** `marks` rounded to the nearest 100, so one running to 20 stayed at 0. It now keeps about three figures, and lands on exactly what it says (`MachineTags.tsx`).
+- **`lit` is wrong for a scan's feathers.** At any `cover` that shows, it dyes the head and turns a red crest orange, and full size is where you see it. Thin `rings` with `strength` about 5 said the same thing and left the bird its own colors. At the default strength, their bloom washes a close shot.
+- **A person standing upright reaches a wall nose first, and can't lean.** A `knock` on axis [1, 0, 0] snaps a head back, chin forward, so the nose took the hit. The axis for a forward snap is the one square to their facing (up x facing). And a trunk with a flared base has their legs in its roots by 27 cm when their head reaches the bark. That's declared in `touching` and framed out, with no shot in those scenes going below the waist. `touching` switches the mesh check off for that pair, so a head against bark then has to be checked by eye, frame by frame, at full size. A straight post, or a person who could lean, would fix it properly.
+
+**Not done:** finding ideas. `channels/shorts.yaml` has no competitors, so the topic stage doesn't run on this channel, and when it does it shows eight recent titles and asks for three ideas. The proposal, not built: search real sources, write each idea as assumption, truth, source and first picture, check it against his titles and the kit, let a blind comparison with his typical scripts set the bar (untested), and let the owner pick from five. Real viewers are still the only judge, through `core/performance.py`, once a channel's connected.
 
 ## How a character short runs (phases 28 and 36)
 

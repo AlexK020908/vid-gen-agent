@@ -13,17 +13,18 @@ CAPTION_WORDS = 4
 PAUSE_MS, LONG_PAUSE_MS, LAST_PAUSE_MS = 500, 900, 1200   # the owner: "breathing room between every senetence"
 
 
-def pauses(scenes: list[dict]) -> list[int]:
+def pauses(scenes: list[dict], gaps: tuple | list | None = None) -> list[int]:
     """The silence after each line, in ms: room after every one, and more after a question or where the story moves on, so
-    the "But" that follows has somewhere to land."""
+    the "But" that follows has somewhere to land. `gaps` is a channel's own (line, long, last), in place of the usual three."""
+    line, long, last = gaps or (PAUSE_MS, LONG_PAUSE_MS, LAST_PAUSE_MS)
     out = []
     for s, after in zip(scenes, [*scenes[1:], None]):
         if after is None:
-            out.append(LAST_PAUSE_MS)
+            out.append(last)
         elif s["narration"].rstrip().endswith("?") or after["beat_idx"] != s["beat_idx"]:
-            out.append(LONG_PAUSE_MS)
+            out.append(long)
         else:
-            out.append(PAUSE_MS)
+            out.append(line)
     return out
 
 

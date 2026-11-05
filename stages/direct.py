@@ -46,7 +46,8 @@ def timeline(ctx, conn, video) -> dict:
     scenes = db.scenes_for(conn, video["id"])
     rows = [{"idx": s["idx"], "narration": s["narration"], "shows": s["visual_prompt"], "duration_ms": s["duration_ms"],
              "words": json.loads(s["words_json"] or "[]")} for s in scenes]
-    return short.lines(rows, short.pauses([{"narration": s["narration"], "beat_idx": s["beat_idx"]} for s in scenes]))
+    gaps = ctx.channel(video["channel_id"]).pauses_ms
+    return short.lines(rows, short.pauses([{"narration": s["narration"], "beat_idx": s["beat_idx"]} for s in scenes], gaps))
 
 
 def _stub(ctx) -> bool:

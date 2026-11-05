@@ -117,6 +117,14 @@ out["in_the_way"] = refused({"length": 0.2, "set": "sky_counter", "cast": {"stan
                              "shots": [{"t": 0, "on": "stand:", "frame": 0.6, "angle": [0, 3], "lens": 26, "square": True}]})
 out["lens_under"] = refused({"length": 0.2, "set": "sky_counter", "cast": {"stand": STAND},
                              "shots": [{"t": 0, "on": "stand:", "frame": 0.6, "angle": [0, -40], "lens": 26, "square": True}]})
+# a wall behind what a shot is on isn't in its way, with the lens inside the wall's bounding box; a wall between them is.
+# A thing's `at` is its middle, and this one's wall is 0.89 behind that
+SHOT_LOW = [{"t": 0, "on": "stand:", "frame": 0.6, "angle": [0, 3], "lens": 26, "square": True}]
+out["wall_behind"] = refused({"length": 0.2, "set": "sky_counter", "cast": {"stand": STAND, "corner": {"type": "prop", "prop": "corner", "on": "set", "at": [0, -0.59], "facing": 0}}, "shots": SHOT_LOW})
+out["wall_between"] = refused({"length": 0.2, "set": "sky_counter", "cast": {"stand": STAND, "corner": {"type": "prop", "prop": "corner", "on": "set", "at": [0, -1.04], "facing": 0}}, "shots": SHOT_LOW})
+# how many chips a hit throws
+staged({"length": 0.2, "set": "sky_counter", "cast": {"stand": STAND}, "happens": [{"do": "sparks", "t": 0.05, "on": "stand:", "kind": "chips", "count": 6}], "shots": SHOT})
+out["chips"] = sum(obj.name.startswith("Spark") for obj in bpy.data.objects)
 out["slide_through"] = refused({"length": 0.6, "set": "sky_counter", "cast": {"stand": STAND, "other": {"type": "prop", "prop": "block", "at": [0, 0, 0.5], "facing": 0, "floats": True}},
                                 "happens": [{"do": "slide", "t": 0.1, "prop": "other", "by": [0, 0, -0.5], "over": 0.4}], "shots": SHOT})
 

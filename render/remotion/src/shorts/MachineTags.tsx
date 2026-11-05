@@ -113,7 +113,9 @@ export const MachineTag: React.FC<{t: MTag; tracks: Record<string, Track>}> = ({
     const halo = (size: number): string => [0.12, 0.3, 0.7].map((k) => `0 0 ${Math.round(size * k)}px ${color}`).join(', ');
     const share = interpolate(frame, [a, a + (b - a) * 0.7], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
     const value = (t.start ?? 0) + ((t.end ?? 0) - (t.start ?? 0)) * (1 - (1 - share) * (1 - share));
-    const shown = Math.round(value / 100) * 100;
+    // to about three figures as it runs, so 40,000 ticks by hundreds and 20 by ones, and exactly what it says at the end
+    const step = Math.max(1, 10 ** (Math.floor(Math.log10(Math.max(1, Math.abs(t.end ?? 0)))) - 2));
+    const shown = share >= 1 ? (t.end ?? 0) : Math.round(value / step) * step;
     const s = interpolate(frame, [a, a + 5], [0.86, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
     return (
       <div style={{position: 'absolute', left: ax * SHORT_W, top: ay * SHORT_H, transform: `translate(-50%,-50%) scale(${s})`,

@@ -146,7 +146,8 @@ def amount(value: float) -> str:
 def outline_text(outline: dict) -> str:
     """The outline as the script, titles and revise turns read it. Outlines from before the backstory, cast and
     tracker leave those lines out."""
-    lines = [f"Hook: {outline['hook']}"]
+    lines = [f"Shape: {outline['shape']}"] if outline.get("shape") else []
+    lines.append(f"Hook: {outline['hook']}")
     if outline.get("fact"):
         lines.append(f"Fact: {outline['fact']}")
     if outline.get("backstory"):
@@ -165,6 +166,8 @@ def outline_text(outline: dict) -> str:
             lines.append(f"  Skill: {b['skill']}")
         if b.get("cast"):
             lines.append(f"  Cast: {', '.join(b['cast'])}")
+    if outline.get("turn"):
+        lines += ["", f"Turn: {outline['turn']}"]
     return "\n".join(lines + ["", f"Ending: {outline['ending']}"])
 
 

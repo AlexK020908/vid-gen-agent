@@ -35,6 +35,7 @@ class Channel:
     voice_model: str = ""     # an ElevenLabs model for this channel's voice, in place of models.voice
     voice_speed: float = 0.0  # this channel's pace, in place of elevenlabs.speed
     max_seconds: int = 0      # competitors' videos longer than this don't count: 60 or so for a Shorts channel
+    pauses_ms: list[int] = field(default_factory=list)  # a character short's silence after a line, after a question or new beat, and at the end
 
     @property
     def script_gate(self) -> bool:
@@ -112,7 +113,15 @@ def _channel(root: Path, raw: dict, path: Path | None = None) -> Channel:
         voice_model=str(raw.get("voice_model") or ""),
         voice_speed=float(raw.get("voice_speed") or 0),
         max_seconds=int(raw.get("max_seconds") or 0),
+        pauses_ms=_pauses(raw.get("pauses_ms")),
     )
+
+
+def _pauses(value) -> list[int]:
+    gaps = [int(v) for v in value or []]
+    if gaps and len(gaps) != 3:
+        raise ValueError(f"pauses_ms is three numbers, after a line, after a question or new beat, and at the end; not {value!r}")
+    return gaps
 
 
 def _format(value) -> str:

@@ -24,10 +24,12 @@ WPM = 150                       # elevenlabs.speed slows the voices to about thi
 # A character short: 30 to 60 seconds, read slowly (prompts/character/)
 SHORT_BEATS = (3, 6)
 SHORT_LINES = (4, 14)
-SHORT_LINE_WORDS = (3, 22)
+SHORT_LINE_WORDS = (3, 34)      # one sentence: the reference shorts' run about 18 words, up to 30 or so (BUILD.md, phase 39)
 SHORT_WORDS = (60, 150)         # what the prompt asks for
 SHORT_WORDS_OK = (50, 165)      # what passes
-SHORT_HOOK_WORDS = 14
+SHORT_HOOK_WORDS = 26           # a moment is short, but an "If you..." setup runs to about 25
+SHORT_SHAPES = ("true_story", "absurd_test", "why_it_happens", "thought_experiment", "fake_invention", "fix_in_steps", "ladder")
+QUESTION_OPENS = ("why_it_happens",)     # the only shape that may open on a bare question
 TITLES = 3
 TITLE_MAX = 100                 # YouTube's limit
 DESCRIPTION_CHARS = (150, 900)  # the viewer-facing blurb above the chapters: a short paragraph, not a note or an essay
@@ -353,11 +355,24 @@ def visual_prompt(text: str) -> list[str]:
     return ["the visual_prompt is empty"] if _blank(text) else []
 
 
+def _bare_question(hook: str) -> bool:
+    """A hook that only asks. An "If you..." setup can end on a question: it has already put something in front of the viewer."""
+    text = hook.strip().lower()
+    return text.endswith("?") and not text.startswith("if ")
+
+
 def short_outline(data: dict) -> list[str]:
     """A character short's outline (prompts/character/outline.md)."""
     out = []
     if _blank(data.get("hook")) or words(data["hook"]) > SHORT_HOOK_WORDS:
         out.append(f"the hook has to be there, in {SHORT_HOOK_WORDS} words at most")
+    elif _bare_question(data["hook"]) and data.get("shape") not in QUESTION_OPENS:
+        out.append("the hook is a bare question: open on a moment already happening, or an \"If you...\" setup. Only "
+                   f"{' or '.join(QUESTION_OPENS)} can open on a question")
+    if data.get("shape") not in SHORT_SHAPES:
+        out.append(f"the shape has to be one of {', '.join(SHORT_SHAPES)}")
+    if _blank(data.get("turn")):
+        out.append("the turn has to be there: what comes after the answer, or \"none:\" and why the short is stronger without one")
     if _blank(data.get("fact")):
         out.append("the fact has to be there, with where it's known from")
     lo, hi = SHORT_BEATS

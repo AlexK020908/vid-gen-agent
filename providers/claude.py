@@ -97,7 +97,7 @@ INVENTORY = _obj({  # prompts/inventory.md: the props a script uses and how big 
     "people": {"type": "array", "items": _obj({"name": STR, "scale": NUM})}})
 SHEET_VALUES = ("idx", "label", "shot", "duration_ms", "place_name", "words", "visual_prompt", "set_change", "looks",
                 "people", "crowds", "stage", "props", "poses", "cycles", "previous", "state")
-SHORT_OUTLINE = _obj({"hook": STR, "fact": STR,  # prompts/character/: a character short (core/formats.py)
+SHORT_OUTLINE = _obj({"shape": {"type": "string", "enum": list(checks.SHORT_SHAPES)}, "hook": STR, "fact": STR, "turn": STR,  # prompts/character/: a character short (core/formats.py)
                       "beats": {"type": "array", "items": _obj({"title": STR, "summary": STR})}, "ending": STR})
 SHORT_SCRIPT = _obj({"scenes": {"type": "array", "items": _obj({"beat": {"type": "integer"}, "narration": STR, "shows": STR})}})
 SHORT_TITLES = _obj({"titles": {"type": "array", "items": STR}, "description": STR})
@@ -315,8 +315,8 @@ class ClaudeLLM:
                          checks.short_outline, meter)
         beats = [{"label": f"Beat {n}", "title": b["title"].strip(), "summary": b["summary"].strip(), "skill": "",
                   "hero": False, "cast": []} for n, b in enumerate(data["beats"], 1)]
-        return {"topic": topic, "hook": data["hook"].strip(), "fact": data["fact"].strip(), "backstory": "", "cast": [],
-                "tracker": [], "beats": beats, "ending": data["ending"].strip()}
+        return {"topic": topic, "shape": data["shape"], "hook": data["hook"].strip(), "fact": data["fact"].strip(), "backstory": "",
+                "cast": [], "tracker": [], "beats": beats, "turn": data["turn"].strip(), "ending": data["ending"].strip()}
 
     def _short_script(self, channel, outline: dict, notes: list[str], previous: dict | None, meter: Meter,
                       progress: Callable[[int], None] | None) -> dict:

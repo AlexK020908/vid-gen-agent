@@ -117,6 +117,7 @@ CHECK_EVERY = 2                   # frames apart that moving things are checked
 PERSON_EVERY = 10                 # and people: a body is many faces, and it moves slowly
 LENS_ROWS = (-1, 0, 1)            # the rays through what a shot is on, to see whether something's in front of it
 NEAR_LENS = 0.6                   # how much of the way from the lens something in front has to be to count as blocking it
+BEHIND_SUBJECT = 0.02   # a wall behind what a shot is on isn't in its way, even with the lens inside the wall's bounding box (m)
 HAT_ROOM = 1.06                   # a hat that's made to fit is this much wider than the head under it
 HAIR_ROOM = 0.012                 # room left between the top of the head and the inside of a hat (m)
 LEAN_LIMIT = math.radians(50)     # the steepest a flyer banks
@@ -1000,7 +1001,8 @@ class Stage:
         place = self._on_person(e["who"], e["on"])
         socket = person.glow(place, float(e.get("radius", 0.078)), COLORS[e["color"]])
         begin, end = self.frame(e["t"]), self.frame(e["to"])
-        for f, value in ((max(1, begin - 1), 0.0), (begin + 18, 0.75), (end, 1.0)):
+        strength = float(e.get("strength", 1.0))
+        for f, value in ((max(1, begin - 1), 0.0), (begin + 18, 0.75 * strength), (end, strength)):
             socket.default_value = value
             socket.keyframe_insert("default_value", frame=f)
 
@@ -1132,7 +1134,7 @@ class Stage:
             elif kind == "rings":
                 self._clean_rings(e, f, self.aim(e["on"], f), self._facing_shot(e["t"]))
             elif kind == "sparks":
-                self._sparks(self.aim(e["on"], f), f, kind=e.get("kind", "sparks"))
+                self._sparks(self.aim(e["on"], f), f, kind=e.get("kind", "sparks"), count=int(e.get("count", 26)))
             elif kind == "play":
                 end = self.frame(e["to"]) if "to" in e else self.total + 1
                 self.props[e["prop"]]["thing"].play(f, end, e["move"], float(e.get("speed", 1.0)))
@@ -1323,7 +1325,8 @@ class Stage:
                 solid = self._solid_of(cid)
                 if solid.tree is None:
                     continue
-                if all(solid.low[i] <= lens[i] <= solid.high[i] for i in range(3)) and solid.ray(lens, way.normalized()):
+                ahead = solid.ray(lens, way.normalized())
+                if all(solid.low[i] <= lens[i] <= solid.high[i] for i in range(3)) and ahead and ahead[2] < way.length - BEHIND_SUBJECT:
                     out.append(f"the shot at {cut['t']} s has its lens inside {cid}. Leave {cid} out of its shows, or move the lens")
                     continue
                 blocked = 0

@@ -91,11 +91,14 @@ A scene:
     expression who, name (one of EXPRESSIONS or null), amount
     face       who, keys {face shape: value}, over
     gaze       who, x, y                                          -1 to 1: their left, and up
-    glow       who, on (one of GLOW_PLACES), color (one of COLORS), to (seconds), radius
+    glow       who, on (one of GLOW_PLACES), color (one of COLORS), to (seconds), radius, strength
+                                                                  on a person's skin. strength 0 to 1, 1 by default: about 0.5 keeps
+                                                                  the skin showing, and full is flat paint in a close shot
     rings      on ("id:along"), color, reach, over, count, width  thin clean circles spreading from a point to `reach` meters and
                                                                   fading over `over` seconds, facing the shot's lens: a force going
                                                                   out, a hit, a field
-    sparks     on ("id:along"), kind                              bright sparks for metal on metal, or kind "chips": what
+    sparks     on ("id:along"), kind, count                       `count` of them, 26 by default: a bird's peck wants about 6, or a close
+                                                                  shot fills with them. Bright sparks for metal on metal, or kind "chips": what
                                                                   flies off wood or stone. A strike's own come with its
                                                                   "sparks": false, true or "chips"
     knock      who, size (degrees), axis [x, y, z]                a blow: head, neck and chest ring down together

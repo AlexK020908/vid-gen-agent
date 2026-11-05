@@ -165,6 +165,16 @@ def test_every_line_gets_room_and_a_question_gets_more():
     assert short.PAUSE_MS >= 500                              # the owner's floor
 
 
+def test_a_channel_can_have_its_own_pauses():
+    scenes = [{"narration": "Why?", "beat_idx": 0}, {"narration": "One.", "beat_idx": 0}, {"narration": "Two.", "beat_idx": 0}]
+    assert short.pauses(scenes, [350, 450, 600]) == [450, 350, 600]
+    assert short.pauses(scenes, []) == short.pauses(scenes)   # an empty setting means the usual ones
+    from core import config as cfg
+    assert cfg._pauses([350, 450, 600]) == [350, 450, 600] and cfg._pauses(None) == []
+    with pytest.raises(ValueError):
+        cfg._pauses([350])
+
+
 def _tone(path, seconds, start_hz, end_hz, rate=44100):
     """A voice-like tone whose pitch glides, as a wav."""
     import array
@@ -248,9 +258,57 @@ class Answers(ClaudeLLM):
 
 SHORTS = replace(CFG.channels["zombie"], id="shorts", name="Small Facts", format="character", gates=["render"], path=None,
                  scenario_family="one surprising true thing a viewer can see happen")
-OUTLINE = {"hook": "Why don't woodpeckers get headaches?", "fact": "Their beaks flex. Source: a 2022 study in Current Biology.",
+OUTLINE = {"shape": "why_it_happens", "hook": "Why don't woodpeckers get headaches?", "fact": "Their beaks flex. Source: a 2022 study in Current Biology.",
            "beats": [{"title": "The hit", "summary": "A beak strikes."}, {"title": "The force", "summary": "A glow."},
-                     {"title": "The answer", "summary": "It bends."}], "ending": "Your head doesn't."}
+                     {"title": "The answer", "summary": "It bends."}], "turn": "none: the answer is the surprise.", "ending": "Your head doesn't."}
+
+
+def test_an_outline_says_its_shape_and_what_comes_after_the_answer():
+    from providers import checks
+    assert checks.short_outline(OUTLINE) == []
+    assert "the shape" in " ".join(checks.short_outline({**OUTLINE, "shape": "listicle"}))
+    assert "the turn" in " ".join(checks.short_outline({**OUTLINE, "turn": " "}))
+
+
+def test_only_a_why_short_can_open_on_a_bare_question():
+    from providers import checks
+    story = {**OUTLINE, "shape": "true_story"}
+    assert "bare question" in " ".join(checks.short_outline(story))
+    assert "bare question" in " ".join(checks.short_outline({**story, "hook": "What if you never slept?"}))
+    assert checks.short_outline({**story, "hook": "He glued a coin to the pavement."}) == []
+    assert checks.short_outline({**story, "hook": "If you caught a stone in your mouth, could you still talk?"}) == []     # a setup can end on one
+
+
+def test_a_setup_can_run_long_but_a_hook_cant_run_on_forever():
+    from providers import checks
+    assert checks.short_outline({**OUTLINE, "hook": " ".join(["word"] * checks.SHORT_HOOK_WORDS)}) == []
+    assert "words at most" in " ".join(checks.short_outline({**OUTLINE, "hook": " ".join(["word"] * (checks.SHORT_HOOK_WORDS + 1))}))
+
+
+def test_every_shape_is_described_to_whoever_writes_the_outline():
+    from pathlib import Path
+    from providers import checks
+    prompt = (Path(__file__).resolve().parent.parent / "prompts" / "character" / "outline.md").read_text(encoding="utf-8")
+    for shape in checks.SHORT_SHAPES:
+        assert f"- `{shape}`:" in prompt
+
+
+def test_the_outline_as_the_script_reads_it_has_the_shape_and_the_turn():
+    llm = Answers([OUTLINE])
+    got = llm.outline(SHORTS, "Woodpeckers", [], None, NoMeter())
+    assert got["shape"] == "why_it_happens"
+    text = prompts.outline_text(got)
+    assert text.startswith("Shape: why_it_happens\nHook:") and "Turn: none: the answer" in text
+    old = {k: v for k, v in got.items() if k not in ("shape", "turn")}     # outlines from before these still read
+    assert "Shape" not in prompts.outline_text(old) and "Turn" not in prompts.outline_text(old)
+
+
+def test_a_line_can_run_long_while_each_part_leads_to_the_next():
+    from providers import checks
+    built = Answers([OUTLINE]).outline(SHORTS, "Woodpeckers", [], None, NoMeter())
+    line = lambda beat, count: {"beat": beat, "narration": " ".join(["word"] * count) + ".", "shows": "a beak"}
+    assert checks.short_script([line(1, 30), line(2, 20), line(3, 10), line(3, 10)], built) == []
+    assert "line 1 is 35 words" in " ".join(checks.short_script([line(1, 35), line(2, 20), line(3, 10), line(3, 10)], built))
 
 
 def test_a_short_gets_its_own_prompts_and_the_cards_shape():

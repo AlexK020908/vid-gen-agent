@@ -138,11 +138,14 @@ def measured(tmp_path_factory):
              "spots": {"under": [0, 0, 0], "over": [0, 0, 0.1], "off_middle": [0.05, 0, 0.05]}}
     dome = {"what": "a hat", "source": {"kind": "built", "parts": [{"id": "dome", "kind": "lathe", "segments": 48,
             "points": [[0.11, 0.0], [0.09, 0.07], [0.0, 0.12], [0.0, 0.115], [0.086, 0.066], [0.106, 0.0]], "material": "steel"}]}}
-    for name, spec in (("block", block), ("hat", dome)):
+    corner = {"what": "a wall with a wing that reaches forward, so its bounding box holds a lens in front of the wall", "source": {"kind": "built", "parts": [
+              {"id": "wall", "kind": "box", "size": [2.4, 0.05, 1.0], "bevel": 0.002, "at": [0, 0.5, 0.5], "material": "steel"},
+              {"id": "wing", "kind": "box", "size": [0.05, 1.8, 1.0], "bevel": 0.002, "at": [1.2, -0.4, 0.5], "material": "steel"}]}}
+    for name, spec in (("block", block), ("hat", dome), ("corner", corner)):
         blender_render.make_thing(CFG, spec, {"file": "", "license": "own", "credit": ""}, tmp / name)
     found = clips.catalog(CFG)
     job = {"folders": {"walt": str(_fake_person(tmp))}, "catalog": {"Idle_relaxed": found["Idle_relaxed"]},
-           "things": {"block": str(tmp / "block"), "hat": str(tmp / "hat")}, "out": str(tmp),
+           "things": {"block": str(tmp / "block"), "hat": str(tmp / "hat"), "corner": str(tmp / "corner")}, "out": str(tmp),
            "textures": {t: assets.texture(CFG.data_dir, t) for t in blender_render.TEXTURES}}
     (tmp / "job.json").write_text(json.dumps(job), encoding="utf-8")
     done = subprocess.run([str(blender_render.exe(CFG)), "-b", "--factory-startup", "--python-exit-code", "1", "-P",
@@ -195,6 +198,18 @@ def test_what_isnt_physically_right_is_refused_in_words(measured):
     assert any("in front of the lens" in p for p in measured["in_the_way"])
     assert any("under the counter" in p for p in measured["lens_under"])
     assert any("pass through each other" in p for p in measured["slide_through"])    # moving, not just as it starts
+
+
+@needs_blender
+def test_a_wall_behind_the_subject_isnt_in_the_way_but_one_between_them_is(measured):
+    """Found on a woodpecker against a wide trunk: a lens inside its bounding box was refused for a trunk behind the bird."""
+    assert not any("lens" in p for p in measured["wall_behind"])
+    assert any("lens" in p for p in measured["wall_between"])
+
+
+@needs_blender
+def test_a_hit_throws_as_many_chips_as_it_says(measured):
+    assert measured["chips"] == 6
 
 
 @needs_blender

@@ -3,9 +3,10 @@
 You write the narration of one vertical 3D short for {channel_name}, from its approved outline. One voice tells it over the picture. The picture follows the voice, so every line has to give the director something to show.
 
 - 60 to 150 words in all: 30 to 60 seconds, read slowly. Viewers hear it once and read it as big captions.
-- `scenes` are lines of narration, 4 to 14 of them, each 3 to 22 words: one sentence, or two very short ones. Code leaves a pause after every line, longer after a question, so give each sentence its own line wherever you can.
+- `scenes` are lines of narration, 4 to 14 of them, each 3 to 30 words: one sentence, or two very short ones. Code leaves a pause after every line, longer after a question, so give each sentence its own line, and end a line only where the viewer should stop.
+- Let a sentence run on while each part leads to the next: "which", "until", "so", "because", rather than a full stop. Keep a short one for what has to land hard. Choppy lines of a few words each sound like a list.
 - Plain spoken words a twelve-year-old knows. Say a number as you'd say it aloud. Short words beat long ones.
-- Start with the hook. Move problem to answer with "But" and "So". Build to the one moment the outline leads to, and end on the last line it asked for. No "follow for more", no "in this video".
+- The first line is the outline's hook. Follow the outline's `Shape`. Show what's strange before saying why. Move problem to answer with "But" and "So". Build to the one moment the outline leads to, then give its `Turn`, and end on the last line it asked for. No summing up, no "follow for more", no "in this video".
 - `beat` is the number of the outline's beat each line belongs to, in order, and every beat gets at least one line.
 - `shows` says in a few plain words what's on screen during that line ("a gull's eye fixed on the sandwich"), for the director: what happens, not how it's filmed.
 - Say only what the outline's `fact` supports. If it's a finding from one study, say "one study found", not "always".

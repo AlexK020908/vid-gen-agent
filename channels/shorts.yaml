@@ -11,6 +11,8 @@ budget_usd: 5
 clips_per_video: 0
 narrator: you
 max_seconds: 70
+pauses_ms: [350, 450, 600]    # silence after a line, after a question or new beat, and at the end: the reference's explainers (BUILD.md,
+                              # phase 39), chosen Nov 5 after the trial in data/benchmarks/pace_test. Left out, it's 500, 900, 1200
 youtube:                      # not connected: nothing here can publish until it is
   category_id: 27             # Education
   tags: [science, facts, shorts]
