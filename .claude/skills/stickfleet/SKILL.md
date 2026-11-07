@@ -117,6 +117,12 @@ A channel with this format makes vertical 3D shorts with no code per video: you 
 - The render card has the MP4 and a frame sheet, and only a title to pick. A flag with a note directs it again and keeps
   the voice. There's nothing else to spend after the voice.
 
+## Finding ideas
+
+When the owner wants ideas for a short, follow `prompts/character/ideas.md`, which doesn't need the server: `uv run python run.py ideas fetch`, read the leads with `run.py ideas show`, write the cards to `data/ideas/cards.json`, and `run.py ideas check` them. Read the reference's titles near anything you like, since a card's terms only catch exact words. A fresh reviewer with web search tests the claims before the owner sees them. Don't score or rank them.
+
+The owner posts on Instagram by hand, so give them the video and a caption with the credits its models need (each thing's `thing.json` has its license and credit), and remind them of the AI label.
+
 ## Other skills here
 
 `remotion-best-practices` (Remotion's own) is for changing the code in `render/remotion/`, such as how captions are drawn. It isn't how a video gets made: videos go through the pipeline above, so when the owner asks for a video, don't open Remotion Studio or start a project as that skill says. `blender-motion-state-inspection` (from ECC) is for when a person or animal in a render looks twisted, floats, slides or faces the wrong way: measure before changing anything.

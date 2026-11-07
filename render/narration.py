@@ -30,6 +30,8 @@ GAP = 0.04                      # the least breath between one line's end and th
 CAPTION_MAX = 64                # characters a caption holds, on the box's two lines
 QUIET = 0.012                   # a 10 ms window quieter than this (of full scale) is silence
 LEAD, TAIL = 0.03, 0.06         # the room kept before a line's first sound and after its last
+SCRAP_GAP = 0.15                # silence that cuts a scrap of sound off from a line's words: longer than a stop inside a word (about 0.07 s)
+SCRAP_MOST = 0.2                # the longest a scrap at either end can be
 MOST_TEMPO = 1.15               # the most read() speeds a slow voice up to reach its pace: the ear doesn't mind this
 DUCK = 0.6                      # how much of its volume a sound effect keeps when it lands on a spoken line
 PITCH_LOW, PITCH_HIGH = 70, 300  # the range a speaking voice's pitch is looked for in, Hz
@@ -76,8 +78,13 @@ def _voiced(config, channel, voice_id: str, lines: list[dict], out_dir: Path, sp
         yield i, key, decoded, ffmpeg.duration_ms(decoded) / 1000, words, usd
 
 
-def _ends(path: Path) -> tuple[float, float]:
-    """Where a line's speech starts and stops, in seconds, with a little room at each end."""
+def _ends(path: Path, starts: list[float] | None = None) -> tuple[float, float]:
+    """Where a line's speech starts and stops, in seconds, with a little room at each end. `starts` are its words' start
+    times in seconds, if known.
+
+    A short scrap of sound cut off from the words by silence at either end isn't the line: ElevenLabs is shown the lines
+    either side, and a take can end on the first sound of the next one (the woodpecker's "...a sponge. s-" before "So
+    what", which the owner heard as "s--- so"), or be a breath. It's dropped unless a word starts in it."""
     with wave.open(str(path)) as w:
         rate, n = w.getframerate(), w.getnframes()
         samples = array.array("h", w.readframes(n))
@@ -86,7 +93,19 @@ def _ends(path: Path) -> tuple[float, float]:
             if math.sqrt(sum(s * s for s in samples[i:i + size]) / size) / 32768 > QUIET]
     if not loud:
         return 0.0, n / rate
-    return max(0.0, loud[0] / rate - LEAD), min(n / rate, (loud[-1] + size) / rate + TAIL)
+    runs = [[loud[0], loud[0] + size]]   # stretches of sound, in samples, split where SCRAP_GAP of silence falls
+    for i in loud[1:]:
+        if (i - runs[-1][1]) / rate >= SCRAP_GAP:
+            runs.append([i, i + size])
+        else:
+            runs[-1][1] = i + size
+    starts = starts or []
+    short = lambda run: (run[1] - run[0]) / rate <= SCRAP_MOST
+    while len(runs) > 1 and short(runs[-1]) and not any(t >= (runs[-2][1] + runs[-1][0]) / 2 / rate for t in starts):
+        runs.pop()
+    while len(runs) > 1 and short(runs[0]) and starts and min(starts) >= (runs[0][1] + runs[1][0]) / 2 / rate:
+        runs.pop(0)
+    return max(0.0, runs[0][0] / rate - LEAD), min(n / rate, runs[-1][1] / rate + TAIL)
 
 
 def trimmed(path: Path, result: dict) -> tuple[Path, dict]:
@@ -95,7 +114,7 @@ def trimmed(path: Path, result: dict) -> tuple[Path, dict]:
     path = Path(path)
     decoded = path.with_name(f"{path.stem}.full.wav")
     ffmpeg.run(["-i", path, "-ar", 44100, "-ac", 1, decoded])
-    a, b = _ends(decoded)
+    a, b = _ends(decoded, [w["start_ms"] / 1000 for w in result.get("words") or []])
     final = path.with_name(f"{path.stem}.speech.wav")
     ffmpeg.run(["-i", decoded, "-af", f"atrim=start={a:.3f}:end={b:.3f},asetpts=PTS-STARTPTS", "-ar", 44100, "-ac", 1, final])
     decoded.unlink(missing_ok=True)
@@ -146,13 +165,13 @@ def read(config, channel, voice_id: str, lines: list[dict], out_dir: Path, speed
     voiced, spent = [], 0.0
     for i, key, decoded, _seconds, words, usd in _voiced(config, channel, voice_id, lines, out_dir, speed, tts, model):
         spent += usd
-        voiced.append((lines[i]["text"], key, decoded, _ends(decoded), words))
+        voiced.append((lines[i]["text"], key, decoded, _ends(decoded, [w["start"] for w in words]), words))
     speech = sum(b - a for _text, _key, _decoded, (a, b), _words in voiced)
     chars = sum(len(text) for text, *_rest in voiced)
     tempo = min(MOST_TEMPO, max(1.0, pace * speech / chars)) if pace else 1.0
     out = []
     for text, key, decoded, (a, b), words in voiced:
-        final = Path(out_dir) / f"read_{key}_{tempo:.3f}.wav"
+        final = Path(out_dir) / f"read_{key}_{tempo:.3f}_{a:.2f}_{b:.2f}.wav"   # named by its cut too, so a better trim is used
         if not final.exists():
             ffmpeg.run(["-i", decoded, "-af", f"atrim=start={a:.3f}:end={b:.3f},asetpts=PTS-STARTPTS,atempo={tempo:.4f}",
                         "-ar", 44100, "-ac", 1, final])

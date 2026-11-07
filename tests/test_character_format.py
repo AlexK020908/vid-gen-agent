@@ -265,6 +265,37 @@ def test_a_line_is_cut_to_its_speech_and_its_words_move_with_it(tmp_path):
     assert got["words"][0]["start_ms"] <= 40 and final.exists()
 
 
+def _pieces(path, parts, rate=44100):
+    """A wav of (seconds, loud) pieces: noise where loud, silence where not."""
+    import array
+    import random
+    import wave
+    noise, data = random.Random(7), array.array("h")
+    for seconds, loud in parts:
+        data.extend(int(noise.uniform(-9000, 9000)) if loud else 0 for _ in range(int(seconds * rate)))
+    with wave.open(str(path), "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(rate)
+        w.writeframes(data.tobytes())
+    return path
+
+
+def test_a_scrap_of_the_next_line_at_a_takes_end_is_cut_off(tmp_path):
+    from render import narration
+    # words, 0.28 s of silence, then 0.04 s of the next line's first sound: the woodpecker's line 6
+    leaked = _pieces(tmp_path / "leak.wav", [(0.1, False), (1.0, True), (0.28, False), (0.04, True)])
+    a, b = narration._ends(leaked, [0.1, 0.5])
+    assert a == pytest.approx(0.07, abs=0.015) and b == pytest.approx(1.1 + narration.TAIL, abs=0.015)
+    # a stop inside the last word ("it." is a closure, then the t) is too short a silence to cut anything off
+    stop = _pieces(tmp_path / "stop.wav", [(1.0, True), (0.07, False), (0.05, True), (0.2, False)])
+    assert narration._ends(stop, [0.0, 0.6])[1] == pytest.approx(1.12 + narration.TAIL, abs=0.015)
+    # a short last word after a pause is kept, as the voice's timing has a word starting in it
+    word = _pieces(tmp_path / "word.wav", [(1.0, True), (0.3, False), (0.15, True), (0.2, False)])
+    assert narration._ends(word, [0.0, 0.6, 1.3])[1] == pytest.approx(1.45 + narration.TAIL, abs=0.015)
+    assert narration._ends(word, [0.0, 0.6])[1] == pytest.approx(1.0 + narration.TAIL, abs=0.015)
+
+
 def test_a_channels_own_pace_is_used(tmp_path, monkeypatch):
     tts = ElevenLabsTTS(CFG)
     sent = []

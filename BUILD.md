@@ -47,10 +47,11 @@ The spec is [../plan.md](../plan.md). This file tracks what is built, how it dev
 | 39. What to write | His scripts and upload list measured; the outline gets a shape and a turn, the hook starts in a moment or an "If you..." setup, the reviewer sends back what stops at the answer; pauses by channel. Spec: [What his scripts taught](#what-his-scripts-taught-phase-39-what-to-write) | **Built** (Nov 5, 2026): the woodpecker short rewritten through it, made at both pauses in `data/benchmarks/pace_test/`, voice $0.11; `shorts` is on the fewer pauses, and the reviewer has web search. Finding ideas isn't built |
 | 40. How it moves | People run, hit and fall; the camera travels; things squash and bend; a thing's set against a crooked surface by measurement; a window in something's head. Spec: [How it moves](#how-it-moves-phase-40) | **Built** (Nov 5, 2026): the woodpecker short made again through it on an 8K tree, voice $0.128, at `data/benchmarks/woodpecker_v3/woodpecker_v4.mp4`. The owner approved the silent preview ("looks good"), and of that cut said "its not bad" |
 | 41. How the world works | A frame reviewer goes through every finished short before the owner sees it. Hands hold, what's inside rides, soft things give, bodies land, lights turn with people, x-rays of a person's own head. Spec: [What a frame review found](#what-a-frame-review-found-phase-41-how-the-world-works) | **Built** (Nov 5 to 6, 2026): the woodpecker short went through it, and the owner approved `data/benchmarks/woodpecker_v3/woodpecker_v7.mp4` ("yea this looks good"). The new director's brief hasn't yet run through a real job |
+| 42. Finding ideas | Real leads anyone can check, cards that say what people assume and what's true, and a check against the reference's titles. No score. Spec: [How ideas are found](#how-ideas-are-found-phase-42) | **Built** (Nov 6, 2026): `run.py ideas`, with a first batch of 14 cards in `data/ideas/cards.json` |
 
 The code for plan.md's whole build order is complete (weeks 4–6 are running videos, not building); phase 10 is the YouTube tools plan.md lists that no phase has needed yet. What needs your accounts is under "Your turn" in How YouTube works, How Claude writes, How voice, pictures and clips work, and How topics and metrics work.
 
-**On Nov 6, 2026 the owner decided to post on Instagram rather than YouTube.** Nothing's built for that yet: everything that publishes or reads numbers (`stages/publish.py`, `stages/analytics.py`, `core/performance.py`, `youtube/`) is YouTube-only, and a video's verdict is judged on AVD % and CTR. Making a video isn't affected.
+**On Nov 6, 2026 the owner decided to post on Instagram rather than YouTube.** Nothing's built for that yet: everything that publishes or reads numbers (`stages/publish.py`, `stages/analytics.py`, `core/performance.py`, `youtube/`) is YouTube-only, and a video's verdict is judged on AVD % and CTR. Making a video isn't affected. The owner posts by hand ("i can post it myself, i just need the vbideos and good ideas"), so no posting or metrics code is planned: a finished video gets a caption with the credits its models need.
 
 ## Run it
 
@@ -61,7 +62,7 @@ copy .env.example .env           # ElevenLabs, fal and YouTube keys (no Claude k
 copy claude-settings.json .claude\settings.json   # once, by hand (and into the workspace folder above): the permission prompts
                                  # .claude\skills and .claude\agents are in the repo; the workspace folder above has copies
 uv run python run.py serve       # the engine, and MCP for Claude Code at http://localhost:8000/mcp
-uv run pytest -q                 # 424 tests, ~10 min (the session, looking and puppet ones are slowest), real ffmpeg, Remotion and Blender; Claude's jobs answered in the tests, fake ElevenLabs, fal, Google APIs; $0
+uv run pytest -q                 # 439 tests, ~10 min (the session, looking and puppet ones are slowest), real ffmpeg, Remotion and Blender; Claude's jobs answered in the tests, fake ElevenLabs, fal, Google APIs; $0
 uv run pytest -m live            # 4 tests against real APIs (a voice line, a still, a 3 s clip ~$0.35, competitors' videos, free); skipped without keys
 uv run python run.py demo        # headless run through every gate
 uv run python run.py status
@@ -528,6 +529,8 @@ The same review also led to the sled being seen to reach the tree before the cut
 
 The owner on v7 (`woodpecker_v7.mp4`): "yea this looks good". No fresh reviewer has seen that exact cut: the last round of fixes was checked on frames from the final file.
 
+**A take can end on the next line's first sound (every video).** Of v8 the owner said "its good but the voice has weird pauses, like s--- so...". Line 6's take ended "...with a sponge.", then 0.28 s of silence, then 40 ms of rising hiss where ElevenLabs had started on the "S" of "So what", the next line, which it's shown for flow. The trimmer kept everything up to the last sound, so the cut said "sponge... s- ... So". It was the only take of the eleven with one, and v7 had it too. Every pause inside a line was at a comma (0.13 to 0.26 s), the gaps between lines measured 0.41 to 0.43 s against his 0.36, and the whooshes under the voice were too quiet in the mix to hear. Now `narration._ends` drops a scrap of up to 0.2 s at either end that 0.15 s of silence cuts off from the words, unless the voice's timing has a word starting in it. A stop inside a word, like the closure before the t of "it.", is about 0.07 s, so it's kept. `woodpecker_v9.mp4` (59.6 s) has line 6 cut again from the same take, for nothing, and everything after it 0.28 s sooner: only the sponge-hammer scene was filmed again, and on frames from the final file the hammer still lands on "sponge" and the cut comes on "So". It goes with `woodpecker_v9_caption.txt`, the same caption. The tools that found it are in `made_with/` (`ends.py` checks each take's two ends; `mix_vs_voice.py` says whether an effect can be heard over the voice).
+
 Still short: the second fall and the man's rebound (the stock clip), the mallet crossing his face in the picture at about 30 s, nothing that shows the bird's pressure against a limit at the end, and the small brain not being tied to the bird in the picture.
 
 **The reviewer always fills its cap, unless told not to.** Each of the first four passes came back with 15 findings, of falling severity, so the count says nothing about whether a cut's ready. Ask it to rank them, and to say what's a blemish: stop when the top few are no longer things a viewer would call wrong.
@@ -535,6 +538,24 @@ Still short: the second fall and the man's rebound (the stock clip), the mallet 
 **How to look at a model.** The film's own camera hid most of this. A scratch script that stages a scene with its checks off and renders from any side, close up, found the fist, the pinky, the lights and the head, and it's the first thing to reach for.
 
 **Tests:** `tests/test_precision.py` has one for each of these, named for what went wrong, and the stand-in person in `tests/blender_fake_person.py` has hands and feet now.
+
+## How ideas are found (phase 42)
+
+The owner, on Nov 6, 2026: "i can post it myself, i just need the vbideos and good ideas". The topic stage only proposes variants of a competitor's recent hits, `shorts` has no competitors, and every short so far had a hand-picked topic. So nothing went looking.
+
+- **`run.py ideas fetch`** (`ideas/leads.py`, free, no account) gets Wikipedia's lists of common misconceptions, its list of Ig Nobel winners, and YouTube's search suggestions for how people ask things. The winners since 2001 are in tables, which Wikipedia's plain-text extract drops, so pages are read from their HTML. `run.py ideas show <part of a page's name>`, or `show asked`, prints them.
+- **Cards** (`prompts/character/ideas.md`, in `data/ideas/cards.json`): the session reads the leads and writes each idea as its hook, what people think, what's true, the chain of causes, the turn, the first picture, how it goes inside, what's needed, its shape and its source. Most leads go nowhere, and that's expected.
+- **`run.py ideas check`** (`ideas/cards.py`) refuses a card with something missing, a bare question for a hook, no link for a source, or terms the reference's titles already have (all of them in one title, singular or plural, whole words). Then a fresh reviewer with web search tests the claims, since whoever wrote a card doesn't grade it.
+- **There's no score**, because a blind test couldn't pick his winners from their titles better than a coin flip. The owner picks, and real views decide. Keep it that way until something beats a coin flip on held-out pairs.
+
+What the first run taught:
+
+- **A word count isn't a reading.** Of the first shortlist, his titles ruled out spaghetti ("Breaking Spaghetti Without Extra Pieces", which had wrongly been called free), train wheels, exploding trousers, dead spiders as robots, pigeons in war, why bees die after stinging, cracking knuckles, falling elevators and falling through ice. "Straw" also matched, on a potato. So read the near titles, and make `terms` the real subject.
+- He's covered a lot: 4,147 uploads. The Ig Nobels since 2001 and arguments that build by steps are where free ground showed up.
+- The check says a card can be used, not that it's good, and it says so.
+- **Every card of the first 14 needed changes from the fresh fact-checker,** and one was dropped: a full bottle does break more easily, but the paper says it hits with about 70% more energy, so "you'd want the full one" was unsupported. Most of what it caught was reasoning the writer had added to a source, which `ideas.md` now warns about.
+
+The same check on the woodpecker's words found the argument sound, and four lines firmer than their sources: "what protects it" (others are listed), "enough for a concussion" (it's pressure against a threshold, and whether pressure causes concussion isn't settled), "not by much" (the authors call the margin considerable), and "slams into it" (the CDC says bounce or twist). The owner said to fix the first three ("yes fix"), $0.048, and `woodpecker_v8.mp4` (59.9 s) is the cut to post, with `woodpecker_v8_caption.txt`. The last is left, since it's the plain version of the straight-on case and the picture rests on it. The longer line 7 needed one more cut, at "probably", as a shot of 4.2 s was refused. V8 was checked on frames from the final file, and no fresh reviewer has seen it.
 
 ## How a character short runs (phases 28 and 36)
 

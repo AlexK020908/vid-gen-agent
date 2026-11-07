@@ -361,16 +361,22 @@ def _bare_question(hook: str) -> bool:
     return text.endswith("?") and not text.startswith("if ")
 
 
-def short_outline(data: dict) -> list[str]:
-    """A character short's outline (prompts/character/outline.md)."""
+def short_hook(hook, shape) -> list[str]:
+    """A character short's first line and the shape it's built on, in an outline or on an idea card."""
     out = []
-    if _blank(data.get("hook")) or words(data["hook"]) > SHORT_HOOK_WORDS:
+    if _blank(hook) or words(hook) > SHORT_HOOK_WORDS:
         out.append(f"the hook has to be there, in {SHORT_HOOK_WORDS} words at most")
-    elif _bare_question(data["hook"]) and data.get("shape") not in QUESTION_OPENS:
+    elif _bare_question(hook) and shape not in QUESTION_OPENS:
         out.append("the hook is a bare question: open on a moment already happening, or an \"If you...\" setup. Only "
                    f"{' or '.join(QUESTION_OPENS)} can open on a question")
-    if data.get("shape") not in SHORT_SHAPES:
+    if shape not in SHORT_SHAPES:
         out.append(f"the shape has to be one of {', '.join(SHORT_SHAPES)}")
+    return out
+
+
+def short_outline(data: dict) -> list[str]:
+    """A character short's outline (prompts/character/outline.md)."""
+    out = short_hook(data.get("hook"), data.get("shape"))
     if _blank(data.get("turn")):
         out.append("the turn has to be there: what comes after the answer, or \"none:\" and why the short is stronger without one")
     if _blank(data.get("fact")):

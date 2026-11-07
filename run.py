@@ -234,6 +234,20 @@ def cmd_thing(args) -> None:
         print(f"{tid}: {made['sheet']}")
 
 
+def cmd_ideas(args) -> None:
+    from core import config
+    from ideas import cards, leads
+
+    cfg = config.load()
+    folder = cfg.data_dir / "ideas"
+    if args.do == "fetch":
+        leads.fetch(folder)
+    elif args.do == "show":
+        leads.show(folder, args.what or "")
+    elif cards.check_file(args.what or folder / "cards.json", cfg.data_dir):
+        sys.exit(1)
+
+
 def cmd_scene(args) -> None:
     from pathlib import Path
 
@@ -447,6 +461,11 @@ def main() -> None:
     p.add_argument("channel")
     p.add_argument("--propose", action="store_true", help="also ask for topic ideas (a Claude call in live mode)")
     p.set_defaults(fn=cmd_topics)
+
+    p = sub.add_parser("ideas", help="finding things to make shorts about (prompts/character/ideas.md): fetch leads, show them, check a file of cards")
+    p.add_argument("do", choices=("fetch", "show", "check"))
+    p.add_argument("what", nargs="?", help="show: part of a page's name, or \"asked\" for the questions. check: the file, or data/ideas/cards.json")
+    p.set_defaults(fn=cmd_ideas)
 
     p = sub.add_parser("connect", help="sign in to YouTube for one channel")
     p.add_argument("channel")
