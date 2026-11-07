@@ -1,0 +1,175 @@
+{
+ "what": "a long steel rail up on trestles, for a crash-test sled to run along",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "near",
+    "kind": "box",
+    "size": [
+     2.4,
+     0.012,
+     0.01
+    ],
+    "bevel": 0.0015,
+    "at": [
+     0,
+     -0.06,
+     0.005
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "far",
+    "kind": "box",
+    "size": [
+     2.4,
+     0.012,
+     0.01
+    ],
+    "bevel": 0.0015,
+    "at": [
+     0,
+     0.06,
+     0.005
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "leg_a_near",
+    "kind": "box",
+    "size": [
+     0.018,
+     0.018,
+     1.457
+    ],
+    "bevel": 0.0015,
+    "at": [
+     -0.5,
+     -0.06,
+     -0.729
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "leg_a_far",
+    "kind": "box",
+    "size": [
+     0.018,
+     0.018,
+     1.457
+    ],
+    "bevel": 0.0015,
+    "at": [
+     -0.5,
+     0.06,
+     -0.729
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "tie_a",
+    "kind": "box",
+    "size": [
+     0.018,
+     0.12,
+     0.018
+    ],
+    "bevel": 0.0015,
+    "at": [
+     -0.5,
+     0,
+     -0.012
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "low_tie_a",
+    "kind": "box",
+    "size": [
+     0.018,
+     0.12,
+     0.018
+    ],
+    "bevel": 0.0015,
+    "at": [
+     -0.5,
+     0,
+     -0.801
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "leg_b_near",
+    "kind": "box",
+    "size": [
+     0.018,
+     0.018,
+     1.627
+    ],
+    "bevel": 0.0015,
+    "at": [
+     0.3,
+     -0.06,
+     -0.814
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "leg_b_far",
+    "kind": "box",
+    "size": [
+     0.018,
+     0.018,
+     1.627
+    ],
+    "bevel": 0.0015,
+    "at": [
+     0.3,
+     0.06,
+     -0.814
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "tie_b",
+    "kind": "box",
+    "size": [
+     0.018,
+     0.12,
+     0.018
+    ],
+    "bevel": 0.0015,
+    "at": [
+     0.3,
+     0,
+     -0.012
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "low_tie_b",
+    "kind": "box",
+    "size": [
+     0.018,
+     0.12,
+     0.018
+    ],
+    "bevel": 0.0015,
+    "at": [
+     0.3,
+     0,
+     -0.895
+    ],
+    "material": "bright_steel"
+   }
+  ]
+ },
+ "spots": {
+  "end": [
+   -1.2,
+   0,
+   0.01
+  ]
+ }
+}

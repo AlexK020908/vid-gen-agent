@@ -11,12 +11,26 @@ from mathutils.bvhtree import BVHTree
 MOST_PAIRS = 3000      # of the faces two things cross at, how many are measured: enough to find the deepest
 MOST_INSIDE = 800      # of a thing's points and faces, how many are tested for being inside another
 GRID = 32              # rays a side across where two things overlap, finding how far one can come down onto the other
+ALL_WAYS = tuple(Vector((x + 0.013, y - 0.017, z + 0.011)).normalized() for x in (-1, 0, 1) for y in (-1, 0, 1) for z in (-1, 0, 1) if x or y or z)    # 26, none along a face
+LINES = ALL_WAYS[:13]  # the same, one way along each line through a point
+ENCLOSED = 0.55        # how many of those lines have to meet something on both sides of a point, for it to be surrounded: from outside something, a line meets it on one side only, however many rays hit it
+OUT_WAYS = tuple(Vector(v).normalized() for v in ((0.0123, 0.0177, 1.0), (0.81, -0.0211, 0.0173), (-0.0307, 0.87, -0.0191)))     # not along any face: straight up can run along a wall
+
+
+CARRIED = "carried"    # marks what rides inside something: it goes where that goes, and it's a thing of its own
 
 
 def meshes_of(root) -> list:
-    """The meshes that make up something, leaving out what's never drawn."""
-    return [obj for obj in [root, *root.children_recursive]
-            if obj.type == "MESH" and not obj.hide_viewport and obj.display_type != "WIRE" and not obj.get("light")]
+    """The meshes that make up something, leaving out what's never drawn, and what's riding inside it, which is something else."""
+    found, waiting = [], [root]
+    while waiting:
+        obj = waiting.pop()
+        if obj is not root and obj.get(CARRIED):
+            continue
+        if obj.type == "MESH" and not obj.hide_viewport and obj.display_type != "WIRE" and not obj.get("light"):
+            found.append(obj)
+        waiting += obj.children
+    return found
 
 
 class Solid:
@@ -72,16 +86,19 @@ class Solid:
         return max(deepest, self._inside(other), other._inside(self))
 
     def _holds(self, point: Vector) -> bool:
-        """Whether a point is inside this, by how many surfaces a ray from it crosses on its way out."""
-        crossed, at = 0, point
-        way = Vector((0.0123, 0.0177, 1.0)).normalized()     # not along any face: straight up can run along a wall
-        for _ in range(32):
-            hit = self.tree.ray_cast(at, way)
-            if hit[0] is None:
-                break
-            crossed += 1
-            at = hit[0] + way * 1e-5
-        return crossed % 2 == 1
+        """Whether a point is inside this, by how many surfaces a ray from it crosses on its way out: an odd number. A scan isn't sealed, and one
+        ray can go through a hole in it, so three go different ways, and most of them have to say so."""
+        votes = 0
+        for way in OUT_WAYS:
+            crossed, at = 0, point
+            for _ in range(32):
+                hit = self.tree.ray_cast(at, way)
+                if hit[0] is None:
+                    break
+                crossed += 1
+                at = hit[0] + way * 1e-5
+            votes += crossed % 2
+        return votes >= 2
 
     def _inside(self, other: "Solid") -> float:
         """How deep this is inside another: what the faces can't say when two shapes line up exactly, as one block sliding through
@@ -120,6 +137,43 @@ class Solid:
             hit = self.tree.ray_cast(point, Vector((0, 0, 1)))
             if hit[0] is not None and (least is None or hit[3] < least):
                 least = hit[3]
+        return least
+
+    def encloses(self, point: Vector) -> bool:
+        """Whether this is all round a point, as a head's round a brain or a skull's: lines through it meet this on both sides, most of them. It doesn't count surfaces crossed, since
+        a skull has two to each wall, and it allows for the holes in a scan, or for the eyes and throat, which only spoil the lines that go through them."""
+        return sum(self.tree.ray_cast(point, way)[0] is not None and self.tree.ray_cast(point, -way)[0] is not None for way in LINES) >= ENCLOSED * len(LINES)
+
+    def pokes_by(self, points: list[Vector]) -> float:
+        """How far the furthest of these points is outside this, in meters: 0 if it's round them all."""
+        worst = 0.0
+        for point in points:
+            if not self.encloses(point):
+                found = self.tree.find_nearest(point)
+                if found[3] is not None and found[3] > worst:
+                    worst = found[3]
+        return worst
+
+    def reach_to(self, other: "Solid", way: Vector, back: float = 1.0) -> float | None:
+        """How far this can go along a direction before it touches another, by rays both ways: less than 0 if it's already that far through
+        it. Each ray starts `back` meters behind, so one that's already through still finds the near side. None if it would miss."""
+        if not self.tree or not other.tree:
+            return None
+        way = way.normalized()
+        side = way.cross(Vector((0, 0, 1)))
+        side = side.normalized() if side.length > 1e-6 else Vector((1, 0, 0))
+        over = side.cross(way)
+        spread = [(min(v.dot(axis) for v in self.verts), max(v.dot(axis) for v in self.verts)) for axis in (side, over)]
+        facing = [v for v in other.verts if spread[0][0] <= v.dot(side) <= spread[0][1] and spread[1][0] <= v.dot(over) <= spread[1][1]]
+        least = None
+        for point in self._sample(6000):
+            hit = other.tree.ray_cast(point - way * back, way)
+            if hit[0] is not None and (least is None or hit[3] - back < least):
+                least = hit[3] - back
+        for point in facing[:: max(1, len(facing) // 6000)]:
+            hit = self.tree.ray_cast(point + way * back, -way)
+            if hit[0] is not None and (least is None or hit[3] - back < least):
+                least = hit[3] - back
         return least
 
     def gap_to(self, other: "Solid") -> float:

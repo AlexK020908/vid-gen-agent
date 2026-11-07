@@ -113,6 +113,7 @@ A channel with this format makes vertical 3D shorts with no code per video: you 
 - If the channel has the `character` gate, a card waits on the owner with the people's and things' sheets (`approve` gate
   `character`, or `revise` with a note to direct it again).
 - A `film` job goes to the worker agent: a sheet of one frame per shot. What it finds goes back as a `direct` revise, once.
+- A `frames` job goes to the `frame-reviewer` agent, launched with just "Do Stick Fleet job N.", once the whole short's put together: it reads sheets of the finished short, ten frames a second, for what breaks physics or how the world works. Never do it yourself: whoever staged a short doesn't grade it. If there's no `frame-reviewer` agent type, launch a general-purpose agent with the instructions in `.claude/agents/frame-reviewer.md`. What it finds goes back as a `direct` revise, at most twice, and only what changed is rendered again.
 - The render card has the MP4 and a frame sheet, and only a title to pick. A flag with a note directs it again and keeps
   the voice. There's nothing else to spend after the voice.
 

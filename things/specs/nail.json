@@ -1,0 +1,51 @@
+{
+ "what": "a big steel nail, point at the bottom",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "nail",
+    "kind": "lathe",
+    "points": [
+     [
+      0,
+      0
+     ],
+     [
+      0.0045,
+      0.014
+     ],
+     [
+      0.0045,
+      0.11
+     ],
+     [
+      0.012,
+      0.112
+     ],
+     [
+      0.012,
+      0.118
+     ],
+     [
+      0,
+      0.12
+     ]
+    ],
+    "material": "bright_steel"
+   }
+  ]
+ },
+ "spots": {
+  "head": [
+   0,
+   0,
+   0.118
+  ],
+  "tip": [
+   0,
+   0,
+   0
+  ]
+ }
+}

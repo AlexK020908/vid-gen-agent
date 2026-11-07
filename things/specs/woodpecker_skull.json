@@ -1,0 +1,20 @@
+{
+ "what": "a real woodpecker's skull, with its beak",
+ "source": {
+  "kind": "sketchfab",
+  "uid": "a195afb37a074c12a9651c7b6820044d"
+ },
+ "meters": 0.1202,
+ "spots": {
+  "cavity": [
+   -0.0314,
+   -0.001,
+   0.0042
+  ],
+  "in_front": [
+   -0.0063,
+   -0.001,
+   0.0031
+  ]
+ }
+}

@@ -24,7 +24,7 @@ PEOPLE, STANCES = ["hero", "foe"], ["Idle_relaxed", "Idle_with_a_sword"]
 SCENE = {
     "length": 2.0, "set": "gym",
     "cast": {"a": {"type": "person", "character": "hero", "at": [0, 0], "stance": "Idle_relaxed"},
-             "b": {"type": "person", "character": "foe", "at": [0.85, -0.9], "facing": "a", "stance": "Idle_with_a_sword"},
+             "b": {"type": "person", "character": "foe", "at": [0.8, -0.85], "facing": "a", "stance": "Idle_with_a_sword"},
              "bitten": {"type": "prop", "prop": "long_sword"}, "held": {"type": "prop", "prop": "katana"},
              "thrown": {"type": "prop", "prop": "ball"}},
     "happens": [{"do": "bite", "who": "a", "prop": "bitten"},
@@ -293,9 +293,14 @@ def test_a_hand_stays_on_its_sword_wherever_the_sword_goes(tmp_path):
                     str(TESTS / "blender_hold_check.py"), "--", str(folder)], check=True, capture_output=True)
     out = json.loads((folder / "out.json").read_text(encoding="utf-8"))
     for place in ("near", "far"):
-        assert out[place]["gap"] < 0.005, place              # within 5 mm of the grip
-        assert out[place]["fingers_off"] < 0.05, place       # the hand turned with it
+        assert out[place]["gap"] < 0.012, place              # the wrist within what shows of where it has to be for the handle to lie in the palm
+        assert out[place]["wrist_behind"] < 0, place         # with the wrist behind the handle: the fingers go on past it, and close on it
+    assert sum(a * b for a, b in zip(out["near"]["turned"], out["far"]["turned"])) ** 2 > 0.995     # the hand turned with it
     assert out["glow_node"] == "MIX_SHADER"
+    assert all(sum(out["fist_thin"][f]) > sum(out["fist_thick"][f]) for f in ("f_index", "f_middle", "f_ring", "f_pinky"))    # a thin handle, a tighter fist
+    assert all(clear >= 0.014 for clear in out["handle_clear"].values())       # and no finger goes into what it holds
+    flipped, plain = out["flipped_wrist"]
+    assert flipped[0] == pytest.approx(-plain[0], abs=0.001) and flipped[1] == pytest.approx(-plain[1], abs=0.001)     # a tool held with its face on the far side from its y
 
 
 def test_clips_are_listed_from_both_packs(tmp_path):
@@ -356,3 +361,16 @@ def test_a_person_is_made_through_the_add_on_and_saved(tmp_path, monkeypatch):
     tracks = blender_render.render_shot(CFG, "portrait", tmp_path / "f", size=(108, 192), samples=1, frames=[1],
                                         person=tmp_path / "made")
     assert tracks["rendered"] == [1]
+
+
+def test_glass_needs_a_narrow_aperture_to_stay_in_focus():
+    """Found by looking: glass has no depth, so shallow focus blurred an x-ray's outline while the bark beside it stayed sharp."""
+    from scenes import spec
+    scene = {"happens": [{"do": "ghost", "t": 1.0, "prop": "bird"}]}
+    assert spec._glass_in_focus({"frame": 0.3, "lens": 26, "fstop": 16}, scene, 3.0, "s") == []
+    wide_open = spec._glass_in_focus({"frame": 0.3, "lens": 26, "fstop": 5}, scene, 3.0, "s")
+    assert len(wide_open) == 1 and "at least 11" in wide_open[0]
+    pushes_in = spec._glass_in_focus({"frame": 0.3, "lens": 26, "fstop": 16, "to": {"frame": 0.09}}, scene, 3.0, "s")
+    assert len(pushes_in) == 1 and "at least 37" in pushes_in[0]
+    assert spec._glass_in_focus({"frame": 0.3, "lens": 26, "fstop": 5}, scene, 0.5, "s") == []     # the shot's over before it's glass
+    assert spec._glass_in_focus({"frame": 0.3, "lens": 26, "fstop": 5}, {"happens": []}, 3.0, "s") == []

@@ -14,7 +14,7 @@ A spec:
     {"kind": "built", "parts": [...]}            made here from exact shapes, free, in the machine kit's format (machines/spec.py):
                                                  each part has an id, a kind and its sizes in meters, a material, and optionally
                                                  at, rot and parent. A material is one of the palette's, or a part's own
-                                                 {"color": [r, g, b], "metal": 0 to 1, "rough": 0 to 1, "coat": 0 to 1, "glow": n}.
+                                                 {"color": [r, g, b], "metal": 0 to 1, "rough": 0 to 1, "coat": 0 to 1, "glow": n, "pores": how wide the holes in it are, in meters, for a sponge or bread}.
                                                  Anything simple and geometric comes out sharper this way than from a download:
                                                  a magnet, a pan, a stand, a coil, an arrow, a counter's fittings. A scan is for
                                                  what can't be drawn: food, animals, faces
@@ -22,7 +22,12 @@ A spec:
   turn     optional, degrees around z, so that its front is what the sheet's front view shows. Forward is -y, as for a person
   tilt     optional, [x, y] degrees, to stand it the right way up
   smooth   optional, true: welds a faceted model and shades it smooth, for one that looks like cut paper
-  colors   optional, {a material's name: [r, g, b]}, each 0 to 1, for a model that came grey. thing.json lists its materials
+  trim     optional, [boxes]: takes off what's inside each, as it stands after turn and tilt, such as the stand a museum mounted it on.
+           A box gives a range on any of x, y and z, as shares of the model's whole size: {"y": [0, 0.5], "z": [0, 0.3]}
+  trim_pale optional, [{"near": [x, y, z], "radius": meters, "above": 0 to 1}]: takes off faces paler than that near a place, in meters from its middle as a spot is:
+           what's left of a white mount on a bird's toes, which a box would take the toes with
+  colors   optional, {a material's name: [r, g, b]}, each 0 to 1, for a model that came grey or whose picture is no good: it takes
+           the place of the picture. thing.json lists its materials
   moves    optional, {name: {"clip": a clip in the file, "from": frame, "to": frame}}, to name them or cut one clip into
            several. Left out, every clip in the file is a move by its own name. thing.json lists the file's clips
   rest     optional, a move: it stands in that move's first frame when nothing's playing
@@ -40,7 +45,7 @@ from machines import spec as machine_spec
 SPECS = Path(__file__).resolve().parent / "specs"
 LICENSES = ("CC0", "CC-BY")
 KINDS = {"polyhaven": ("asset",), "sketchfab": ("uid",), "url": ("url", "license", "page"), "generate": ("prompt",), "built": ("parts",)}
-OPTIONAL = ("turn", "tilt", "smooth", "colors", "moves", "rest", "spots")
+OPTIONAL = ("turn", "tilt", "smooth", "colors", "moves", "rest", "spots", "trim", "trim_pale")
 
 
 def all_ids() -> list[str]:
@@ -67,7 +72,7 @@ def _built_problems(parts) -> list[str]:
     for part in parts:
         material = part.get("material") if isinstance(part, dict) else None
         if isinstance(material, dict):
-            unknown = set(material) - {"color", "metal", "rough", "coat", "glow"}
+            unknown = set(material) - {"color", "metal", "rough", "coat", "glow", "pores"}
             if unknown:
                 out.append(f"part {part.get('id')}: its material has no {', '.join(sorted(unknown))}")
             color = material.get("color")

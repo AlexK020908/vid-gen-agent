@@ -32,13 +32,15 @@ bpy.context.view_layer.update()
 tool = s.props["tool"]
 root, thing = tool["root"], tool["thing"]
 turn = root.matrix_world.to_quaternion()
-end = root.matrix_world.translation + turn @ (thing.spot("end") - thing.spot("grip"))
-shoulder = s._in_their_terms("walt", (stage.SHOULDER[0], stage.SHOULDER[1], stage.SHOULDER[2]))
+reach = thing.spot("end") - thing.spot("grip")
+end = root.matrix_world.translation + turn @ reach
+person = s.people["walt"]
+shoulder = person.rig.matrix_world @ person.bone("upper_arm.R").head
 side = s._side_facing("trunk", float(strike["along"]), shoulder)
-front = turn @ Vector((0, -1, 0))
+front = turn @ Vector((reach.x, reach.y, 0)).normalized()      # the way its working end sticks out from the handle is what lands
 toward_target = (side - shoulder)
 toward_target.z = 0
-person = s.people["walt"]
+wrist_gap = ((person.rig.matrix_world @ person.bone("hand.R").head) - person.holds["R"].matrix_world.translation).length
 scene.frame_set(1)
 bpy.context.view_layer.update()
 right = person.rig.pose.bones[person.bones["thumb.01.R"]].rotation_quaternion
@@ -49,4 +51,6 @@ mirrored = Quaternion((left.w, left.x, -left.y, -left.z))
     "faces_target": front.dot(toward_target.normalized()),
     "handle_up": (turn @ Vector((0, 0, 1))).z,
     "thumb_closed_deg": right.rotation_difference(mirrored).angle * 57.2958,
+    "wrist_gap": wrist_gap,
+    "drew_back": len([leg for leg in tool["path"] if not leg.get("blow")]) == 1,
 }), encoding="utf-8")

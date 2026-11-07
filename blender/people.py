@@ -11,7 +11,8 @@ import math
 from pathlib import Path
 
 import bpy
-from mathutils import Matrix, Vector
+import numpy as np
+from mathutils import Matrix, Quaternion, Vector
 
 
 # what a shot or a portrait asks for by name: the add-on's artist-made faces, saved on the person as "e_<file>" keys
@@ -20,6 +21,14 @@ EXPRESSIONS = {
     "scared": "e_unpleasant_surprise", "angry": "e_Angry", "yelling": "e_angry_yell", "sad": "e_Sad",
     "disgusted": "e_Disgust", "thinking": "e_concentrated", "curious": "e_intrigued",
 }
+# a face that isn't one of the add-on's: someone knocked out, with their eyes shut and their jaw hanging
+OWN_FACES = {"out_cold": {"eyeBlink_L": 1.0, "eyeBlink_R": 1.0, "jawOpen": 0.16, "mouthLowerDown_L": 0.08, "mouthLowerDown_R": 0.08, "browInnerUp": 0.08}}
+BEHIND_EYES, ABOVE_EYES = 0.065, 0.025     # how far the middle of a head is from the middle of its eyes, at rest (m)
+FOREARM_TURNS = 0.008 # how much the IK cares about the way a forearm's turned, against where its wrist is: this little is enough to keep it turned with the hand, measured, with the wrist within 2 mm
+BEHIND_KNUCKLES = 0.3 # how far behind the line of the knuckles a handle lies across the palm, of the length of the hand's bone
+PALM_THICK = 0.185    # how far the palm's surface is in front of the hand's bone, of its length
+FINGER_THICK = 0.0065 # how far a finger's middle stays from what it closes on (m)
+FINGERS = {"f_index": (55, 85, 45), "f_middle": (55, 85, 45), "f_ring": (55, 85, 45), "f_pinky": (55, 85, 45), "thumb": (15, 25, 30)}    # how each one's joints share a bend: as far as each goes, at most 1.6 times this
 
 
 class Person:
@@ -45,6 +54,7 @@ class Person:
         bpy.context.scene.render.hair_type = "STRIP"   # strands as flat ribbons facing the camera: smooth in EEVEE
         self._freed: set[str] = set()
         self._anchors: dict[str, tuple] = {}
+        self.holds: dict[str, object] = {}     # what each hand's wrist is locked to
         self._soften_gloss()
         bpy.context.view_layer.update()
 
@@ -84,6 +94,30 @@ class Person:
                     lens = True
             if lens:    # dithered see-through speckles over the iris, so the lens blends instead
                 mat.surface_render_method = "BLENDED"
+
+    def rest_points(self) -> np.ndarray:
+        """Where each point of the body is at rest, in the rig's own space, as this person's proportions make it: those come from shape keys, so the mesh's own numbers are someone else's body."""
+        mesh = self.body.data
+        size = len(mesh.vertices) * 3
+        points = np.zeros(size)
+        mesh.vertices.foreach_get("co", points)
+        keys = mesh.shape_keys
+        if keys:
+            first = keys.key_blocks[0]
+            here, there = np.zeros(size), np.zeros(size)
+            for block in keys.key_blocks[1:]:
+                if block.value and not block.mute:
+                    block.data.foreach_get("co", here)
+                    (block.relative_key or first).data.foreach_get("co", there)
+                    points += block.value * (here - there)
+        place = np.array(self.body.matrix_local)
+        return points.reshape(-1, 3) @ place[:3, :3].T + place[:3, 3]
+
+    def head_middle(self) -> Vector:
+        """The middle of the head at rest, in the rig's own space, measured from the eyes: a person at rest faces -y."""
+        verts = self.eyes.data.vertices
+        eyes = self.eyes.matrix_local @ (sum((v.co for v in verts), Vector()) / len(verts))
+        return eyes + Vector((0, BEHIND_EYES, ABOVE_EYES))
 
     def bone(self, name: str):
         """A pose bone by its name in the add-on's rig, whatever it's called on this person."""
@@ -134,9 +168,12 @@ class Person:
     def expression(self, frame: int, name: str | None, amount: float = 1.0) -> None:
         """Key a named expression at `frame`, every other one back to rest. None is the resting face."""
         shapes = {key: 0.0 for key in EXPRESSIONS.values()}
-        if name:
+        own = {key: 0.0 for face in OWN_FACES.values() for key in face}
+        if name in OWN_FACES:
+            own.update({key: value * amount for key, value in OWN_FACES[name].items()})
+        elif name:
             shapes[EXPRESSIONS[name]] = amount
-        self.face(frame, strict=False, **shapes)
+        self.face(frame, strict=False, **shapes, **own)
 
     def anchor(self, name: str) -> tuple:
         """A point on the head that a camera or a label can follow, as (object, offset): "eyes", "mouth" or "head"."""
@@ -148,29 +185,84 @@ class Person:
             self._anchors[name] = (self.attach("head", points[name](), f"{self.rig.name}.{name}"), (0, 0, 0))
         return self._anchors[name]
 
-    def hold(self, side: str, sword) -> None:
-        """Lock a hand onto a sword's grip, so the sword leads and the arm follows. `sword` is an object in the world
-        with its origin in the palm: its z runs along the blade, its y the way the fingers point. The hand can't slip,
-        whatever the sword does, as long as the arm reaches. The grip lies across the palm, with the thumb on the blade
-        side, as a held sword does. Works out the hand's turn from its rest pose, so call it before keying anything
-        that would change the rest."""
+    def _hand_axes(self, side: str) -> tuple:
+        """A hand's own directions at rest, for what's held in it: a handle lies across the palm along the line of the knuckles, a little diagonally, as it does in a real hand, with the
+        thumb's side at its top. Returns the way along the hand square to that, the way along the handle, the way out of the palm, and where the handle's line would run for a handle of no thickness."""
+        hand = self.bone(f"hand.{side}")
+        index, pinky = (self.bone(f"{name}.01.{side}").bone.head_local for name in ("f_index", "f_pinky"))
+        grip = (index - pinky).normalized()
+        palm = hand.bone.matrix_local.to_3x3() @ Vector((0, 0, 1))                  # fingers close towards the hand's own z
+        palm = (palm - grip * palm.dot(grip)).normalized()
+        along = grip.cross(palm)
+        if along.dot(hand.bone.tail_local - hand.bone.head_local) < 0:
+            along = -along
+        return along, grip, palm, (index + pinky) / 2 - along * (hand.bone.length * BEHIND_KNUCKLES) + palm * (hand.bone.length * PALM_THICK)
+
+    def hold(self, side: str, sword, spin=None, radius: float = 0.014) -> Vector:
+        """Lock a hand onto a handle, so what's held leads and the arm follows. `sword` is an object in the world with its origin on the handle's middle line,
+        where the hand closes on it: its z runs along the handle, and its y the way the fingers point, or that turned by `spin`, for a tool whose working
+        end sticks out some other way: that leads the hand into a blow. The handle lies in the palm, in front of it by its own thickness, across the hand, with the thumb
+        at the top, as a held tool does. The hand can't slip whatever the tool does, as long as the arm reaches. Works out the hand's turn from its rest pose, so call it
+        before keying anything that would change the rest. Returns where the wrist is, in the tool's own axes."""
         hand = self.bone(f"hand.{side}")
         rest = hand.bone.matrix_local.to_3x3()
-        along = (hand.bone.tail_local - hand.bone.head_local).normalized()
-        thumb = self.bone(f"thumb.01.{side}").bone.tail_local - hand.bone.head_local
-        grip = (thumb - along * thumb.dot(along)).normalized()
+        along, grip, palm, lies = self._hand_axes(side)
         axes = Matrix((along.cross(grip).normalized(), along, grip)).transposed()
+        back = axes.inverted()
+        wrist = back @ (hand.bone.head_local - (lies + palm * radius))
+        turned = back.to_quaternion() @ rest.to_quaternion()
+        if spin is not None:
+            back_spin = spin.inverted()
+            wrist, turned = back_spin @ wrist, back_spin @ turned
         target = bpy.data.objects.new(f"{self.rig.name}.hold.{side}", None)
         bpy.context.scene.collection.objects.link(target)
         target.parent = sword
         target.matrix_parent_inverse = Matrix.Identity(4)
         target.rotation_mode = "QUATERNION"
-        target.rotation_quaternion = (axes.inverted() @ rest).to_quaternion()
-        target.location = (0, -0.075, 0)                       # the hand's root, behind the palm
+        target.rotation_quaternion = turned
+        target.location = wrist
         ik = self.bone(f"forearm.{side}").constraints.new("IK")
-        ik.target, ik.chain_count, ik.use_tail, ik.use_rotation = target, 2, True, False
+        ik.target, ik.chain_count, ik.use_tail, ik.use_rotation = target, 2, True, True      # it turns with the hand, a share of the way, or the sleeve tears at the wrist
+        ik.orient_weight = FOREARM_TURNS
         turn = hand.constraints.new("COPY_ROTATION")
         turn.target, turn.target_space, turn.owner_space = target, "WORLD", "WORLD"
+        self.holds[side] = target
+        return wrist
+
+    def _finger_line(self, name: str, side: str, bends: tuple) -> list[Vector]:
+        """Where a finger's joints and its tip are, at rest but for these bends, in degrees, and points along each bone, in the rig's own space."""
+        bones = [self.bone(f"{name}.0{j}.{side}").bone for j in (1, 2, 3)]
+        place = bones[0].matrix_local @ Matrix.Rotation(math.radians(bends[0]), 4, "X")
+        points = [place.translation.copy()]
+        for i, bone in enumerate(bones):
+            if i:
+                place = place @ (bones[i - 1].matrix_local.inverted() @ bone.matrix_local) @ Matrix.Rotation(math.radians(bends[i]), 4, "X")
+            start = place.translation.copy()
+            end = place @ Vector((0, bone.length, 0))
+            points += [start.lerp(end, k / 4) for k in range(1, 5)]
+        return points
+
+    def fist(self, side: str, radius: float) -> dict:
+        """How far each finger's joints bend to close on a handle this thick, in degrees: each goes on bending until it would enter it, so the hand wraps what it holds, however
+        thick that is."""
+        _, grip, palm, lies = self._hand_axes(side)
+        on = lies + palm * radius
+        clear = radius + FINGER_THICK
+
+        def apart(point: Vector) -> float:
+            d = point - on
+            return (d - grip * d.dot(grip)).length
+
+        closed = {}
+        for name, most in FINGERS.items():
+            k = 0.0
+            for step in range(1, 41):
+                bends = tuple(a * step / 25 for a in most)
+                if min(apart(p) for p in self._finger_line(name, side, bends)) < clear:
+                    break
+                k = step / 25
+            closed[name] = tuple(a * k for a in most)
+        return closed
 
     def glow(self, at: Vector, radius: float, color) -> "bpy.types.NodeSocket":
         """A patch of the skin that glows, fading out `radius` meters from the world point `at`, riding on the head, with

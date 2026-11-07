@@ -36,6 +36,17 @@ MOST_REBUILDS = 3
 STANCES = ("Idle_relaxed", "Idle_arms_folded_waiting", "Idle_with_a_sword", "Idle_FoldArms_Loop", "Idle_TalkingPhone_Loop",
            "Idle_No_Loop")
 STUB_STANCE = "Idle_relaxed"
+# what a body can do, and what each looks like: each has been looked at on a person, and the speeds measured. Those that go somewhere are for `walk`
+GOES = {"Walk_forwards": "walking, 0.6 to 1.4 m/s", "Walk_formal": "walking upright, 0.6 to 1.4 m/s", "Walk_crouched_forwards": "creeping along low, 0.4 to 1 m/s",
+        "Walk_carrying": "walking leaning back, as under a weight, 0.4 to 0.9 m/s", "Walk_zombie_forwards": "a zombie's shamble, 0.6 to 1.5 m/s",
+        "Run_jog_forwards": "running, 3.2 to 8 m/s", "Run_sprint": "sprinting, 4.8 to 12 m/s"}
+ACTS = {"Hit_to_the_head": "flinches from a blow to the head, on their feet, 0.5 s", "Hit_to_the_chest": "flinches from a blow to the chest, on their feet, 0.4 s",
+        "Hit_knockback": "thrown back off their feet onto the ground in under a second, travelling over a meter: use stays",
+        "Death_fall_backwards": "doubles over, staggers, and goes down flat on their back with an arm up, 2.4 s: use stays",
+        "Move_get_up_from_the_ground": "gets up off the ground, after one of those", "Action_pick_up_from_a_table": "reaches forward to pick something up",
+        "Action_sit_down": "sits down, on nothing unless something's there: use stays", "Action_stand_up_from_sitting": "stands up from sitting",
+        "Yes": "holds an arm out in front, then lowers it", "Idle_No_Loop": "shakes their head", "Punch_jab_left_2": "a quick left jab", "Punch_cross_right_2": "a hard right punch",
+        "OverhandThrow": "throws overhand", "Consume": "brings a hand up towards their mouth", "TreeChopping_Loop": "chops with both hands, over and over"}
 
 
 def run_once(ctx) -> bool:
@@ -58,6 +69,20 @@ def _stances(ctx) -> list[str]:
     if _stub(ctx) or clips.missing(ctx.config):
         return [STUB_STANCE]
     return [s for s in STANCES if s in clips.catalog(ctx.config)]
+
+
+def _moves(ctx) -> list[str]:
+    """The moves there are here, of those a body can do."""
+    if _stub(ctx) or clips.missing(ctx.config):
+        return []
+    found = clips.catalog(ctx.config)
+    return [name for name in (*GOES, *ACTS) if name in found]
+
+
+def _moves_text(moves: list[str]) -> str:
+    goes = [f"- {name}: {GOES[name]}" for name in moves if name in GOES]
+    acts = [f"- {name}: {ACTS[name]}" for name in moves if name in ACTS]
+    return "Going somewhere, for `walk`:\n" + ("\n".join(goes) or "(none)") + "\n\nOn the spot, for `act`:\n" + ("\n".join(acts) or "(none)")
 
 
 def _people_text() -> str:
@@ -263,14 +288,14 @@ def _work(ctx, conn, video) -> None:
     notes = db.notes(conn, video["id"], "direct")
     people = _make_people(ctx, cast, say)
     menu = {tid: entry for tid, entry in thing_build.menu(ctx.config).items() if tid in things}
-    stances = _stances(ctx)
-    check = lambda d: short.check(d, clock["total"], people, stances, menu)
+    stances, moves = _stances(ctx), _moves(ctx)
+    check = lambda d: short.check(d, clock["total"], people, stances, menu, moves)
     draft = json.loads(video["direction_draft_json"] or "{}")
     previous = draft.get("scenes")
     written = ctx.llm.direct(channel, {
         "outline": outline, "lines": short.lines_text(clock), "total": clock["total"],
         "people": "\n".join(f"- {p['id']}, who plays {p['plays']}" for p in cast["people"]), "cast_ids": people,
-        "things": _things_text(ctx.config, things), "stances": ", ".join(stances), "language": scene_spec.__doc__.strip(),
+        "things": _things_text(ctx.config, things), "stances": ", ".join(stances), "moves": _moves_text(moves), "language": scene_spec.__doc__.strip(),
         "example": "\n\n".join(path.read_text(encoding="utf-8") for path in EXAMPLES), "notes": notes, "previous": previous,
     }, check, meter("the direction"))
     credits = sorted({made["credit"] for tid in things if (made := thing_build.made(ctx.config, tid)) and made.get("credit")})

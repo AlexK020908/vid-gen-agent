@@ -58,12 +58,12 @@ def _from_sketchfab(source: dict, where: Path, say) -> dict:
         raise RuntimeError(f"{info.get('name')!r} can't be used: {reason}")
     links = _json(f"{SKETCHFAB}/models/{uid}/download", {"Authorization": f"Token {token}"})
     say(f"  from Sketchfab: {info['name']} by {info['user']['displayName']}, {license_name}")
-    if links.get("glb"):
-        found = _download(links["glb"]["url"], where / "model.glb")
-    else:
+    if links.get("gltf"):          # Sketchfab's glb has its textures cut down to 1024, whatever the model's own are
         archive = _download(links["gltf"]["url"], where / "model.zip")
         _unpack(archive, where / "unpacked")
         found = _model_in(where / "unpacked")
+    else:
+        found = _download(links["glb"]["url"], where / "model.glb")
     credit = ""
     if license_name == "CC-BY":
         credit = (f'"{info["name"]}" by {info["user"]["displayName"]} ({info["viewerUrl"]}), '
@@ -98,7 +98,7 @@ def _from_url(source: dict, where: Path, say) -> dict:
 
 def _from_polyhaven(source: dict, config, say) -> dict:
     say(f"  from Poly Haven: {source['asset']}, CC0")
-    found = assets.model(config.data_dir, source["asset"])
+    found = assets.model(config.data_dir, source["asset"], source.get("res", "2k"))
     return {"file": found, "license": "CC0", "credit": "", "page": f"https://polyhaven.com/a/{source['asset']}", "usd": 0}
 
 

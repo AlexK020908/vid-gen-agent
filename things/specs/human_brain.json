@@ -1,0 +1,27 @@
+{
+ "what": "a real human brain, shaped from a scan, in clean pink",
+ "source": {
+  "kind": "sketchfab",
+  "uid": "06dd00c44ebd4b4c86475c6c5c33d500"
+ },
+ "meters": 0.165,
+ "colors": {
+  "material_0.007": [
+   0.82,
+   0.47,
+   0.47
+  ]
+ },
+ "spots": {
+  "front": [
+   0,
+   -0.0825,
+   0.012
+  ],
+  "middle": [
+   0,
+   0,
+   0.01
+  ]
+ }
+}

@@ -165,6 +165,61 @@ def test_every_line_gets_room_and_a_question_gets_more():
     assert short.PAUSE_MS >= 500                              # the owner's floor
 
 
+def _stood(length, happens=(), shows=None):
+    shots = [{"t": 0, "on": "walt:eyes", "frame": 0.6, "angle": [0, 0], **({"shows": shows} if shows else {})}]
+    return {"from": 0, "to": length, "set": "gym", "cast": {"walt": {"type": "person", "character": "walt", "at": [0, 0]}}, "happens": list(happens), "shots": shots}
+
+
+def test_a_person_with_nothing_to_do_is_refused_but_a_quick_reaction_isnt():
+    assert short._idle_people(_stood(3.0)) == []                          # a face for a moment
+    assert "just stands there" in " ".join(short._idle_people(_stood(9.0)))
+    looked = [{"do": "expression", "t": 0, "who": "walt", "name": "curious"}, {"do": "glow", "t": 0, "who": "walt", "on": "jaw", "color": "red", "to": 9}]
+    assert short._idle_people(_stood(9.0, looked))                        # a look and a glow are still standing there
+    assert short._idle_people(_stood(9.0, [{"do": "strike", "t": 1, "who": "walt", "prop": "x", "target": "y"}])) == []
+    scene = _stood(9.0)
+    scene["shots"][0]["shows"] = ["trunk"]
+    assert short._idle_people(scene) == []                                # in the scene, and never on screen
+
+
+def test_a_shot_with_nothing_moving_is_refused_but_one_going_somewhere_isnt():
+    still = {"from": 0, "to": 4, "cast": {}, "happens": [], "shots": [{"t": 0, "on": "bird:head", "frame": 0.5}]}
+    assert "nothing moving" in " ".join(short._still_shots(still))
+    assert short._still_shots({**still, "to": 2}) == []                                                        # not long enough to notice
+    assert short._still_shots({**still, "shots": [{**still["shots"][0], "to": {"frame": 0.3}}]}) == []         # the camera's going somewhere
+    assert short._still_shots({**still, "happens": [{"do": "rock", "t": 1, "over": 1, "prop": "bird"}]}) == []  # something's moving in it
+    assert short._still_shots({**still, "happens": [{"do": "expression", "t": 1, "who": "x"}]})                # a look isn't enough
+
+
+def test_someone_can_only_hold_a_stance_and_only_do_a_move():
+    from scenes import spec as scene_spec
+    scene = {"length": 3.0, "set": "sky_set", "cast": {"walt": {"type": "person", "character": "walt", "at": [0, 0], "stance": "Idle_relaxed"}},
+             "happens": [{"do": "act", "t": 0, "who": "walt", "clip": "Hit_to_the_head"}], "shots": [{"t": 0, "on": "walt:eyes", "frame": 0.6}]}
+    assert scene_spec.check(scene, ["walt"], ["Idle_relaxed"], {}, ["Hit_to_the_head"]) == []
+    assert "clip" in " ".join(scene_spec.check(scene, ["walt"], ["Idle_relaxed"], {}, ["Run_sprint"]))         # not a move it was given
+    running = {**scene, "cast": {"walt": {**scene["cast"]["walt"], "stance": "Run_sprint"}}}
+    assert "stance" in " ".join(scene_spec.check(running, ["walt"], ["Idle_relaxed"], {}, ["Run_sprint", "Hit_to_the_head"]))     # running on the spot
+    assert scene_spec.check(scene, ["walt"], ["Idle_relaxed", "Hit_to_the_head"], {}) == []                    # told no moves, what it can hold will do
+
+
+def test_the_moves_offered_to_a_director_say_what_they_do():
+    from stages import direct
+    text = direct._moves_text(["Run_jog_forwards", "Death_fall_backwards"])
+    assert "Run_jog_forwards: running, 3.2 to 8 m/s" in text and "Death_fall_backwards" in text and "use stays" in text
+    assert text.index("Run_jog_forwards") < text.index("On the spot") < text.index("Death_fall_backwards")     # those that go somewhere, for `walk`
+    for name in ("Jump_in_the_air", "Dodge_roll", "ClimbUp_1m"):                                                # looked at on a person, and not what they're called
+        assert name not in direct.GOES and name not in direct.ACTS
+
+
+def test_the_same_picture_can_only_come_up_twice():
+    shot = {"on": "bird:head", "frame": 0.95, "angle": [-100, 0]}
+    scene = {"set": "sky_set", "shots": [{**shot, "t": 1}, {**shot, "t": 3}]}
+    assert short._same_pictures([scene]) == []
+    scene["shots"].append({**shot, "t": 5, "frame": 0.97})                # the same to a viewer
+    assert "comes up 3 times" in " ".join(short._same_pictures([scene]))
+    scene["shots"][2] = {**shot, "t": 5, "frame": 0.3}                    # nearer is a new picture
+    assert short._same_pictures([scene]) == []
+
+
 def test_a_channel_can_have_its_own_pauses():
     scenes = [{"narration": "Why?", "beat_idx": 0}, {"narration": "One.", "beat_idx": 0}, {"narration": "Two.", "beat_idx": 0}]
     assert short.pauses(scenes, [350, 450, 600]) == [450, 350, 600]
@@ -347,10 +402,10 @@ def test_every_prompt_for_a_short_fills_without_a_stray_placeholder():
               "people": "", "things": "", "built_in": "", "character_format": "", "thing_format": "", "what": "", "meters": 1, "moves": True,
               "hits": "", "rejected": "", "size": "", "clips": "", "materials": "", "round": 1, "total": 1, "stances": "",
               "language": "", "example": "", "shots": "", "competitors": "", "taken": "", "families": "", "held": "", "count": 1,
-              "winner": ""}
+              "winner": "", "said": "", "planned": "", "sheets": "", "every": 3}
     for file, turns in (("outline", ("new", "revise")), ("script", ("new", "revise")), ("critic", ("outline", "script")),
                         ("titles", ("",)), ("topic", ("competitors", "winner")), ("cast", ("",)), ("source", ("",)),
-                        ("thing", ("",)), ("direct", ("new", "revise")), ("film", ("",))):
+                        ("thing", ("",)), ("direct", ("new", "revise")), ("film", ("",)), ("frames", ("",))):
         for turn in turns:
             system, user = prompts.render(CFG.root, f"character/{file}.md", turn, SHORTS, values)
             assert system and user
@@ -666,3 +721,31 @@ def test_what_a_look_finds_sends_it_back_once_and_only_once(tmp_path, monkeypatc
         assert video["direction_json"] is None                                   # back to the director
         assert "stands too far" in db.notes(conn, vid, "direct")[0]
         assert json.loads(video["direction_draft_json"])["looked"] is True       # and not looked at again after this
+
+
+def test_a_finished_short_is_laid_out_for_someone_to_go_through_it_frame_by_frame(tmp_path):
+    from render import ffmpeg, frame_sheets
+    video = tmp_path / "short.mp4"
+    ffmpeg.run(["-f", "lavfi", "-i", "testsrc=size=270x480:rate=30:duration=4", "-pix_fmt", "yuv420p", video])
+    made = frame_sheets.sheets(video, tmp_path / "review", every=3)
+    assert len(made) == 2                                                         # 40 frames, at 30 a sheet
+    assert made[0]["from"] == 0 and made[0]["to"] == round(29 * 3 / 30, 2) and made[1]["from"] == 3.0
+    assert not list((tmp_path / "review").glob("f_*.png"))                        # the loose frames don't stay
+    width, height = Image.open(made[0]["file"]).size
+    assert width == frame_sheets.CELL[0] * frame_sheets.ACROSS and height == (frame_sheets.CELL[1] + frame_sheets.BAND) * frame_sheets.DOWN
+
+
+def test_a_jump_between_frames_is_found_unless_a_cut_was_planned_there(tmp_path):
+    from render import ffmpeg, frame_sheets
+    video = tmp_path / "pop.mp4"
+    ffmpeg.run(["-f", "lavfi", "-i", "color=c=black:size=108x192:rate=30:duration=1", "-f", "lavfi", "-i", "color=c=white:size=108x192:rate=30:duration=1",
+                "-filter_complex", "[0][1]concat=n=2:v=1", "-pix_fmt", "yuv420p", video])
+    assert frame_sheets.jumps(video, []) == [1.0]
+    assert frame_sheets.jumps(video, [1.0]) == []
+
+
+def test_what_the_frame_reviewer_finds_goes_back_to_the_director_and_then_the_owner_sees_it(tmp_path, monkeypatch):
+    from stages import film
+    assert film.MOST_FRAME_REVIEWS == 2
+    source = Path(film.__file__).read_text(encoding="utf-8")
+    assert "_review(ctx, conn, video, channel, out, direction, clock)" in source and '"reviewed": draft.get("reviewed", 0) + 1' in source

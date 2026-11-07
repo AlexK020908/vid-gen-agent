@@ -31,7 +31,7 @@ log = logging.getLogger("stickfleet.claude")
 WHAT = {"outline": "outline", "script": "script", "regen": "scene fix", "titles": "titles", "topic": "topic ideas",
         "critic": "review", "picture": "picture check", "map": "stage map", "parts": "part names",
         "inventory": "props list", "sheet": "scene sheet", "cast": "list of what the short needs",
-        "source": "choice of a model", "thing": "check of a model", "direct": "direction", "film": "look at the shots"}
+        "source": "choice of a model", "thing": "check of a model", "direct": "direction", "film": "look at the shots", "frames": "review of the frames"}
 PICTURE_VALUES = ("idx", "label", "shot", "before", "narration", "visual_prompt", "people", "what", "images")  # picture.md
 SHOWN = 25           # problems listed in a retry turn
 FIX = ("That reply has problems the pipeline checks for:\n{problems}\n\n"
@@ -114,6 +114,7 @@ THING_LOOK = _obj({"seen": STR, "right_thing": {"type": "boolean"}, "turn": NUM,
 DIRECTION = {"type": "object", "additionalProperties": False, "required": ["scenes"],
              "properties": {"scenes": {"type": "array", "items": ANY}, "marks": {"type": "array", "items": ANY}}}
 FILM = _obj({"seen": STR, "problems": {"type": "array", "items": _obj({"shot": STR, "what": STR, "fix": STR})}})
+FRAMES = _obj({"seen": STR, "problems": {"type": "array", "items": _obj({"at": STR, "what": STR, "fix": STR})}})
 CRITIQUE = _obj({"verdict": {"type": "string", "enum": ["fine", "revise"]},  # prompts/critic.md, core/review.py
                  "problems": {"type": "array", "items": _obj({"where": STR, "what": STR, "fix": STR})}})
 
@@ -363,6 +364,13 @@ class ClaudeLLM:
                          lambda d: [] if isinstance(d["problems"], list) else ["problems isn't a list"], meter,
                          images=[Path(sheet)])
         log.info("the look at the shots: seen %r, problems %r", data["seen"], data["problems"])
+        return data["problems"]
+
+    def check_frames(self, channel, said: str, planned: str, sheets: list[dict], every: int, meter: Meter) -> list[dict]:
+        listed = "\n".join(f"- {s['file']}: {s['from']} s to {s['to']} s" for s in sheets)
+        data = self._ask("frames", "character/frames.md", "", channel, {"said": said, "planned": planned, "sheets": listed, "every": every}, FRAMES,
+                         lambda d: [] if isinstance(d["problems"], list) else ["problems isn't a list"], meter)
+        log.info("the review of the frames: seen %r, problems %r", data["seen"], data["problems"])
         return data["problems"]
 
     @staticmethod

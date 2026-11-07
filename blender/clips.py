@@ -8,6 +8,8 @@ clip, or the mannequin's rest pose. Our rig is at rest here, before any keys, wh
 """
 from __future__ import annotations
 
+import math
+
 import bpy
 from mathutils import Quaternion, Vector
 
@@ -179,19 +181,30 @@ class Solver:
                     q = pose[bone]
                     pose[self.person.bones[f"{name[:-1]}{other}"]] = Quaternion((q.w, q.x, -q.y, -q.z))
 
+    def pace(self, clip: dict) -> float:
+        """How far a clip's own steps carry this person along the ground in one of its frames: nothing, if it stays on the spot."""
+        travel = clip["hips"][-1] - clip["hips"][0]
+        return math.hypot(travel.x, travel.y) * self.leg / clip["leg"] / max(1, clip["frames"] - 1)
+
     def play(self, clip: dict, start: int, frames: int | None = None, blend: int = 6, speed: float = 1.0,
-             offset: int = 0, adjust=None) -> int:
+             offset: float = 0, adjust=None, on_the_spot: bool = False, clock=None) -> int:
         """Key `clip` from frame `start`, crossfading from what came before over `blend` frames. `frames` is how long to
         play, looping if it's longer than the clip; `speed` below 1 is slow motion. `adjust(frame, pose)` can change each
-        frame's local rotations before they're keyed (a head knocked by a blow). Returns the frame after the last."""
+        frame's local rotations before they're keyed (a head knocked by a blow). `on_the_spot` takes the clip's travel along
+        the ground out of it, keeping the bounce and sway of its steps, for whoever moves the rig to carry them along it, and
+        loops it as the cycle it is, whose last frame is its first. `clock(n)` is how many frames' worth of it have gone by n
+        frames in, for slow motion partway. Returns the frame after the last."""
         length = frames if frames is not None else int(clip["frames"] / speed)
         scale = self.leg / clip["leg"]
         to_local = self.root.bone.matrix_local.to_quaternion().inverted()
         ended: dict[str, Quaternion] = {}
+        period = max(1, clip["frames"] - 1) if on_the_spot else clip["frames"]
+        travel = clip["hips"][-1] - clip["hips"][0]
+        drift = Vector((travel.x, travel.y, 0)) if on_the_spot else Vector()
         for n in range(length):
-            at = (n * speed + offset) % clip["frames"]
+            at = ((clock(n) if clock else n) * speed + offset) % period
             i, between = int(at), at - int(at)
-            hips = clip["hips"][i].lerp(clip["hips"][min(i + 1, clip["frames"] - 1)], between)
+            hips = clip["hips"][i].lerp(clip["hips"][min(i + 1, clip["frames"] - 1)], between) - drift * (at / period)
             root = to_local @ (hips * scale)
             mix = 1.0
             if self.last and n < blend:

@@ -1,0 +1,63 @@
+{
+ "what": "a small steel coil spring between two plates, a shock absorber",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "coil",
+    "kind": "spring",
+    "r": 0.009,
+    "wire": 0.0017,
+    "turns": 4,
+    "h": 0.018,
+    "at": [
+     0,
+     0,
+     0.002
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "back",
+    "kind": "cylinder",
+    "r": 0.0108,
+    "h": 0.002,
+    "at": [
+     0,
+     0,
+     0
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "front",
+    "kind": "cylinder",
+    "r": 0.0108,
+    "h": 0.002,
+    "at": [
+     0,
+     0,
+     0.02
+    ],
+    "material": "bright_steel"
+   }
+  ]
+ },
+ "spots": {
+  "back": [
+   0,
+   0,
+   0
+  ],
+  "front": [
+   0,
+   0,
+   0.022
+  ],
+  "middle": [
+   0,
+   0,
+   0.011
+  ]
+ }
+}

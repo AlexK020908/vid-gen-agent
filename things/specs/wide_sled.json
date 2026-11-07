@@ -1,0 +1,130 @@
+{
+ "what": "a wide low steel crash-test sled that runs on a rail, with a wall across its front that what it carries stops against, and a low steel seat on its floor",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "plate",
+    "kind": "box",
+    "size": [
+     0.195,
+     0.352,
+     0.011
+    ],
+    "bevel": 0.0015,
+    "at": [
+     0.0225,
+     0,
+     0.0065
+    ],
+    "material": {
+     "color": [
+      0.05,
+      0.05,
+      0.055
+     ],
+     "rough": 0.8
+    }
+   },
+   {
+    "id": "side_far",
+    "kind": "box",
+    "size": [
+     0.2,
+     0.01,
+     0.034
+    ],
+    "bevel": 0.0015,
+    "at": [
+     0.025,
+     0.175,
+     0.017
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "side_near",
+    "kind": "box",
+    "size": [
+     0.2,
+     0.01,
+     0.02
+    ],
+    "bevel": 0.0015,
+    "at": [
+     0.025,
+     -0.175,
+     0.01
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "back",
+    "kind": "box",
+    "size": [
+     0.01,
+     0.34,
+     0.02
+    ],
+    "bevel": 0.0015,
+    "at": [
+     0.12,
+     0,
+     0.01
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "front",
+    "kind": "box",
+    "size": [
+     0.01,
+     0.36,
+     0.19
+    ],
+    "bevel": 0.0015,
+    "at": [
+     -0.08,
+     0,
+     0.095
+    ],
+    "material": {
+     "color": [
+      0.05,
+      0.05,
+      0.055
+     ],
+     "rough": 0.8
+    }
+   },
+   {
+    "id": "seat",
+    "kind": "box",
+    "size": [
+     0.15,
+     0.12,
+     0.035
+    ],
+    "bevel": 0.002,
+    "at": [
+     0.005,
+     0.06,
+     0.0295
+    ],
+    "material": "bright_steel"
+   }
+  ]
+ },
+ "spots": {
+  "top": [
+   0,
+   0,
+   0.012
+  ],
+  "front": [
+   -0.085,
+   0,
+   0.04
+  ]
+ }
+}

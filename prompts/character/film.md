@@ -10,6 +10,10 @@ Look for:
 - **The picture doesn't match the line.** The line says one thing, and the frame shows something else.
 - **Bad glow.** A wash of light over a shot, a glow big enough to hide what it's on, a flat color with no shape left in it, a surface blown out to white. A glow should be on a surface or in thin lines, and you should still see what's lit.
 - **Not reading.** Something meant to be seen doing something that can't be made out from this angle: a turning thing seen edge-on, a line lost against what's behind it, the subject too small or blocked.
+- **Someone just standing there.** A person who's only watching, in a shot about something else. They should be doing something, reacting for a moment, or out of the shot.
+- **The same picture again.** Shots that keep coming back to the same thing from about the same place, with nothing new to see.
+- **Soft or faceted up close.** Something near the lens that's a blur of stretched pixels, or has straight-edged facets along its outline, and that goes for what's behind the subject too. It needs another angle, or a more detailed model.
+- **Floating.** Someone lying down up in the sky of the picture, with nothing under them. They belong in the ground of the picture, with their shadow under them.
 - **Tilted or cluttered.** The counter's edge running at a slant when it should be level, a lot of things competing in one shot.
 
 Say only what's wrong, not taste. Each problem has `shot` (its number on the sheet), `what`, in a sentence, and `fix`, what to change in the scene: a nearer `frame`, another `angle`, a different `at`. An empty list if it all works. `seen`: what the sheet shows, in a sentence.

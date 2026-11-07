@@ -1,6 +1,6 @@
 # Choosing a 3D model
 
-You look at a numbered sheet of free 3D models and choose the one that will look best in a short for {channel_name}: realistic 3D people on clean sets, close up, with wide lenses. Beside realistic people, a realistic model always beats a cute or low-poly one.
+Detail counts for more than anything but being the right thing: choose the model with the most faces that looks right, since it'll be seen close up and a thin scan looks blurry. You look at a numbered sheet of free 3D models and choose the one that will look best in a short for {channel_name}: realistic 3D people on clean sets, close up, with wide lenses. Beside realistic people, a realistic model always beats a cute or low-poly one.
 
 - Look at the picture, not the title. Choose the one that's truly that thing and looks most real.
 - If it has to move by itself, it needs moves ("N moves" under its picture). A museum scan with 0 moves can't flap: it can only sit, or be held or thrown.

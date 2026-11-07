@@ -1,0 +1,84 @@
+{
+ "what": "a real woodpecker with a red crest, from a museum scan, upright with its beak forward",
+ "source": {
+  "kind": "sketchfab",
+  "uid": "7dbd98d691474cfeb578f215b4068d0a"
+ },
+ "meters": 0.36,
+ "turn": 270,
+ "trim": [
+  {
+   "y": [
+    0,
+    0.62
+   ],
+   "z": [
+    0,
+    0.432
+   ]
+  }
+ ],
+ "spots": {
+  "beak": [
+   0.0715,
+   -0.1298,
+   0.151
+  ],
+  "head": [
+   0.018,
+   -0.07,
+   0.135
+  ],
+  "feet": [
+   0,
+   -0.09,
+   -0.05
+  ],
+  "neck": [
+   0,
+   -0.04,
+   0.075
+  ],
+  "skull": [
+   -0.008,
+   -0.082,
+   0.14
+  ],
+  "skull_at": [
+   0.0191,
+   -0.0971,
+   0.1464
+  ],
+  "tail": [
+   -0.019,
+   0.114,
+   -0.178
+  ],
+  "tail_base": [
+   0,
+   0.05,
+   -0.05
+  ],
+  "tail_mid": [
+   -0.012,
+   0.09,
+   -0.12
+  ],
+  "head_front": [
+   0.04,
+   -0.1,
+   0.145
+  ]
+ },
+ "trim_pale": [
+  {
+   "near": [
+    0,
+    -0.09,
+    -0.05
+   ],
+   "radius": 0.075,
+   "above": 0.55
+  }
+ ]
+}

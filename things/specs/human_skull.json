@@ -1,0 +1,20 @@
+{
+ "what": "a real human skull",
+ "source": {
+  "kind": "sketchfab",
+  "uid": "1a9db900738d44298b0bc59f68123393"
+ },
+ "meters": 0.21,
+ "spots": {
+  "forehead": [
+   0,
+   -0.09,
+   0.04
+  ],
+  "centre": [
+   0,
+   0.012,
+   0.04
+  ]
+ }
+}

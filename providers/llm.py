@@ -101,6 +101,9 @@ class LLM(Protocol):
         """What a thing's sheet shows, and how to set it up (prompts/character/thing.md)."""
     def direct(self, channel, values: dict, check: Callable[[dict], list[str]], meter: Meter) -> dict:
         """{"scenes": [...]}: the whole short in the scene language (prompts/character/direct.md, scenes/direction.py)."""
+    def check_frames(self, channel, said: str, planned: str, sheets: list[dict], every: int, meter: Meter) -> list[dict]:
+        raise NotImplementedError
+
     def check_film(self, channel, shots: str, sheet, meter: Meter) -> list[dict]:
         """What a viewer would see is wrong on a sheet of frames: [{shot, what, fix}]."""
 
@@ -204,13 +207,15 @@ class StubLLM:
                 "moves": {}, "spots": {}, "problems": []}
 
     def direct(self, channel, values: dict, check: Callable[[dict], list[str]], meter: Meter) -> dict:
-        """One scene on the first person, cutting every 3 seconds."""
+        """One scene on the first person, cutting every 3 seconds to a new picture, with a blow to give them something to do."""
         _cost(meter, 0.05)
         total, who = values["total"], values["cast_ids"][0]
         starts = [float(t) for t in range(0, max(1, int(total)), 3)]
         scene = {"from": 0, "to": total, "set": "sky_set",
                  "cast": {who: {"type": "person", "character": who, "at": [0, 0], "stance": values["stances"].split(", ")[0]}},
-                 "happens": [], "shots": [{"t": t, "on": f"{who}:eyes", "frame": 0.6, "lens": 26} for t in starts]}
+                 "happens": [{"do": "knock", "t": 0.5, "who": who, "size": 3, "axis": [1, 0, 0]}],
+                 "shots": [{"t": t, "on": f"{who}:eyes", "frame": round(0.3 * 1.4 ** (i % 8), 3), "angle": [-60 + 40 * (i // 8), 0], "lens": 26,
+                            "to": {"frame": round(0.36 * 1.4 ** (i % 8), 3)}} for i, t in enumerate(starts)]}
         direction = {"scenes": [scene]}
         problems = check(direction)
         if problems:
@@ -218,6 +223,10 @@ class StubLLM:
         return direction
 
     def check_film(self, channel, shots: str, sheet, meter: Meter) -> list[dict]:
+        _cost(meter, 0.01)
+        return []
+
+    def check_frames(self, channel, said: str, planned: str, sheets: list[dict], every: int, meter: Meter) -> list[dict]:
         _cost(meter, 0.01)
         return []
 

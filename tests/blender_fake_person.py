@@ -62,7 +62,7 @@ def build():
         before = None
         for name, head, tail in ((f"upper_arm.{side}", (0.17 * x, 0.05, 1.25), (0.32 * x, 0.03, 1.07)),
                                  (f"forearm.{side}", (0.32 * x, 0.03, 1.07), (0.46 * x, -0.1, 0.95)),
-                                 (f"hand.{side}", (0.46 * x, -0.1, 0.95), (0.54 * x, -0.18, 0.87)),
+                                 (f"hand.{side}", (0.46 * x, -0.1, 0.95), (0.505 * x, -0.145, 0.905)),
                                  (f"thumb.01.{side}", (0.47 * x, -0.13, 0.95), (0.49 * x, -0.2, 0.93))):
             bone = arm.edit_bones.new(name)
             bone.head, bone.tail = head, tail
@@ -71,6 +71,28 @@ def build():
             elif before is not None:
                 bone.parent = before
             before = bone
+    bpy.ops.object.mode_set(mode="OBJECT")
+    bpy.ops.object.mode_set(mode="EDIT")
+    for side, x in (("L", 1), ("R", -1)):                 # fingers, joint by joint, so a hand can close on what it holds
+        shin = arm.edit_bones.new(f"shin.{side}")
+        shin.head, shin.tail, shin.parent = (0.1 * x, 0, 0.45), (0.1 * x, 0, 0.1), arm.edit_bones[f"thigh.{side}"]
+        foot = arm.edit_bones.new(f"foot.{side}")
+        foot.head, foot.tail, foot.parent = (0.1 * x, 0, 0.1), (0.1 * x, -0.12, 0.02), shin
+        for name, spread in (("f_index", 0.03), ("f_middle", 0.01), ("f_ring", -0.01), ("f_pinky", -0.03)):
+            at = (0.505 * x, -0.145 + spread * 0.7, 0.905 - spread * 0.7)    # the knuckles lie across the hand
+            parent = arm.edit_bones[f"hand.{side}"]
+            for joint in (1, 2, 3):
+                bone = arm.edit_bones.new(f"{name}.0{joint}.{side}")
+                tail = (at[0] + 0.02 * x, at[1] - 0.02, at[2] - 0.02)
+                bone.head, bone.tail, bone.parent = at, tail, parent
+                at, parent = tail, bone
+        parent = arm.edit_bones[f"thumb.01.{side}"]
+        at = parent.tail.copy()
+        for joint in (2, 3):
+            bone = arm.edit_bones.new(f"thumb.0{joint}.{side}")
+            tail = (at[0] + 0.005 * x, at[1] - 0.025, at[2] - 0.005)
+            bone.head, bone.tail, bone.parent = at, tail, parent
+            at, parent = tail, bone
     bpy.ops.object.mode_set(mode="OBJECT")
     for bone in rig.pose.bones:
         bone["original_name"] = bone.name

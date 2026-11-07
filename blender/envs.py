@@ -11,16 +11,16 @@ import random
 
 import bmesh
 import bpy
-from mathutils import Vector
+from mathutils import Quaternion, Vector
 
 from blender import materials, shapes
 
 HDRIS: dict[str, str] = {}   # Poly Haven HDRI id -> path, set by run.py
 
 
-def _world(color=(0, 0, 0), hdri: str | None = None, strength=1.0, rotation=0.0, reflect=None):
+def _world(color=(0, 0, 0), hdri: str | None = None, strength=1.0, rotation=0.0, reflect=None, most=None):
     """The sky: an HDRI, or a flat color. `reflect` is a color only reflections see (steel in a black room still
-    catches a grey room), while the camera sees `color`."""
+    catches a grey room), while the camera sees `color`. `most`: how bright an HDRI can look to the camera, while what it lights still gets all of it, so a patch of real sky doesn't bloom over what's in front of it."""
     world = bpy.data.worlds.new("World")
     world.use_nodes = True
     tree = world.node_tree
@@ -44,7 +44,20 @@ def _world(color=(0, 0, 0), hdri: str | None = None, strength=1.0, rotation=0.0,
         coords = tree.nodes.new("ShaderNodeTexCoord")
         tree.links.new(coords.outputs["Generated"], mapping.inputs["Vector"])
         tree.links.new(mapping.outputs["Vector"], env.inputs["Vector"])
-        tree.links.new(env.outputs["Color"], bg.inputs["Color"])
+        if most is None:
+            tree.links.new(env.outputs["Color"], bg.inputs["Color"])
+        else:
+            held = tree.nodes.new("ShaderNodeVectorMath")
+            held.operation = "MINIMUM"
+            tree.links.new(env.outputs["Color"], held.inputs[0])
+            held.inputs[1].default_value = (most, most, most)
+            path = tree.nodes.new("ShaderNodeLightPath")
+            seen = tree.nodes.new("ShaderNodeMix")
+            seen.data_type = "RGBA"
+            tree.links.new(path.outputs["Is Camera Ray"], seen.inputs["Factor"])
+            tree.links.new(env.outputs["Color"], seen.inputs[6])
+            tree.links.new(held.outputs["Vector"], seen.inputs[7])
+            tree.links.new(seen.outputs[2], bg.inputs["Color"])
     else:
         bg.inputs["Color"].default_value = (*color, 1)
     bpy.context.scene.world = world
@@ -123,16 +136,8 @@ def engine_void(target=(0, 0, 0.22), scale=1.0):
         track.target, track.track_axis, track.up_axis = aim, "TRACK_NEGATIVE_Z", "UP_Y"
 
 
-def sky_set(strength=0.7, ambient=(0.62, 0.74, 0.90)):
-    """A clean sky behind a person, as in the character reference: blue, paler toward the horizon, with a soft darker
-    line low in the picture and pale ground below it. The camera sees the gradient, fixed to the picture so a move
-    can't shift it; everything else is lit by an even pale sky. Colors are chosen to come out right through AgX."""
-    world = bpy.data.worlds.new("World")
-    world.use_nodes = True
-    tree = world.node_tree
-    lit = tree.nodes["Background"]
-    lit.inputs["Color"].default_value = (*ambient, 1)
-    lit.inputs["Strength"].default_value = strength
+def _sky_picture(tree):
+    """The sky set's gradient, fixed to the picture, in a node tree: blue, paler toward the horizon, a darker line, pale ground."""
     coords = tree.nodes.new("ShaderNodeTexCoord")
     split = tree.nodes.new("ShaderNodeSeparateXYZ")
     tree.links.new(coords.outputs["Window"], split.inputs[0])
@@ -146,6 +151,108 @@ def sky_set(strength=0.7, ambient=(0.62, 0.74, 0.90)):
     for element, (at, color) in zip(elements, stops):
         element.position = at
         element.color = (*color, 1)
+    return ramp
+
+
+def _hidden_floor(reach=300.0):
+    """A floor nobody can see, at z 0: it shows exactly the picture behind it, so all it does is hide what's planted below the ground, such
+    as the buried end of a tree, which the set's floor, being only a picture, wouldn't."""
+    mesh = bpy.data.meshes.new("hidden_floor")
+    mesh.from_pydata([(-reach, -reach, 0), (reach, -reach, 0), (reach, reach, 0), (-reach, reach, 0)], [], [[0, 1, 2, 3]])
+    floor = bpy.data.objects.new("hidden_floor", mesh)
+    bpy.context.scene.collection.objects.link(floor)
+    floor.visible_shadow = False
+    mat = bpy.data.materials.new("hidden_floor")
+    mat.use_nodes = True
+    tree = mat.node_tree
+    tree.nodes.clear()
+    shown = tree.nodes.new("ShaderNodeEmission")
+    tree.links.new(_sky_picture(tree).outputs["Color"], shown.inputs["Color"])
+    shown.inputs["Strength"].default_value = SKY_STRENGTH
+    tree.links.new(shown.outputs["Emission"], tree.nodes.new("ShaderNodeOutputMaterial").inputs["Surface"])
+    mesh.materials.append(mat)
+
+
+PLACE_SKY_MOST = 1.1     # how bright a place's sky can look: above this, it blooms over what's in front of it
+
+
+def place(sky: str, ground: str | None = None, turn: float = 0.0, bright: float = 1.0, tile: float = 2.0, reach: float = 26.0, shade: float = 1.0):
+    """A real place: a Poly Haven sky all round, which moves with the camera as a real one does, so a shot that travels shows it. And real ground under
+    it, `tile` meters a repeat, out to `reach` meters, where it fades into the ground in the picture. `turn` swings the place round, in degrees, and `bright`
+    is how strongly it lights things, and `shade` darkens the ground, for a place that's darker than what lights it."""
+    _world(hdri=sky, strength=bright, rotation=math.radians(turn), most=PLACE_SKY_MOST)
+    bpy.context.scene.world.use_sun_shadow = True
+    if ground:
+        _fading_ground(ground, tile, reach, shade)
+
+
+def room_behind(sky: str, turn: float = 0.0, bright: float = 1.0) -> None:
+    """A real room behind a set with its own lighting, for what the camera sees past it: a counter in a lab. What lights the things on it stays as it was."""
+    tree = bpy.context.scene.world.node_tree
+    mix = next(n for n in tree.nodes if n.type == "MIX_SHADER")
+    env = tree.nodes.new("ShaderNodeTexEnvironment")
+    env.image = bpy.data.images.load(HDRIS[sky], check_existing=True)
+    mapping = tree.nodes.new("ShaderNodeMapping")
+    mapping.inputs["Rotation"].default_value = (0, 0, math.radians(turn))
+    coords = tree.nodes.new("ShaderNodeTexCoord")
+    tree.links.new(coords.outputs["Generated"], mapping.inputs["Vector"])
+    tree.links.new(mapping.outputs["Vector"], env.inputs["Vector"])
+    held = tree.nodes.new("ShaderNodeVectorMath")
+    held.operation = "MINIMUM"
+    tree.links.new(env.outputs["Color"], held.inputs[0])
+    held.inputs[1].default_value = (PLACE_SKY_MOST, PLACE_SKY_MOST, PLACE_SKY_MOST)
+    seen = tree.nodes.new("ShaderNodeBackground")
+    seen.inputs["Strength"].default_value = bright
+    tree.links.new(held.outputs["Vector"], seen.inputs["Color"])
+    tree.links.new(seen.outputs[0], mix.inputs[2])
+
+
+def _fading_ground(texture: str, tile: float, reach: float, shade: float = 1.0) -> None:
+    n = 64
+    mesh = bpy.data.meshes.new("Ground")
+    mesh.from_pydata([(reach * math.cos(i * math.tau / n), reach * math.sin(i * math.tau / n), 0) for i in range(n)], [], [list(range(n))])
+    floor = bpy.data.objects.new("Ground", mesh)
+    bpy.context.scene.collection.objects.link(floor)
+    mat = bpy.data.materials.new("Ground")
+    mat.use_nodes = True
+    mat.surface_render_method = "BLENDED"
+    tree = mat.node_tree
+    bsdf = tree.nodes["Principled BSDF"]
+    picture = materials._textured(tree, bsdf, texture, scale=1 / tile)
+    darker = tree.nodes.new("ShaderNodeVectorMath")
+    darker.operation = "SCALE"
+    tree.links.new(picture.outputs["Color"], darker.inputs[0])
+    darker.inputs["Scale"].default_value = shade
+    tree.links.new(darker.outputs["Vector"], bsdf.inputs["Base Color"])
+    coords = tree.nodes.new("ShaderNodeTexCoord")
+    far = tree.nodes.new("ShaderNodeVectorMath")
+    far.operation = "LENGTH"
+    tree.links.new(coords.outputs["Object"], far.inputs[0])
+    fade = tree.nodes.new("ShaderNodeMapRange")
+    fade.interpolation_type = "SMOOTHERSTEP"
+    fade.inputs["From Min"].default_value, fade.inputs["From Max"].default_value = reach * 0.3, reach * 0.95
+    fade.inputs["To Min"].default_value, fade.inputs["To Max"].default_value = 1.0, 0.0
+    tree.links.new(far.outputs["Value"], fade.inputs["Value"])
+    mix = tree.nodes.new("ShaderNodeMixShader")
+    tree.links.new(fade.outputs["Result"], mix.inputs[0])
+    tree.links.new(tree.nodes.new("ShaderNodeBsdfTransparent").outputs[0], mix.inputs[1])
+    tree.links.new(bsdf.outputs[0], mix.inputs[2])
+    tree.links.new(mix.outputs[0], tree.nodes["Material Output"].inputs["Surface"])
+    mesh.materials.append(mat)
+
+
+def sky_set(strength=0.7, ambient=(0.62, 0.74, 0.90)):
+    """A clean sky behind a person, as in the character reference: blue, paler toward the horizon, with a soft darker
+    line low in the picture and pale ground below it. The camera sees the gradient, fixed to the picture so a move
+    can't shift it; everything else is lit by an even pale sky. Colors are chosen to come out right through AgX."""
+    world = bpy.data.worlds.new("World")
+    world.use_nodes = True
+    tree = world.node_tree
+    lit = tree.nodes["Background"]
+    lit.inputs["Color"].default_value = (*ambient, 1)
+    lit.inputs["Strength"].default_value = strength
+    ramp = _sky_picture(tree)
+    _hidden_floor()
     seen = tree.nodes.new("ShaderNodeBackground")
     tree.links.new(ramp.outputs["Color"], seen.inputs["Color"])
     seen.inputs["Strength"].default_value = SKY_STRENGTH
@@ -158,9 +265,9 @@ def sky_set(strength=0.7, ambient=(0.62, 0.74, 0.90)):
     bpy.context.scene.world = world
 
 
-def sky_counter():
+def sky_counter(depth: float = 1.0):
     """A clean blue backdrop behind a matte wooden counter, level across the picture, for showing things up close. The counter's
-    top is at z 0. The backdrop is fixed to the picture and is what the camera sees past the counter; everything else, reflections
+    top is at z 0, and it goes `depth` meters back. The backdrop is fixed to the picture and is what the camera sees past the counter; everything else, reflections
     included, sees a studio: a bright soft overhead, a pale band at the horizon, darker warm below, with broad soft stripes around
     it so steel has something to mirror. No people-flattering front light: things are lit from above and to the side, so a shape
     reads. Its colors go straight to the screen (the Standard view), matched to the reference's by number."""
@@ -246,7 +353,7 @@ def sky_counter():
     tree.links.new(seen.outputs["Background"], mix.inputs[2])
     tree.links.new(mix.outputs["Shader"], tree.nodes["World Output"].inputs["Surface"])
     scene.world = world
-    top = shapes.box("Counter", (8.0, 1.0, 0.05), "counter_wood", at=(0, -0.08, -0.025), bevel=0.003)
+    top = shapes.box("Counter", (8.0, depth, 0.05), "counter_wood", at=(0, -0.08 + (depth - 1.0) / 2, -0.025), bevel=0.003)
     front = shapes.box("Cabinet", (8.0, 0.95, 1.2), None, at=(0, -0.055, -0.65))
     materials.custom("cabinet", color=(0.16, 0.10, 0.07), rough=0.55)
     materials.assign(front, "cabinet")
@@ -268,7 +375,10 @@ def sky_counter():
     return [top, front]
 
 
-def floor_shadow(name, at, radius=0.62, darkness=0.5):
+SHADOW_RADIUS = 0.62     # how far a patch of shadow under someone reaches (m)
+
+
+def floor_shadow(name, at, radius=SHADOW_RADIUS, darkness=0.5):
     """A soft dark patch on the ground under someone, on a set with no floor to catch a real shadow, so feet touch it."""
     mesh = bpy.data.meshes.new(name)
     mesh.from_pydata([(radius * math.cos(i * math.tau / 48), radius * math.sin(i * math.tau / 48), 0) for i in range(48)], [],
@@ -309,10 +419,14 @@ SKY_LINE = (0.06, 0.26, 0.56)     # the soft dark line
 SKY_GROUND = (0.32, 0.50, 0.78)   # the pale ground below it
 
 
-def portrait_lights(face, key=125.0, fill=55.0, rim=45.0, reach=1.0):
+def portrait_lights(face, key=125.0, fill=55.0, rim=45.0, reach=1.0, facing=0.0):
     """Big soft lights on a person's face at the world point `face`, bright as the reference is: a key from the front
     left and above, a fill from the front right, and a rim from behind to lift the hair off the sky. They're round, so
-    a catchlight in an eye looks like one. `reach` moves them out and brightens them to match, for something bigger."""
+    a catchlight in an eye looks like one. `reach` moves them out and brightens them to match, for something bigger. `facing`
+    is the way they face, in degrees, as a person's is: the lights come from in front of them, whichever way that is.
+    Returns the lights and what they aim at, for moving them with someone."""
+    made = []
+    turn = Quaternion((0, 0, 1), math.radians(facing))
     for name, at, energy, size in (("Key", (-1.1, -2.2, 1.0), key, 2.4), ("Fill", (1.8, -2.0, 0.1), fill, 3.0),
                                    ("Rim", (0.8, 1.8, 1.2), rim, 1.6)):
         data = bpy.data.lights.new(name, "AREA")
@@ -321,12 +435,14 @@ def portrait_lights(face, key=125.0, fill=55.0, rim=45.0, reach=1.0):
         data.size = size * reach
         light = bpy.data.objects.new(name, data)
         bpy.context.scene.collection.objects.link(light)
-        light.location = Vector(face) + Vector(at) * reach
+        light.location = Vector(face) + turn @ (Vector(at) * reach)
         aim = bpy.data.objects.new(f"{name}.aim", None)
         bpy.context.scene.collection.objects.link(aim)
         aim.location = face
         track = light.constraints.new("TRACK_TO")
         track.target, track.track_axis, track.up_axis = aim, "TRACK_NEGATIVE_Z", "UP_Y"
+        made += [light, aim]
+    return made
 
 
 def _gym_wall(at, along, length, height=9.0):

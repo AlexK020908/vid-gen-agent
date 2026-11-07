@@ -252,11 +252,48 @@ def _counter_wood(name):
     return mat
 
 
-def custom(name: str, color=(0.5, 0.5, 0.5), metal: float = 0.0, rough: float = 0.5, coat: float = 0.0, glow: float = 0.0):
-    """A part's own paint, by name, for what the palette doesn't have (`color` is linear, each 0 to 1)."""
+def custom(name: str, color=(0.5, 0.5, 0.5), metal: float = 0.0, rough: float = 0.5, coat: float = 0.0, glow: float = 0.0, pores: float = 0.0):
+    """A part's own paint, by name, for what the palette doesn't have (`color` is linear, each 0 to 1). `pores` is how wide the holes in it are, in
+    meters, for something soft and full of them: a sponge, bread, pumice."""
     if name not in _made:
         _made[name] = _plain(name, tuple(color), metallic=metal, roughness=rough, emission=glow, coat=coat)
+        if pores:
+            _with_pores(_made[name], float(pores))
     return _made[name]
+
+
+def _with_pores(mat, size: float) -> None:
+    """Holes all over a material, darker inside, with their edges catching the light."""
+    pores_on(mat.node_tree, next(n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), size)
+
+
+def pores_on(tree, bsdf, size: float, object_scale: float = 1.0) -> None:
+    """Holes all over one shader in a material, `size` meters wide on an object scaled by this."""
+    coords = tree.nodes.new("ShaderNodeTexCoord")
+    cells = tree.nodes.new("ShaderNodeTexVoronoi")
+    cells.inputs["Scale"].default_value = object_scale / size
+    tree.links.new(coords.outputs["Object"], cells.inputs["Vector"])
+    holes = tree.nodes.new("ShaderNodeValToRGB")
+    holes.color_ramp.elements[0].position, holes.color_ramp.elements[1].position = 0.16, 0.42
+    tree.links.new(cells.outputs["Distance"], holes.inputs["Fac"])
+    shade = tree.nodes.new("ShaderNodeMix")
+    shade.data_type = "RGBA"
+    shade.blend_type = "MULTIPLY"
+    shade.inputs["Factor"].default_value = 1.0
+    shade.inputs[6].default_value = bsdf.inputs["Base Color"].default_value
+    lighten = tree.nodes.new("ShaderNodeMapRange")
+    lighten.inputs["To Min"].default_value, lighten.inputs["To Max"].default_value = 0.3, 1.0
+    tree.links.new(holes.outputs["Color"], lighten.inputs["Value"])
+    combine = tree.nodes.new("ShaderNodeCombineColor")
+    for socket in ("Red", "Green", "Blue"):
+        tree.links.new(lighten.outputs["Result"], combine.inputs[socket])
+    tree.links.new(combine.outputs["Color"], shade.inputs[7])
+    tree.links.new(shade.outputs[2], bsdf.inputs["Base Color"])
+    bump = tree.nodes.new("ShaderNodeBump")
+    bump.inputs["Strength"].default_value = 0.9
+    bump.inputs["Distance"].default_value = size * 0.6
+    tree.links.new(holes.outputs["Color"], bump.inputs["Height"])
+    tree.links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
 
 
 def _floorboards(name):

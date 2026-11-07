@@ -17,7 +17,7 @@ from characters.build import sheet as tile
 from core import db
 from core.errors import FinalError
 from core.stage import run_video_stage
-from render import ffmpeg, narration, remotion_render, sfx
+from render import ffmpeg, frame_sheets, narration, remotion_render, sfx
 from render.render import _srt_ts
 from scenes import direction as short
 from scenes import render as filming
@@ -31,8 +31,9 @@ READY = """AND direction_json IS NOT NULL AND json_extract(direction_json, '$.ap
            AND NOT EXISTS (SELECT 1 FROM scenes s WHERE s.video_id = videos.id AND s.state != 'ok')"""
 FPS = 30
 LOOK_SIZE, LOOK_SAMPLES = (432, 768), 12
+MOST_FRAME_REVIEWS = 2          # how many times a finished short goes back for what the frame reviewer found, before the owner sees it as it stands
 FRAME_SHEET_EVERY = 1.5     # seconds between frames on the render card's sheet
-SOUNDS = {"hit": ("impact_heavy", 0.55), "fly": ("whoosh_soft", 0.3), "go": ("whoosh_soft", 0.25), "rock": ("tap_heavy", 0.4)}
+SOUNDS = {"hit": ("impact_heavy", 0.55), "fly": ("whoosh_soft", 0.3), "go": ("whoosh_soft", 0.25), "rock": ("tap_heavy", 0.4), "step": ("tap", 0.16), "land": ("thud", 0.6)}
 
 
 def run_once(ctx) -> bool:
@@ -179,6 +180,17 @@ def _frame_sheet(video_file: Path, out: Path) -> Path | None:
     return out
 
 
+def _review(ctx, conn, video, channel, out: Path, direction: dict, clock: dict) -> list[dict]:
+    """The finished short, gone through frame by frame by someone who didn't make it, for what breaks physics or how the world works. Jumps between frames with no cut there
+    are measured first, and handed to them to look at."""
+    cuts = [float(s["t"]) for directed in direction["scenes"] for s in directed["shots"]] + [float(directed["from"]) for directed in direction["scenes"]]
+    jumped = frame_sheets.jumps(out, cuts)
+    planned = f"The picture jumps from one frame to the next at these times, with no cut there: {', '.join(f'{t} s' for t in jumped)}. Some will be a fast move, and some a mistake." if jumped else "Nothing jumps from one frame to the next but at the cuts."
+    said = "\n".join(f"{line['from']} s to {line['to']} s: {line['text']}" for line in clock["lines"])
+    sheets = frame_sheets.sheets(out, out.parent / "frames_review")
+    return ctx.llm.check_frames(channel, said, planned, sheets, frame_sheets.EVERY, ctx.meter(conn, video, NAME, "the review of the frames"))
+
+
 def _work(ctx, conn, video) -> None:
     channel = ctx.channel(video["channel_id"])
     direction = json.loads(video["direction_json"])
@@ -216,8 +228,25 @@ def _work(ctx, conn, video) -> None:
     if _stub(ctx) and remotion_render.missing():
         raise FinalError("this needs Remotion: cd render/remotion && npm install")
     props, files = _props(ctx, video, conn, filmed, clock, direction.get("marks"))
-    remotion_render.render_machine(props, files, out, lambda done, total: ctx.events.emit(
-        "stage_progress", video["id"], stage=NAME, done=done, total=total, unit="%"))
+    stamp = out.with_suffix(".key")                 # this stage runs again from the top when the reviewer answers: the same short needn't be put together twice
+    key = hashlib.sha256(json.dumps(props, sort_keys=True).encode("utf-8")).hexdigest()
+    if not (out.exists() and stamp.exists() and stamp.read_text(encoding="utf-8") == key):
+        remotion_render.render_machine(props, files, out, lambda done, total: ctx.events.emit(
+            "stage_progress", video["id"], stage=NAME, done=done, total=total, unit="%"))
+        stamp.write_text(key, encoding="utf-8")
+    draft = json.loads(video["direction_draft_json"] or "{}")
+    if not _stub(ctx) and draft.get("reviewed", 0) < MOST_FRAME_REVIEWS:
+        problems = _review(ctx, conn, video, channel, out, direction, clock)
+        if problems:
+            notes = [f"{direct.LOOK_NOTE}at {p['at']}: {p['what']} Fix: {p['fix']}" for p in problems]
+            said = "\n".join(f"- {n}" for n in notes)
+            ctx.events.emit("notice", video["id"], text=f"The review of the frames found {len(notes)} thing(s), so it's being directed again:\n{said}")
+            with db.tx(conn):
+                for note in notes:
+                    db.add_feedback(conn, video["id"], "direct", note)
+                db.update_video(conn, video["id"], direction_json=None,
+                                direction_draft_json=json.dumps({**draft, "looked": True, "reviewed": draft.get("reviewed", 0) + 1}))
+            return
     srt = out.with_suffix(".srt")
     srt.write_text(_srt(clock), encoding="utf-8")
     sheet = _frame_sheet(out, out.with_name("frames.png"))

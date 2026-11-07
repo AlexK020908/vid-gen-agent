@@ -19,6 +19,8 @@ RUNNER = ROOT / "blender" / "run.py"
 FRAME = re.compile(r"^FRAME (\d+)/(\d+|\?)")
 TEXTURES = ("red_sand", "oak_veneer_01")      # what blender/materials.py's palette loads
 HDRIS = ("kloofendal_43d_clear_puresky",)     # what blender/envs.py's worlds load
+PLACE_SKY = "4k"                              # how big a place's sky is fetched: it fills the picture, a little out of focus
+PLACE_GROUND = "4k"                           # and its ground: someone lying on it is seen from close up
 
 
 def exe(config) -> Path:
@@ -40,9 +42,10 @@ def run_job(config, job: dict, out_dir: Path, progress: Callable[[int, int], Non
         raise RuntimeError(reason)
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+    place = (job.get("scene") or {}).get("place") or {}
     job = {**job, "out": str(out_dir),
-           "textures": {t: assets.texture(config.data_dir, t) for t in TEXTURES},
-           "hdris": {h: assets.hdri(config.data_dir, h) for h in HDRIS}}
+           "textures": {**{t: assets.texture(config.data_dir, t) for t in TEXTURES}, **({place["ground"]: assets.texture(config.data_dir, place["ground"], PLACE_GROUND)} if place.get("ground") else {})},
+           "hdris": {**{h: assets.hdri(config.data_dir, h) for h in HDRIS}, **({place["sky"]: assets.hdri(config.data_dir, place["sky"], PLACE_SKY)} if place.get("sky") else {})}}
     job_path = out_dir / "job.json"
     job_path.write_text(json.dumps(job, indent=1), encoding="utf-8")
     cmd = [str(exe(config)), "-b", "--factory-startup", "--python-exit-code", "1", "-P", str(RUNNER), "--",
@@ -90,6 +93,7 @@ def render_stage(config, scene: dict, folders: dict, catalog: dict, out_dir: Pat
         for old in out_dir.glob("f_*.png"):
             old.unlink()
     used = {c["stance"]: catalog[c["stance"]] for c in scene["cast"].values() if c["type"] == "person"}
+    used |= {e["clip"]: catalog[e["clip"]] for e in scene.get("happens") or [] if e.get("do") in ("act", "walk")}
     run_job(config, {"kind": "stage", "scene": scene, "folders": {k: str(v) for k, v in folders.items()}, "catalog": used,
                      "things": {k: str(v) for k, v in (things or {}).items()},
                      "size": list(size), "fps": fps, "samples": int(samples or config.blender.get("samples", 32)),

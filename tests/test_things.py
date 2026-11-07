@@ -268,6 +268,8 @@ def test_a_tool_swung_at_the_side_of_a_thing_lands_flat_on_it_in_a_closed_hand(t
     assert out["faces_target"] > 0.9                           # its front is what lands, not its side
     assert out["handle_up"] > 0.9                              # upright, as a hammer meets a wall, not poked end on
     assert out["thumb_closed_deg"] > 10                        # the hand holding it has closed; the other hasn't
+    assert out["wrist_gap"] < 0.012                            # and it's on it, as it lands
+    assert out["drew_back"]                                    # they draw back first
 
 
 @needs_blender

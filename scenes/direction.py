@@ -10,6 +10,11 @@ from scenes import spec as scene_spec
 
 MEET = 0.05      # how far apart two scenes can be and still count as one starting where the last ended (s)
 CAPTION_WORDS = 4
+MOST_IDLE = 4.5      # how long a person can be in a scene with nothing to do: time for a reaction, and no more (s)
+PERSON_ACTS = ("hold", "bite", "wear", "strike", "knock", "move", "act", "walk")     # an expression, a look or a glow alone is standing there
+MOST_STILL = 2.5     # how long a shot can hold with neither the camera nor anything in it moving (s)
+MOVING = ("rock", "slide", "spin", "strike", "fly", "go", "walk", "act", "knock", "squash", "play", "move", "rings", "sparks")
+MOST_REPEATS = 2     # how many times the same picture can come up in a short
 PAUSE_MS, LONG_PAUSE_MS, LAST_PAUSE_MS = 500, 900, 1200   # the owner: "breathing room between every senetence"
 
 
@@ -97,13 +102,72 @@ def tags(marks) -> list[dict]:
     return [{"tone": "red", "at": [0.5, 0.36], **m} for m in marks or []]
 
 
-def check(direction: dict, total: float, people: list[str], stances: list[str], things: dict) -> list[str]:
+def _idle_people(scene: dict) -> list[str]:
+    """Who just stands there. A person is in a shot to do something, or to react for a moment."""
+    out = []
+    length = float(scene["to"]) - float(scene["from"])
+    if length <= MOST_IDLE:
+        return out
+    for pid, entry in (scene.get("cast") or {}).items():
+        if entry.get("type") != "person":
+            continue
+        acts = any(e.get("who") == pid and e.get("do") in PERSON_ACTS for e in scene.get("happens") or [])
+        seen = any(not shot.get("shows") or pid in shot["shows"] for shot in scene.get("shots") or [])
+        if seen and not acts:
+            out.append(f"{pid} just stands there for {round(length, 1)} s. A person is only in a shot to do something or to react for a moment: "
+                       f"give them something to do, or leave them out of this scene")
+    return out
+
+
+def _still_shots(scene: dict) -> list[str]:
+    """A shot held with nothing moving in it. The camera can stay still while something happens, and something can stay still while the
+    camera travels. Both still at once is a photograph."""
+    out = []
+    shots = [s for s in scene.get("shots") or [] if isinstance(s, dict) and isinstance(s.get("t"), (int, float))]
+    ends = [s["t"] for s in shots[1:]] + [scene["to"]]
+    for shot, end in zip(shots, ends):
+        if end - shot["t"] <= MOST_STILL or "to" in shot:
+            continue
+        moving = False
+        for e in scene.get("happens") or []:
+            if e.get("do") not in MOVING or not isinstance(e.get("t"), (int, float)):
+                continue
+            until = e["t"] + (e["over"] if isinstance(e.get("over"), (int, float)) else 1.0)
+            if e["t"] < end and until > shot["t"]:
+                moving = True
+                break
+        if not moving:
+            out.append(f"the shot at {shot['t']} s holds for {round(end - shot['t'], 1)} s with nothing moving. Have the camera travel with `to`, or have something happen")
+    return out
+
+
+def _picture(scene: dict, shot: dict) -> tuple:
+    """What a shot shows, near enough: two shots with the same of these look like the same picture to a viewer."""
+    frame = float(shot.get("frame") or 1.0)
+    angle = shot.get("angle") or [0, 0]
+    return (scene.get("set"), shot.get("on"), round(math.log(max(frame, 0.01), 1.3)), round(float(angle[0]) / 20), round(float(angle[1]) / 20))
+
+
+def _same_pictures(scenes: list) -> list[str]:
+    """The same picture coming back again and again. A cut has to show something new."""
+    seen: dict[tuple, list[float]] = {}
+    for scene in scenes:
+        if not isinstance(scene, dict):
+            continue
+        for shot in scene.get("shots") or []:
+            if isinstance(shot, dict) and "on" in shot:
+                seen.setdefault(_picture(scene, shot), []).append(shot.get("t", 0))
+    return [f"the same picture of {key[1]} comes up {len(times)} times, at {', '.join(str(t) for t in times)} s: at most {MOST_REPEATS}. Show something new instead"
+            for key, times in seen.items() if len(times) > MOST_REPEATS]
+
+
+def check(direction: dict, total: float, people: list[str], stances: list[str], things: dict, moves: list[str] | None = None) -> list[str]:
     """Everything wrong with a direction, in words: the scenes have to cover the short exactly, and each has to pass the
-    scene language's own check. `people` are the ids it may cast."""
+    scene language's own check. `people` are the ids it may cast, `stances` what they can hold, `moves` what they can do."""
     scenes = direction.get("scenes")
     if not isinstance(scenes, list) or not scenes:
         return ["scenes: there has to be at least one"]
-    out, at = mark_problems(direction.get("marks"), total), 0.0
+    out, at = mark_problems(direction.get("marks"), total) + _same_pictures(scenes), 0.0
     for i, scene in enumerate(scenes):
         label = f"scene {i + 1}"
         if not isinstance(scene, dict) or not _times(scene):
@@ -116,7 +180,9 @@ def check(direction: dict, total: float, people: list[str], stances: list[str], 
             continue
         at = scene["to"]
         out += [f"{label}: don't write {key}: code works it out" for key in ("length", "captions") if key in scene]
-        out += [f"{label}: {p}" for p in scene_spec.check(local(scene), people, stances, things)]
+        out += [f"{label}: {p}" for p in _idle_people(scene)]
+        out += [f"{label}: {p}" for p in _still_shots(scene)]
+        out += [f"{label}: {p}" for p in scene_spec.check(local(scene), people, stances, things, moves)]
     if abs(at - total) > MEET:
         out.append(f"the last scene ends at {round(at, 2)}, and the short ends at {total}")
     return out

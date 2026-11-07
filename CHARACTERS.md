@@ -60,7 +60,7 @@ Only `blender/humgen.py` and `render/humgen.py` are tied to Human Generator. `bl
 6. **Look check** (worker jobs). Start, middle and end frames: does it show the line, is the face broken, does a hand or prop pass through the body?
 7. **Assemble and publish.** `MachineShort`, then the Shorts profile from phase 28.
 
-There's no cloth or hair simulation at first: clothes follow the rig and hair stays still. It suits close-ups, and it will look stiff on walking, running or fighting shots. A body move, such as swinging a sword, is a clip from a free CC0 pack in `data/motion/`, retargeted onto our rig, and looks only as good as that clip. The add-on bought here has no animation library of its own. A single-layer top tears at the shoulder with the arm overhead, so action shots need a layered outfit.
+There's no cloth or hair simulation at first: clothes follow the rig and hair stays still. It suits close-ups, and it looks stiff on a slow walk, though at a run, with motion blur, it holds up (phase 40). A body move, such as swinging a sword or going down in a fall, is a clip from a free CC0 pack in `data/motion/`, retargeted onto our rig, and looks only as good as that clip. Walking and running take their steps from the clip and their travel from the rig, so feet don't slide: BUILD.md, How it moves. The add-on bought here has no animation library of its own. A single-layer top tears at the shoulder with the arm overhead, so action shots need a layered outfit.
 
 ## Phases
 

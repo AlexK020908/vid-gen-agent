@@ -12,9 +12,10 @@ from __future__ import annotations
 import math
 
 import bpy
+import numpy as np
 from mathutils import Matrix, Vector
 
-from blender import look
+from blender import look, materials
 
 COLORS = {"green": (0.03, 1.0, 0.12), "red": (1.0, 0.04, 0.03), "blue": (0.04, 0.3, 1.0), "yellow": (1.0, 0.75, 0.03),
           "white": (1.0, 1.0, 1.0), "orange": (1.0, 0.32, 0.05), "cream": (1.0, 0.72, 0.36), "cyan": (0.22, 0.72, 1.0),
@@ -121,6 +122,277 @@ def surface(meshes: list, color, begin: int, end: int, fade: int, last: int, str
         tree.links.new(before, mix.inputs[1])
         tree.links.new(light.outputs[0], mix.inputs[2])
         tree.links.new(mix.outputs[0], output.inputs["Surface"])
+
+
+PART = "ghost_part"
+TURNED = "turned_part"
+WINDOW_EDGE = 1.15      # how far past a window's radius what's seen through it fades back in, as a share of it
+
+
+def mark_part(meshes: list, centre, radius: float, points=None, name: str = PART) -> None:
+    """How much of each point of these meshes is within `radius` meters of a place, fading out over the last quarter of that, kept on
+    the points so it stays on them when they bend. `points`: where they are, if that isn't what the mesh says, as for someone's body at rest, wherever they've gone."""
+    middle = np.array(centre)
+    for obj in meshes:
+        if points is None:
+            place = np.array(obj.matrix_world)
+            co = np.zeros(len(obj.data.vertices) * 3)
+            obj.data.vertices.foreach_get("co", co)
+            far = np.linalg.norm(co.reshape(-1, 3) @ place[:3, :3].T + place[:3, 3] - middle, axis=1)
+        else:
+            far = np.linalg.norm(points - middle, axis=1)
+        share = np.clip((radius - far) / (radius * 0.25), 0.0, 1.0)
+        obj.data.attributes.new(name, "FLOAT", "POINT").data.foreach_set("value", share * share * (3 - 2 * share))
+
+
+def smooth_part(meshes: list, times: int, name: str = PART) -> None:
+    """What mark_part marked, with the little bumps in its surface smoothed away, and no smaller for it: each pass smooths it and then swells it back by as much (Taubin), as plain smoothing shrinks a head
+    by centimeters. It's a shape key, so it's worked out once, and everything else about the mesh goes on from there."""
+    for obj in meshes:
+        marked = obj.data.attributes.get(name)
+        if marked is None:
+            continue
+        mesh = obj.data
+        count = len(mesh.vertices)
+        shares = np.zeros(count)
+        marked.data.foreach_get("value", shares)
+        if not shares.any():
+            continue
+        co = np.zeros(count * 3)
+        mesh.vertices.foreach_get("co", co)
+        co = co.reshape(-1, 3)
+        # a scan's points are split along the seams of its picture: what's in one place moves as one, or smoothing opens cracks along them
+        _, first, same = np.unique(np.round(co / 1e-6).astype(np.int64), axis=0, return_index=True, return_inverse=True)
+        same = same.reshape(-1)
+        points, share = co[first].copy(), shares[first]
+        edges = np.zeros(len(mesh.edges) * 2, dtype=np.int64)
+        mesh.edges.foreach_get("vertices", edges)
+        edges = same[edges].reshape(-1, 2)
+        faces_on = np.zeros(len(mesh.loops), dtype=np.int64)
+        mesh.loops.foreach_get("edge_index", faces_on)
+        faces_on = np.bincount(faces_on, minlength=len(edges))
+        apart = edges[:, 0] != edges[:, 1]
+        edges, faces_on = edges[apart], faces_on[apart]
+        # the rim of a hole, an edge with a face on one side only once what's split along a seam is joined up, stays where it is, or smoothing opens the hole up
+        ordered = np.sort(edges, axis=1)
+        _, inverse = np.unique(ordered[:, 0] * len(points) + ordered[:, 1], return_inverse=True)
+        inverse = inverse.reshape(-1)
+        rim = ordered[np.bincount(inverse, weights=faces_on)[inverse] < 2]
+        share = share.copy()
+        share[rim.reshape(-1)] = 0.0
+        neighbors = np.zeros(len(points))
+        np.add.at(neighbors, edges[:, 0], 1)
+        np.add.at(neighbors, edges[:, 1], 1)
+        neighbors = np.maximum(neighbors, 1)[:, None]
+        for _ in range(times):
+            for step in (0.5, -0.53):
+                total = np.zeros_like(points)
+                np.add.at(total, edges[:, 0], points[edges[:, 1]])
+                np.add.at(total, edges[:, 1], points[edges[:, 0]])
+                points = points + (total / neighbors - points) * (step * share)[:, None]
+        if not mesh.shape_keys:
+            obj.shape_key_add(name="Basis", from_mix=False)
+        block = obj.shape_key_add(name=f"{name}.smooth", from_mix=False)
+        block.data.foreach_set("co", points[same].reshape(-1))
+        block.value = 1.0
+        mesh.update()
+
+
+def _through_window(tree, centre, radius: float):
+    """1 for what's seen by a line of sight passing through a circle around an object, 0 for the rest: how near it comes to the line from the lens
+    to this point on the surface. It follows the object, wherever that goes."""
+    geometry = tree.nodes.new("ShaderNodeNewGeometry")
+    middle = tree.nodes.new("ShaderNodeCombineXYZ")
+    for axis, transform in zip("XYZ", ("LOC_X", "LOC_Y", "LOC_Z")):
+        driver = middle.inputs[axis].driver_add("default_value").driver
+        driver.type = "SCRIPTED"
+        variable = driver.variables.new()
+        variable.name = "at"
+        variable.type = "TRANSFORMS"
+        variable.targets[0].id = centre
+        variable.targets[0].transform_type = transform
+        variable.targets[0].transform_space = "WORLD_SPACE"
+        driver.expression = "at"
+    apart = tree.nodes.new("ShaderNodeVectorMath")
+    apart.operation = "SUBTRACT"
+    tree.links.new(middle.outputs[0], apart.inputs[0])
+    tree.links.new(geometry.outputs["Position"], apart.inputs[1])
+    across = tree.nodes.new("ShaderNodeVectorMath")
+    across.operation = "CROSS_PRODUCT"
+    tree.links.new(apart.outputs[0], across.inputs[0])
+    tree.links.new(geometry.outputs["Incoming"], across.inputs[1])
+    length = tree.nodes.new("ShaderNodeVectorMath")
+    length.operation = "LENGTH"
+    tree.links.new(across.outputs[0], length.inputs[0])
+    share = tree.nodes.new("ShaderNodeMapRange")
+    share.inputs["From Min"].default_value, share.inputs["From Max"].default_value = radius, radius * WINDOW_EDGE
+    share.inputs["To Min"].default_value, share.inputs["To Max"].default_value = 1.0, 0.0
+    tree.links.new(length.outputs["Value"], share.inputs["Value"])
+    return geometry.outputs["Backfacing"], share.outputs["Result"]
+
+
+def turn_part(meshes: list, into: dict, begin: int, end: int, fade: int, last: int) -> None:
+    """What mark_part marked TURNED becoming other stuff, of `into`'s color and roughness and full of its `pores`, in place of what it was, with a little of what it was still showing in it, so it's
+    still plainly the same thing."""
+    for mat in _materials(meshes):
+        mat.use_nodes = True
+        tree = mat.node_tree
+        output = next((n for n in tree.nodes if n.type == "OUTPUT_MATERIAL" and n.is_active_output), None)
+        if output is None or not output.inputs["Surface"].links:
+            continue
+        before = output.inputs["Surface"].links[0].from_socket
+        own = next((n for n in tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+        stuff = tree.nodes.new("ShaderNodeBsdfPrincipled")
+        stuff.inputs["Base Color"].default_value = (*into["color"], 1)
+        stuff.inputs["Roughness"].default_value = float(into.get("rough", 1.0))
+        if into.get("pores"):
+            materials.pores_on(tree, stuff, float(into["pores"]), max(meshes[0].matrix_world.to_scale()))
+        if own is not None and own.inputs["Base Color"].links:
+            gray = tree.nodes.new("ShaderNodeRGBToBW")
+            tree.links.new(own.inputs["Base Color"].links[0].from_socket, gray.inputs[0])
+            shows = tree.nodes.new("ShaderNodeMapRange")
+            shows.inputs["From Min"].default_value, shows.inputs["From Max"].default_value = 0.0, 0.12
+            shows.inputs["To Min"].default_value, shows.inputs["To Max"].default_value = 0.72, 1.0
+            tree.links.new(gray.outputs[0], shows.inputs["Value"])
+            mixed = tree.nodes.new("ShaderNodeMix")
+            mixed.data_type = "RGBA"
+            mixed.blend_type = "MULTIPLY"
+            mixed.inputs["Factor"].default_value = 1.0
+            base = stuff.inputs["Base Color"]
+            if base.links:
+                tree.links.new(base.links[0].from_socket, mixed.inputs[6])
+            else:
+                mixed.inputs[6].default_value = base.default_value
+            tree.links.new(shows.outputs["Result"], mixed.inputs[7])
+            tree.links.new(mixed.outputs[2], base)
+        level = tree.nodes.new("ShaderNodeValue")
+        _keys(level.outputs[0], _envelope(begin, end, fade, last))
+        marked = tree.nodes.new("ShaderNodeAttribute")
+        marked.attribute_name = TURNED
+        turned = tree.nodes.new("ShaderNodeMixShader")
+        tree.links.new(_math(tree, "MULTIPLY", level.outputs[0], marked.outputs["Fac"]), turned.inputs[0])
+        tree.links.new(before, turned.inputs[1])
+        tree.links.new(stuff.outputs[0], turned.inputs[2])
+        tree.links.new(turned.outputs[0], output.inputs["Surface"])
+
+
+def pit(meshes: list, at, smallest: float, largest: float, begin: int, end: int, last: int) -> None:
+    """A dark hollow on a surface where it's being hit, around a place in the world, from one size to another: what a surface looks like with a hole started in it."""
+    for mat in _materials(meshes):
+        tree = mat.node_tree
+        bsdf = next((n for n in tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+        if bsdf is None:
+            continue
+        geometry = tree.nodes.new("ShaderNodeNewGeometry")
+        centre = tree.nodes.new("ShaderNodeCombineXYZ")
+        for axis, value in zip("XYZ", at):
+            centre.inputs[axis].default_value = value
+        far = tree.nodes.new("ShaderNodeVectorMath")
+        far.operation = "DISTANCE"
+        tree.links.new(geometry.outputs["Position"], far.inputs[0])
+        tree.links.new(centre.outputs[0], far.inputs[1])
+        size = tree.nodes.new("ShaderNodeValue")
+        _keys(size.outputs[0], [(max(1, begin), smallest), (end, largest), (max(end + 1, last), largest)])
+        grown = tree.nodes.new("ShaderNodeMath")
+        grown.operation = "DIVIDE"
+        tree.links.new(far.outputs["Value"], grown.inputs[0])
+        tree.links.new(size.outputs[0], grown.inputs[1])
+        dark = tree.nodes.new("ShaderNodeMapRange")
+        dark.interpolation_type = "SMOOTHSTEP"
+        dark.inputs["From Min"].default_value, dark.inputs["From Max"].default_value = 0.55, 1.0
+        dark.inputs["To Min"].default_value, dark.inputs["To Max"].default_value = 0.92, 0.0
+        tree.links.new(grown.outputs[0], dark.inputs["Value"])
+        mixed = tree.nodes.new("ShaderNodeMix")
+        mixed.data_type = "RGBA"
+        tree.links.new(dark.outputs["Result"], mixed.inputs["Factor"])
+        base = bsdf.inputs["Base Color"]
+        if base.links:
+            tree.links.new(base.links[0].from_socket, mixed.inputs[6])
+        else:
+            mixed.inputs[6].default_value = base.default_value
+        mixed.inputs[7].default_value = (0.015, 0.01, 0.008, 1)
+        tree.links.new(mixed.outputs[2], base)
+
+
+def fade_out(mats: list, begin: int, end: int, fade: int, last: int) -> None:
+    """These materials aren't there at all, from `begin` until `end`, fading: what's left out of an x-ray."""
+    for mat in mats:
+        if not mat.use_nodes:
+            continue
+        mat.surface_render_method = "DITHERED"
+        mat.use_transparent_shadow = True
+        tree = mat.node_tree
+        output = next((n for n in tree.nodes if n.type == "OUTPUT_MATERIAL" and n.is_active_output), None)
+        if output is None or not output.inputs["Surface"].links:
+            continue
+        before = output.inputs["Surface"].links[0].from_socket
+        level = tree.nodes.new("ShaderNodeValue")
+        _keys(level.outputs[0], _envelope(begin, end, fade, last))
+        gone = tree.nodes.new("ShaderNodeMixShader")
+        tree.links.new(level.outputs[0], gone.inputs[0])
+        tree.links.new(before, gone.inputs[1])
+        tree.links.new(tree.nodes.new("ShaderNodeBsdfTransparent").outputs[0], gone.inputs[2])
+        tree.links.new(gone.outputs[0], output.inputs["Surface"])
+
+
+def ghost(meshes: list, color, begin: int, end: int, fade: int, last: int, edge: float = 2.2, strength: float = 1.4, window: tuple | None = None, fill: float = 0.0) -> None:
+    """These meshes go to glass: see ghost_materials."""
+    ghost_materials(_materials(meshes), color, begin, end, fade, last, edge, strength, window, fill)
+
+
+def ghost_materials(mats: list, color, begin: int, end: int, fade: int, last: int, edge: float = 2.2, strength: float = 1.4, window: tuple | None = None, fill: float = 0.0) -> None:
+    """These materials go to glass: you see through where they face you, and their edges stay as a thin bright line, so what's inside
+    them shows, as in an x-ray. `edge` is how narrow that line is: more is finer. With `window`, an object at its middle and a radius that mark_part marked, only
+    that much does, and the rest stays as it is, so it's still plainly the same thing. The inside of its far side, which would show through the
+    window in patches, goes where you're looking at it through the window, and only there: a scan's full of tiny gaps, and if the far side went
+    everywhere, you'd see the sky through each. `fill`: how much of what it was stays, faintly, so it's still a solid thing and not just lines."""
+    color = color_of(color)
+    for mat in mats:
+        mat.use_nodes = True
+        mat.surface_render_method = "BLENDED"
+        mat.use_transparency_overlap = True        # or the glass in front hides whatever else is glass behind it
+        mat.use_transparent_shadow = True      # glass lets the light through to what's inside it
+        tree = mat.node_tree
+        output = next(n for n in tree.nodes if n.type == "OUTPUT_MATERIAL" and n.is_active_output)
+        if not output.inputs["Surface"].links:
+            continue
+        before = output.inputs["Surface"].links[0].from_socket
+        level = tree.nodes.new("ShaderNodeValue")
+        _keys(level.outputs[0], _envelope(begin, end, fade, last))
+        facing = tree.nodes.new("ShaderNodeLayerWeight")
+        facing.inputs["Blend"].default_value = 0.5
+        rim = _math(tree, "POWER", facing.outputs["Facing"], edge)
+        light = tree.nodes.new("ShaderNodeEmission")
+        light.inputs["Color"].default_value = (*color, 1)
+        tree.links.new(_math(tree, "MULTIPLY", rim, strength), light.inputs["Strength"])
+        clear = tree.nodes.new("ShaderNodeBsdfTransparent")
+        if window:                    # a window's faintly tinted, so its shape reads as a solid thing against what's behind it, however busy
+            clear.inputs["Color"].default_value = (*[0.72 + 0.28 * v for v in color], 1)
+        glass = tree.nodes.new("ShaderNodeMixShader")
+        tree.links.new(rim, glass.inputs[0])
+        tree.links.new(clear.outputs[0], glass.inputs[1])
+        tree.links.new(light.outputs[0], glass.inputs[2])
+        turned = tree.nodes.new("ShaderNodeMixShader")      # from what it was, to glass
+        amount = level.outputs[0]
+        if window:
+            marked = tree.nodes.new("ShaderNodeAttribute")
+            marked.attribute_name = PART
+            amount = _math(tree, "MULTIPLY", amount, marked.outputs["Fac"])
+        if fill:
+            amount = _math(tree, "MULTIPLY", amount, 1.0 - fill)
+        tree.links.new(amount, turned.inputs[0])
+        tree.links.new(before, turned.inputs[1])
+        tree.links.new(glass.outputs[0], turned.inputs[2])
+        last_shader = turned.outputs[0]
+        if window:                                          # and what's seen from inside, through that, isn't there at all
+            inside, through = _through_window(tree, *window)
+            gone = _math(tree, "MULTIPLY", _math(tree, "MULTIPLY", inside, through), level.outputs[0])
+            hidden = tree.nodes.new("ShaderNodeMixShader")
+            tree.links.new(gone, hidden.inputs[0])
+            tree.links.new(last_shader, hidden.inputs[1])
+            tree.links.new(tree.nodes.new("ShaderNodeBsdfTransparent").outputs[0], hidden.inputs[2])
+            last_shader = hidden.outputs[0]
+        tree.links.new(last_shader, output.inputs["Surface"])
 
 
 def tint(meshes: list, color, begin: int, end: int, amount: float = 1.0) -> None:

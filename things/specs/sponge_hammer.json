@@ -1,0 +1,74 @@
+{
+ "what": "a hammer whose head is a soft yellow sponge",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "handle",
+    "kind": "cylinder",
+    "r": 0.014,
+    "h": 0.3,
+    "bevel": 0.004,
+    "at": [
+     0,
+     0,
+     0
+    ],
+    "material": {
+     "color": [
+      0.45,
+      0.28,
+      0.14
+     ],
+     "rough": 0.6
+    }
+   },
+   {
+    "id": "head",
+    "kind": "box",
+    "size": [
+     0.075,
+     0.14,
+     0.075
+    ],
+    "bevel": 0.012,
+    "at": [
+     0,
+     0,
+     0.33
+    ],
+    "material": {
+     "color": [
+      0.95,
+      0.72,
+      0.13
+     ],
+     "rough": 1.0,
+     "pores": 0.0032
+    }
+   }
+  ]
+ },
+ "spots": {
+  "grip": [
+   0,
+   0,
+   0.07
+  ],
+  "end": [
+   0,
+   -0.07,
+   0.33
+  ],
+  "joint": [
+   0,
+   0,
+   0.295
+  ],
+  "head": [
+   0,
+   0,
+   0.33
+  ]
+ }
+}

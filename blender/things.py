@@ -12,11 +12,13 @@ from pathlib import Path
 
 import bmesh
 import bpy
+import numpy as np
 from mathutils import Euler, Vector
 
 from blender import envs, kit, look, materials, shapes
 
 EASE_FRAMES = 6     # how long one move takes to ease into the next
+MOST_FACES = 200_000     # a museum scan comes with up to a million: its texture carries the detail, and every check reads every face
 VIEWS = (("front", 0, 4), ("three quarter", -38, 10), ("side", 90, 4), ("back", 180, 4), ("from above", 20, 55))
 LENS = 60.0
 
@@ -70,6 +72,135 @@ def _smooth(meshes: list) -> None:
         obj.data.shade_smooth()
 
 
+def _fewer_faces(meshes: list) -> None:
+    """A heavy scan brought down to MOST_FACES, keeping its shape and how its texture sits on it. Not one with a rig: its bones need
+    every face where it is."""
+    total = sum(len(obj.data.polygons) for obj in meshes)
+    if total <= MOST_FACES or any(m.type == "ARMATURE" for obj in meshes for m in obj.modifiers):
+        return
+    for obj in meshes:
+        bm = bmesh.new()         # a scan can be all loose triangles, which won't simplify until their corners are joined
+        bm.from_mesh(obj.data)
+        bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-6)
+        bm.to_mesh(obj.data)
+        bm.free()
+        trim = obj.modifiers.new("fewer", "DECIMATE")
+        trim.ratio = MOST_FACES / total
+    bpy.context.view_layer.update()
+    graph = bpy.context.evaluated_depsgraph_get()
+    for obj in meshes:
+        made = bpy.data.meshes.new_from_object(obj.evaluated_get(graph))
+        obj.modifiers.clear()
+        obj.data = made
+
+
+def _trim(meshes: list, boxes: list) -> None:
+    """What's inside each box taken off, such as the stand a museum mounted it on. A box gives a range on any of x, y and z, as shares
+    of what it measured to begin with: {"y": [0, 0.5], "z": [0, 0.3]} is the nearer half of the lowest part, all the way across."""
+    low, high = _bounds(meshes)
+    for box in boxes:
+        ranges = [(i, low[i] + (high[i] - low[i]) * box["xyz"[i]][0], low[i] + (high[i] - low[i]) * box["xyz"[i]][1]) for i in range(3) if "xyz"[i] in box]
+        for obj in meshes:
+            place = obj.matrix_world.copy()
+            bm = bmesh.new()
+            bm.from_mesh(obj.data)
+            doomed = []
+            for vert in bm.verts:
+                at = place @ vert.co
+                if all(a <= at[i] <= b for i, a, b in ranges):
+                    doomed.append(vert)
+            bmesh.ops.delete(bm, geom=doomed, context="VERTS")
+            bm.to_mesh(obj.data)
+            bm.free()
+            obj.data.update()
+
+
+def _trim_pale(meshes: list, rules: list) -> None:
+    """Faces paler than a brightness taken off, near a place: what's left of a white mount on a bird's toes, which a box would take the toes
+    with. Each is {"near": [x, y, z], "radius": meters, "above": 0 to 1}, in meters from its middle, as a spot is. A face's brightness is
+    what its picture shows at its corners and middle, and it goes if all of them are paler."""
+    bpy.context.view_layer.update()
+    for rule in rules:
+        near, reach, above = Vector(rule["near"]), float(rule["radius"]), float(rule["above"])
+        for obj in meshes:
+            layer = obj.data.uv_layers.active
+            if layer is None:
+                continue
+            place = obj.matrix_world
+            pixels = {}
+            for slot, mat in enumerate(obj.data.materials):
+                node = None
+                if mat is not None and mat.use_nodes:
+                    bsdf = next((n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+                    if bsdf is not None and bsdf.inputs["Base Color"].links:
+                        node = bsdf.inputs["Base Color"].links[0].from_node
+                if node is not None and node.type == "TEX_IMAGE" and node.image and node.image.size[0]:
+                    w, h = node.image.size
+                    pixels[slot] = (np.array(node.image.pixels[:], dtype=np.float32).reshape(h, w, -1), w, h)
+            doomed = []
+            for poly in obj.data.polygons:
+                if poly.material_index not in pixels or (place @ poly.center - near).length > reach:
+                    continue
+                image, w, h = pixels[poly.material_index]
+                uvs = [layer.data[i].uv for i in poly.loop_indices]
+                uvs.append(sum(uvs, Vector((0, 0))) / len(uvs))
+                pale = True
+                for uv in uvs:
+                    r, g, b = image[int(uv.y % 1 * (h - 1)), int(uv.x % 1 * (w - 1))][:3]
+                    if min(r, g, b) < above:
+                        pale = False
+                        break
+                if pale:
+                    doomed.append(poly.index)
+            if doomed:
+                bm = bmesh.new()
+                bm.from_mesh(obj.data)
+                bm.faces.ensure_lookup_table()
+                bmesh.ops.delete(bm, geom=[bm.faces[i] for i in doomed], context="FACES_ONLY")
+                bm.to_mesh(obj.data)
+                bm.free()
+                obj.data.update()
+
+
+def _image_size(obj, slot: int) -> tuple[int, int] | None:
+    """The size of the picture on a material's color, or None if it isn't from a picture."""
+    mats = obj.data.materials
+    mat = mats[slot] if slot < len(mats) else None
+    if mat is None or not mat.use_nodes:
+        return None
+    bsdf = next((n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+    if bsdf is None or not bsdf.inputs["Base Color"].links:
+        return None
+    node = bsdf.inputs["Base Color"].links[0].from_node
+    return tuple(node.image.size) if node.type == "TEX_IMAGE" and node.image and node.image.size[0] else None
+
+
+def _texels_per_meter(meshes: list) -> float | None:
+    """How many of its texture's pixels lie on a meter of its surface, typically. None if its color doesn't come from a picture."""
+    bpy.context.view_layer.update()
+    found = []
+    for obj in meshes:
+        layer = obj.data.uv_layers.active
+        if layer is None:
+            continue
+        place, verts = obj.matrix_world, obj.data.vertices
+        polys = obj.data.polygons
+        for k in range(0, len(polys), max(1, len(polys) // 3000)):
+            poly = polys[k]
+            size = _image_size(obj, poly.material_index)
+            if not size or len(poly.vertices) != 3:
+                continue
+            a, b, c = (place @ verts[i].co for i in poly.vertices)
+            area = (b - a).cross(c - a).length / 2
+            p, q, r = (layer.data[i].uv for i in poly.loop_indices)
+            flat = abs((q.x - p.x) * (r.y - p.y) - (r.x - p.x) * (q.y - p.y)) / 2
+            if area > 1e-12 and flat > 0:
+                found.append(math.sqrt(flat * size[0] * size[1] / area))
+    if not found:
+        return None
+    return round(sorted(found)[len(found) // 2], 1)
+
+
 def _color(meshes: list, colors: dict) -> list[str]:
     """Paint materials by name, for a model that came grey. Returns every material it has; a name that matches none fails."""
     found = {m.name: m for obj in meshes for m in obj.data.materials if m is not None}
@@ -78,6 +209,8 @@ def _color(meshes: list, colors: dict) -> list[str]:
             raise ValueError(f"no material called {name}: it has {', '.join(sorted(found))}")
         bsdf = next((n for n in found[name].node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
         if bsdf is not None:
+            for link in list(bsdf.inputs["Base Color"].links):   # a scan's picture would win over the color
+                found[name].node_tree.links.remove(link)
             bsdf.inputs["Base Color"].default_value = (*color, 1)
             bsdf.inputs["Roughness"].default_value = 0.7
     return sorted(found)
@@ -159,6 +292,8 @@ def make(job: dict, out: Path) -> dict:
     meshes = [obj for obj in objects if obj.type == "MESH"]
     if not meshes:
         raise ValueError(f"{job['source']['file']} has no mesh in it")
+    if not built:
+        _fewer_faces(meshes)
     if spec.get("smooth"):
         _smooth(meshes)
     paints = _color(meshes, spec.get("colors") or {})
@@ -189,6 +324,8 @@ def make(job: dict, out: Path) -> dict:
     if rest:
         _show(bpy.data.actions[clips[rest["clip"]]["action"]], clips[rest["clip"]]["slots"], by_name)
         scene.frame_set(int(rest["from"]))
+    if spec.get("trim"):
+        _trim(meshes, spec["trim"])
     low, high = _bounds(meshes)
     longest = max(high - low)
     if longest <= 0:
@@ -197,12 +334,16 @@ def make(job: dict, out: Path) -> dict:
     holder.scale = (scale, scale, scale)
     low, high = _bounds(meshes)
     holder.location = -(low + high) / 2
+    bpy.context.view_layer.update()
+    if spec.get("trim_pale"):
+        _trim_pale(meshes, spec["trim_pale"])
     low, high = _bounds(meshes)
     _clear_animation(objects)
     scene.frame_set(1)
 
     manifest = {"spec": spec, "root": root.name, "holder": holder.name, "objects": sorted(o.name for o in [root, holder, *objects]),
                 "size": [round(v, 5) for v in high - low], "materials": paints, "clips": clips, "moves": moves, "license": job["source"]["license"],
+                "texels_per_meter": None if built else _texels_per_meter(meshes),
                 "credit": job["source"].get("credit", ""), "page": job["source"].get("page", "")}
     if built:      # its spots and lines were written in its parts' meters: from here on they count from its middle, like any thing's
         bpy.context.view_layer.update()

@@ -14,6 +14,8 @@ from things import get
 from things import spec as thing_spec
 
 
+SCREEN_HEIGHT = 1920     # a short's height in pixels
+STRETCH = 2.0            # screen pixels to one of a texture's: past this it looks blurry. The first woodpecker was seen at 3 to 6, and judged "really low resolution"
 MADE_BY = ("materials.py", "shapes.py", "kit.py", "things.py")     # what a built thing's look comes from, in blender/
 
 
@@ -34,6 +36,13 @@ def made(config, tid: str) -> dict | None:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
 
 
+def sharp_from(manifest: dict | None) -> float:
+    """The nearest a shot can be on a thing, as meters of picture top to bottom, before its texture's stretched to more than
+    STRETCH screen pixels a texel. 0 if it isn't textured, or was made before this was measured."""
+    texels = (manifest or {}).get("texels_per_meter")
+    return round(SCREEN_HEIGHT / (STRETCH * texels), 3) if texels else 0.0
+
+
 def menu(config) -> dict:
     """What a scene can ask of each thing: id -> its moves and spots. A thing's clips are only known once it's been made."""
     out = {}
@@ -42,7 +51,7 @@ def menu(config) -> dict:
         manifest = made(config, tid)
         moves = (manifest or {}).get("moves") or spec.get("moves") or {}
         lines = [part["id"] for part in spec["source"].get("parts") or [] if part.get("kind") in ("pipe", "spiral")]
-        out[tid] = {"moves": sorted(moves), "spots": sorted(spec.get("spots") or {}), "lines": sorted(lines)}
+        out[tid] = {"moves": sorted(moves), "spots": sorted(spec.get("spots") or {}), "lines": sorted(lines), "sharp_from": sharp_from(manifest)}
     return out
 
 
