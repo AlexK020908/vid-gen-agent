@@ -1,0 +1,52 @@
+{
+ "what": "a steel lid that fits inside the water tank and presses down on the water, with a hole for the straw",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "disc",
+    "kind": "tube",
+    "r_out": 0.1885,
+    "r_in": 0.015,
+    "h": 0.025,
+    "material": "dark_steel",
+    "bevel": 0.003
+   },
+   {
+    "id": "band",
+    "kind": "tube",
+    "r_out": 0.1885,
+    "r_in": 0.1765,
+    "h": 0.004,
+    "at": [
+     0,
+     0,
+     0.025
+    ],
+    "material": "bright_steel"
+   }
+  ]
+ },
+ "spots": {
+  "under": [
+   0,
+   0,
+   0
+  ],
+  "top": [
+   0,
+   0,
+   0.025
+  ],
+  "rim": [
+   0.1685,
+   0,
+   0.025
+  ],
+  "middle": [
+   0,
+   0,
+   0.0125
+  ]
+ }
+}

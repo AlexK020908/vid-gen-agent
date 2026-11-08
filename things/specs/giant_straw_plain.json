@@ -1,0 +1,265 @@
+{
+ "what": "the giant straw with no staff behind it, for where weights stack round its foot",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "tube",
+    "kind": "tube",
+    "r_out": 0.012,
+    "r_in": 0.0105,
+    "h": 14.1813,
+    "material": {
+     "color": [
+      0.62,
+      0.68,
+      0.74
+     ],
+     "rough": 0.3,
+     "clear": 0.55
+    }
+   },
+   {
+    "id": "neck",
+    "kind": "pipe",
+    "path": [
+     [
+      0,
+      0,
+      14.1813
+     ],
+     [
+      0,
+      0,
+      14.2313
+     ],
+     [
+      0,
+      0.7142,
+      14.2313
+     ]
+    ],
+    "r": 0.012,
+    "bend": 0.04,
+    "material": {
+     "color": [
+      0.62,
+      0.68,
+      0.74
+     ],
+     "rough": 0.3,
+     "clear": 0.55
+    }
+   },
+   {
+    "id": "water",
+    "kind": "cylinder",
+    "r": 0.010100000000000001,
+    "h": 14.1713,
+    "at": [
+     0,
+     0,
+     0.0005
+    ],
+    "material": {
+     "color": [
+      0.05,
+      0.27,
+      0.85
+     ],
+     "rough": 0.04,
+     "clear": 0.3
+    },
+    "liquid": true
+   },
+   {
+    "id": "clip2",
+    "kind": "torus",
+    "major": 0.016,
+    "minor": 0.003,
+    "at": [
+     0,
+     0,
+     5.77
+    ],
+    "material": "black_steel"
+   },
+   {
+    "id": "arm2",
+    "kind": "box",
+    "size": [
+     0.012,
+     0.384,
+     0.012
+    ],
+    "at": [
+     0,
+     0.208,
+     5.77
+    ],
+    "material": "black_steel"
+   },
+   {
+    "id": "plate2",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.006,
+     0.06
+    ],
+    "at": [
+     0,
+     0.397,
+     5.77
+    ],
+    "material": "black_steel"
+   },
+   {
+    "id": "clip3",
+    "kind": "torus",
+    "major": 0.016,
+    "minor": 0.003,
+    "at": [
+     0,
+     0,
+     8.97
+    ],
+    "material": "black_steel"
+   },
+   {
+    "id": "arm3",
+    "kind": "box",
+    "size": [
+     0.012,
+     0.384,
+     0.012
+    ],
+    "at": [
+     0,
+     0.208,
+     8.97
+    ],
+    "material": "black_steel"
+   },
+   {
+    "id": "plate3",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.006,
+     0.06
+    ],
+    "at": [
+     0,
+     0.397,
+     8.97
+    ],
+    "material": "black_steel"
+   },
+   {
+    "id": "clip4",
+    "kind": "torus",
+    "major": 0.016,
+    "minor": 0.003,
+    "at": [
+     0,
+     0,
+     12.17
+    ],
+    "material": "black_steel"
+   },
+   {
+    "id": "arm4",
+    "kind": "box",
+    "size": [
+     0.012,
+     0.384,
+     0.012
+    ],
+    "at": [
+     0,
+     0.208,
+     12.17
+    ],
+    "material": "black_steel"
+   },
+   {
+    "id": "plate4",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.006,
+     0.06
+    ],
+    "at": [
+     0,
+     0.397,
+     12.17
+    ],
+    "material": "black_steel"
+   }
+  ]
+ },
+ "spots": {
+  "foot": [
+   0,
+   0,
+   0
+  ],
+  "top": [
+   0,
+   0.7142,
+   14.2313
+  ],
+  "bend": [
+   0,
+   0,
+   14.2313
+  ],
+  "zero": [
+   0,
+   0,
+   0.2905
+  ],
+  "low": [
+   0,
+   0,
+   0.7905
+  ],
+  "one": [
+   0,
+   0,
+   1.2905
+  ],
+  "three": [
+   0,
+   0,
+   3.7905
+  ],
+  "five": [
+   0,
+   0,
+   5.2905
+  ],
+  "ten": [
+   0,
+   0,
+   10.5905
+  ],
+  "eleven": [
+   0,
+   0,
+   11.0905
+  ],
+  "twelve": [
+   0,
+   0,
+   12.2905
+  ],
+  "mid": [
+   0,
+   0,
+   6.2905
+  ]
+ }
+}

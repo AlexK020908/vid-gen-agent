@@ -387,6 +387,7 @@ class Air:
             bpy.context.scene.collection.objects.link(obj)
             obj["light"] = True
             obj.visible_shadow = False        # a picture of air, not a thing: it casts no shadow
+            obj["air"] = True                 # nor does it hide a label's dot behind it (blender/tracks.py)
             gone = b["gone"] or end + 1
             for f, at in b["track"].items():
                 obj.location = at

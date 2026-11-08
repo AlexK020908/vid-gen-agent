@@ -1,0 +1,77 @@
+{
+ "what": "a cast-iron weight, 35 cm across and 45 cm tall, about 400 kg, with a hole through its middle",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "iron",
+    "kind": "tube",
+    "r_out": 0.175,
+    "r_in": 0.016,
+    "h": 0.45,
+    "material": {
+     "color": [
+      0.07,
+      0.07,
+      0.075
+     ],
+     "metal": 0.75,
+     "rough": 0.55
+    },
+    "bevel": 0.006
+   },
+   {
+    "id": "plate",
+    "kind": "box",
+    "size": [
+     0.17,
+     0.008,
+     0.09
+    ],
+    "at": [
+     0,
+     -0.17,
+     0.225
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "word",
+    "kind": "text",
+    "body": "400 KG",
+    "height": 0.05,
+    "depth": 0.002,
+    "at": [
+     0,
+     -0.1755,
+     0.225
+    ],
+    "material": {
+     "color": [
+      0.02,
+      0.02,
+      0.02
+     ],
+     "rough": 0.6
+    }
+   }
+  ]
+ },
+ "spots": {
+  "under": [
+   0,
+   0,
+   0
+  ],
+  "top": [
+   0,
+   0,
+   0.45
+  ],
+  "middle": [
+   0,
+   -0.17,
+   0.225
+  ]
+ }
+}

@@ -39,7 +39,7 @@ def _seen(scene, depsgraph, cam_pos: Vector, point: Vector, owner) -> bool:
         group = owner.get("group")
         if obj is not None and group and obj.original.get("group") == group:
             return True   # one air ball in front of another is still the air the label points at
-        see_through = obj is not None and (obj.original.get("clear") or obj.original.get("liquid"))
+        see_through = obj is not None and (obj.original.get("clear") or obj.original.get("liquid") or obj.original.get("air"))     # air balls are a picture, not in the way
         if obj is not None and not obj.original.hide_render and not see_through:
             return False
         step = (loc - origin).length + 1e-3   # hidden helper (the cutter): look past it
