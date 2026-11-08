@@ -1,0 +1,53 @@
+{
+ "what": "the water filling a giant straw's neck, from the top of its upright to the mouthpiece",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "water",
+    "kind": "pipe",
+    "path": [
+     [
+      0,
+      0,
+      0
+     ],
+     [
+      0,
+      0,
+      0.05
+     ],
+     [
+      0,
+      0.7142,
+      0.05
+     ]
+    ],
+    "r": 0.0101,
+    "bend": 0.04,
+    "material": {
+     "color": [
+      0.05,
+      0.27,
+      0.85
+     ],
+     "rough": 0.04,
+     "clear": 0.3
+    },
+    "liquid": true
+   }
+  ]
+ },
+ "spots": {
+  "at_bend": [
+   0,
+   0,
+   0.05
+  ],
+  "start": [
+   0,
+   0,
+   0
+  ]
+ }
+}

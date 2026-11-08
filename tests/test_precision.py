@@ -157,6 +157,9 @@ def test_what_goes_wrong_is_marked_and_a_question_asked():
     assert short.tags([fail])[0]["at"] == [0.5, 0.3] and short.tags([fail])[0]["text"] == "TOO TALL"
     assert short.tags([fail])[0]["size"] == short.TAG_SIZE and "size" not in short.tags([{"kind": "count", "from": 1, "to": 2}])[0]    # big enough to read on mute
     assert short.mark_problems([{"kind": "warn", "text": "STORM WARNING", "from": 1, "to": 2}], 5) == []
+    title = short.tags([{"kind": "title", "text": "submersible pump", "from": 1, "to": 2}])[0]
+    assert title["text"] == "SUBMERSIBLE\nPUMP" and "size" not in title          # big, across the picture, broken between words to stay in it
+    assert short.tags([{"kind": "title", "text": "pile hammer", "from": 1, "to": 2}])[0]["text"] == "PILE HAMMER"
     assert "warns of" in short.mark_problems([{"kind": "warn", "from": 1, "to": 2}], 5)[0]
 
 

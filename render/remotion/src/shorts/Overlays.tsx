@@ -111,15 +111,19 @@ export const CalloutLabel: React.FC<{c: Callout; track: Point[] | undefined; fir
   const x = fx * SHORT_W;
   const y = fy * SHORT_H;
   const s = pop(frame, c.from, fps);
-  const size = c.size ?? LABEL_SIZE;
-  const k = size / LABEL_SIZE;       // the dot, line and leader grow with the letters
+  const asked = c.size ?? LABEL_SIZE;
+  const k = asked / LABEL_SIZE;       // the dot, line and leader grow with the letters
   const lo = SAFE.left * SHORT_W + 10;
   const hi = (1 - SAFE.right) * SHORT_W - 10;
   // Inter ExtraBold capitals run about 0.68 em wide; a label that wouldn't fit on its side goes on the other
-  const width = c.label.length * size * 0.68 + 16;
+  const wide = (letters: number): number => c.label.length * letters * 0.68 + 16;
   let dir = c.side === 'right' ? 1 : -1;
-  if (!c.stay && dir > 0 && x + LEADER * k + width > hi) dir = -1;
-  else if (!c.stay && dir < 0 && x - LEADER * k - width < lo) dir = 1;
+  const roomOn = (d: number): number => (d > 0 ? hi - (x + LEADER * k + 8) : x - LEADER * k - 8 - lo);
+  // a label that wouldn't fit on its side goes on the other, if there's more room there
+  if (!c.stay && wide(asked) > roomOn(dir) && roomOn(-dir) > roomOn(dir)) dir = -dir;
+  // and if it fits on neither, its letters shrink until it fits on the side it's on, rather than running off the picture
+  const room = roomOn(dir);
+  const size = c.stay ? asked : Math.max(asked * 0.45, Math.min(asked, ((room - 16) / (c.label.length * 0.68))));
   const end = Math.max(lo + 40, Math.min(hi - 40, x + dir * LEADER * k * s));
   const ly = y - 34 * k * s;
   const color = TONES[c.tone];

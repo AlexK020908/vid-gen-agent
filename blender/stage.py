@@ -2876,13 +2876,21 @@ class Stage:
         for name in self.spec.get("anchors") or []:
             mark = bpy.data.objects.new(f"anchor.{name}", None)
             self.bl.collection.objects.link(mark)
-            who = name.partition(":")[0]
+            who, _, part = name.partition(":")
             owner = self.people[who].rig if who in self.people else (self.props[who].get("root") if who in self.props else None)
             if owner is not None:
                 mark["of"] = owner.name
-            for f in range(1, self.total + 1):
-                mark.location = self.aim(name, f)
-                mark.keyframe_insert("location", frame=f)
+            p = self.props.get(who) or {}
+            if p.get("thing") and part in p["thing"].spots:
+                # a spot on a thing rides on the thing, so it's wherever the thing is drawn, however it's moved: keyed from where it was
+                # worked out to be, a slid arrow's label ran off ahead of it (found on the straw short's pump)
+                grip = p["thing"].spot("grip") if p.get("holder") and "grip" in p["thing"].spots else Vector()
+                mark.parent = p["root"]
+                mark.location = self._bent_spot(p, part) - grip
+            else:
+                for f in range(1, self.total + 1):
+                    mark.location = self.aim(name, f)
+                    mark.keyframe_insert("location", frame=f)
             out[name] = (mark, (0.0, 0.0, 0.0))
         return out
 

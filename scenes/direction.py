@@ -76,9 +76,10 @@ def _times(scene: dict) -> bool:
     return all(isinstance(scene.get(k), (int, float)) and math.isfinite(scene[k]) for k in ("from", "to"))
 
 
-MARK_KINDS = ("count", "label", "fail", "ok", "warn", "question")
+MARK_KINDS = ("count", "label", "fail", "ok", "warn", "question", "title")
 LABEL_WORDS = 3          # a label names a thing: a word or two
-MARK_AT = {"count": [0.5, 0.36], "fail": [0.5, 0.3], "ok": [0.5, 0.3], "warn": [0.5, 0.3], "question": [0.5, 0.3]}
+MARK_AT = {"count": [0.5, 0.36], "fail": [0.5, 0.3], "ok": [0.5, 0.3], "warn": [0.5, 0.3], "question": [0.5, 0.3], "title": [0.5, 0.17]}
+TITLE_LINE = 12          # letters a title's line holds, big, across the picture: a longer one breaks between words
 MARK_TONES = ("yellow", "white", "blue", "red", "green")      # render/remotion/src/shorts/types.ts TONES
 LABEL_SIZE, TAG_SIZE = 54, 74    # px on the 1080-wide picture: reference A's are 32 and 38, too small to read beside these shorts' big captions
 
@@ -90,6 +91,7 @@ def mark_problems(marks, total: float, scenes: list | None = None) -> list[str]:
     {"kind": "fail", "text": what went wrong, "from": s, "to": s, "at": [x, y], "icon": "x" or "clock"}: a red cross and its words
     {"kind": "warn", "text": what it warns of, "from": s, "to": s, "at": [x, y]}: a yellow warning sign and its words
     {"kind": "ok", "text": what worked, "from": s, "to": s, "at": [x, y]}: a green tick and its words
+    {"kind": "title", "text": a name, "from": s, "to": s}: big across the top of the picture, the name of what's been built as it's said
     {"kind": "question", "from": s, "to": s, "at": [x, y]}: a big question mark"""
     out = []
     for i, m in enumerate(marks or []):
@@ -149,8 +151,20 @@ def _is_number(value) -> bool:
 
 def tags(marks) -> list[dict]:
     """A direction's marks as what the short's renderer draws over the picture, its labels aside."""
-    return [{"tone": "red", "at": MARK_AT[m["kind"]], **({"size": TAG_SIZE} if m.get("kind") in ("fail", "ok", "warn") else {}), **m}
+    return [{"tone": "red", "at": MARK_AT[m["kind"]], **({"size": TAG_SIZE} if m.get("kind") in ("fail", "ok", "warn") else {}), **m,
+             **({"text": _title_lines(str(m.get("text") or ""))} if m.get("kind") == "title" else {})}
             for m in marks or [] if m.get("kind") != "label"]
+
+
+def _title_lines(text: str) -> str:
+    """A title's words in lines short enough to stay in the picture at its size: "SUBMERSIBLE\\nPUMP"."""
+    lines: list[str] = []
+    for word in text.upper().split():
+        if lines and len(lines[-1]) + 1 + len(word) <= TITLE_LINE:
+            lines[-1] += " " + word
+        else:
+            lines.append(word)
+    return "\n".join(lines)
 
 
 def anchors_for(marks, scene: dict) -> list[str]:

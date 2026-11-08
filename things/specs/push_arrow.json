@@ -1,0 +1,59 @@
+{
+ "what": "a thick clean green arrow, flat, its tip along +z: a push that works, beside the red ones for force",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "body",
+    "kind": "extrude",
+    "outline": [
+     [
+      -0.0125,
+      -0.08
+     ],
+     [
+      0.0125,
+      -0.08
+     ],
+     [
+      0.0125,
+      0.03
+     ],
+     [
+      0.036,
+      0.03
+     ],
+     [
+      0,
+      0.08
+     ],
+     [
+      -0.036,
+      0.03
+     ],
+     [
+      -0.0125,
+      0.03
+     ]
+    ],
+    "depth": 0.014,
+    "bevel": 0.0025,
+    "material": {
+     "color": [
+      0.05,
+      0.62,
+      0.14
+     ],
+     "rough": 0.4
+    }
+   }
+  ]
+ },
+ "spots": {
+  "body": [
+   0,
+   0,
+   0
+  ]
+ }
+}

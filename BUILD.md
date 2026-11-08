@@ -650,7 +650,29 @@ The owner on the barometer's silent preview: "i mean animation is good, but reme
 
 **The owner on the ending** (Nov 7): "how is the straw realted to barometer tho lol. I think the eend solution shold solve the inital problem, which was having problem sucking water up, baraomoter doesnt solve that. It needs to solve the inherent problem". So, for every short: in a `you_invent` short what's built has to solve the problem the short opens with (`outline.md`, `script.md`, `critic.md`). The straw short now ends on what does: since nothing pulling from the top can beat the air's ten metres, you put the pump down in the water, where it pushes, and the only limit is how hard it pushes; the water climbs all the way to his mouth; the submersible pump. Lines 1 to 8 and their voice are kept. A fresh reviewer checked it (the limit, why deep wells use them, Arutunoff's 1926 patent and Pleuger's 1929 water-well pump, the name) and sent back two lines, both fixed: "push instead of pull" undid "sucking never pulled", and "as high as you like" said more than the fact. The barometer version is kept as `draft_v3_barometer.json`. New: `submersible_pump` (a dark steel can on the tank's floor round the straw's foot, its cable over the rim; pale steel was a blur through blue water), an `ok` mark (a green tick, IT WORKS), and `short.py mixed`, which stages the voiced lines on their voice and the new ones on the estimate, so they're looked at before they're paid for. Its look: the straw's top with nothing on it; the pump in the tank, PUMP; the big PUSH arrow riding the water up, bigger than the air's arrows; past 10 M to the top; him with the straw in his lips, happy, IT WORKS; the pump, SUBMERSIBLE PUMP, and the whole building with the water up to its roof.
 
-**Not done:** voicing the four new lines (about 5¢, waiting on the owner's yes), then the preview with them and its frame review; the full-size cut.
+**Voiced and reviewed.** The owner said yes; the four new lines cost $0.053 (about 20¢ of voice in all), and the short runs 53.6 s. The frame reviewer on its preview (11 things), and what was done:
+- He'd vanished from the roof in the last wide shot, the straw's end standing up on its own: he's there, drinking.
+- The pump just appeared in the tank: it's lowered into the water as the words say so (`slide` with `from`), from under the straw's staff, which it would otherwise pass through.
+- "Pushes the water up into the empty straw" played over a full straw: the straw starts empty, and the water rises into it as the arrows press, on into the next line's climb.
+- The pump's cable stood in a stiff arch over the rim and led nowhere: it rests on the rim at the side and runs off along the ground.
+- Air drifted back down the x-ray straw under NO AIR: it's drawn out through a point past its box's top, so each ball is gone as it leaves, before the label.
+- The ten-metre count settled while the water went on climbing: a count settles at 70% of its time, so it now runs to the water's stop over that, and the water rises at a steady rate and stops dead, as the words say.
+- The pump's arrow floated among the air's red arrows, as if the air pushed up: it starts at the pump, and it's green (`push_arrow`). A `tint` toward green turned the red arrow a dark maroon instead, so tint darkens rather than replaces a strong colour; not looked into.
+- SUBMERSIBLE PUMP pointed below the pump and ran off the picture, and the climbing arrow's PUSH never showed. **Fixed for every short:** a label on a spot of a thing now rides on the thing itself, so it's wherever the thing is drawn; it had been keyed from where the stage worked the spot out to be, which for a slid thing ran far ahead of it. And a label too long for either side of its dot now shrinks until it fits (`CalloutLabel`), rather than running off the picture.
+- Left: dark sawtooth triangles round the bottom of the glass tank in every close shot. It's how liquids are drawn (their backfaces are shaded as the top), so it wants a general fix, not one for this short. Whether his lips close round the straw is to be checked at full size. Nobody's seen hooking up the roof pump, and the weight arrow grows in steps.
+
+**The frame reviewer's third pass** (12 things), and what was done:
+- The payoff wasn't seen: the shot left the water below the straw's bend, and his face was the same as when he was failing. The straw's last stretch runs level over the parapet, so a level can't fill it; it's a thing of its own, `straw_neck_water`, there when we cut to him, the straw blue to his lips as he smiles.
+- The counter read 5 and 8 metres beside an empty straw: the camera rose faster than the water. It rides from the water's 0 to its 10 at the water's own steady rate.
+- The air's red arrows went on pressing while the words said the push isn't the air's: they're gone from that line.
+- The dark pump went pale under the tank's water: the tank's water is clearer than a column's (`clear` 0.62).
+- The straw, full to ten metres, was empty at the cut to the new pump: it runs back down first, the roof pump off.
+- The metre he sucked up vanished in a tenth of a second: it falls back over two thirds of one.
+- The cable ended on the pavement by the tank: it runs on out of the picture.
+- The pump's long name shrank to nothing beside it: a label that fits on neither side now goes to the side with more room (`CalloutLabel`, every short), and the name is a `title`, a new mark, big across the top of the picture as the last line says it, its words in lines that stay in the picture.
+- Left: the pump slides down round the straw like a bead as it's lowered (the straw's foot is fixed at the tank's floor); the sucking face changes little (a face can only pucker and squint here); the air shows in the tank's shots and not on the wall's; the count says "1 metres" for a moment.
+
+**Not done:** the owner's look, and the full-size cut.
 
 ## How a character short runs (phases 28 and 36)
 
