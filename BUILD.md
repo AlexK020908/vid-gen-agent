@@ -50,7 +50,8 @@ The spec is [../plan.md](../plan.md). This file tracks what is built, how it dev
 | 42. Finding ideas | Real leads anyone can check, cards that say what people assume and what's true, and a check against the reference's titles. No score. Spec: [How ideas are found](#how-ideas-are-found-phase-42) | **Built** (Nov 6, 2026): `run.py ideas`, with a first batch of 14 cards in `data/ideas/cards.json` |
 | 43. Liquids and air | What the barometer short needs, built for every short: clean glass, a liquid's level that's always flat and moves as it fills, a pour that lands in what it fills, and air as balls bouncing off everything. Spec: [What fills things, and air](#what-fills-things-and-air-phase-43) | **Built** (Nov 7, 2026), tried on test things only. The barometer's own things, its direction and its silent preview are phase 44 |
 | 44. The barometer short | Its 21 things built from data, its direction on the estimated clock, and a free silent preview, with what making it found fixed for every short. Spec: [The barometer short](#the-barometer-short-phase-44) | **Built** (Nov 7, 2026): a silent preview, now `data/benchmarks/straw/straw_preview_v2_no_voice.mp4`, made after one frame review and four rounds of fixes. The owner: "animation is good", but not straightforward enough (phase 45) |
-| 45. Straightforward | The owner's verdict on that preview, measured against the two shorts they called star references, the woodpecker and the pile hammer: rules for one goal all the way, one step a line, every step seen, and sense on mute; labels and failure marks on the picture; and the barometer's script rewritten to them. Spec: [Straightforward](#straightforward-phase-45) | **Built** (Nov 7, 2026). The new script voiced ($0.147), directed and previewed; then the owner's rule that the ending solve the opening problem, so it now ends on the submersible pump, directed on the estimate for its four new lines, which wait on about 5¢ of voice |
+| 45. Straightforward | The owner's verdict on that preview, measured against the two shorts they called star references, the woodpecker and the pile hammer: rules for one goal all the way, one step a line, every step seen, and sense on mute; labels and failure marks on the picture; and the barometer's script rewritten to them. Spec: [Straightforward](#straightforward-phase-45) | **Built** (Nov 7 to 8, 2026), and closed with the straw short shelved: five versions of it (barometer, submersible pump, force pump with weights) and about 26¢ of voice taught the rules every short now has, and the owner judged the idea itself not good enough to finish (below) |
+| 46. Idea research agent | An agent that lands on ideas as good as the pile hammer's, for each channel's category (inventions now, mysteries and murder cases next), evidenced by what the reference's best videos do, checked, fact-checked, and validated by the owner before anything's built. Spec: [The idea research agent](#the-idea-research-agent-phase-46) | **Built** (Nov 8, 2026): the evidence, four briefs, the owner's taste in their words, the check, and the `idea-researcher` and `idea-checker` agents. Its first run brought 14 fact-checked ideas (6 inventions, 4 mysteries, 4 crimes), waiting on the owner to take or turn down |
 
 The code for plan.md's whole build order is complete (weeks 4–6 are running videos, not building); phase 10 is the YouTube tools plan.md lists that no phase has needed yet. What needs your accounts is under "Your turn" in How YouTube works, How Claude writes, How voice, pictures and clips work, and How topics and metrics work.
 
@@ -65,7 +66,7 @@ copy .env.example .env           # ElevenLabs, fal and YouTube keys (no Claude k
 copy claude-settings.json .claude\settings.json   # once, by hand (and into the workspace folder above): the permission prompts
                                  # .claude\skills and .claude\agents are in the repo; the workspace folder above has copies
 uv run python run.py serve       # the engine, and MCP for Claude Code at http://localhost:8000/mcp
-uv run pytest -q                 # 451 tests, ~10 min (the session, looking and puppet ones are slowest), real ffmpeg, Remotion and Blender; Claude's jobs answered in the tests, fake ElevenLabs, fal, Google APIs; $0
+uv run pytest -q                 # 471 tests, ~10 min (the session, looking and puppet ones are slowest), real ffmpeg, Remotion and Blender; Claude's jobs answered in the tests, fake ElevenLabs, fal, Google APIs; $0
 uv run pytest -m live            # 4 tests against real APIs (a voice line, a still, a 3 s clip ~$0.35, competitors' videos, free); skipped without keys
 uv run python run.py demo        # headless run through every gate
 uv run python run.py status
@@ -76,6 +77,9 @@ uv run python run.py clip-test zombie    # animates that picture with models.cli
 uv run python run.py topics zombie       # check competitors now, list their top recent videos and the queued topics; --propose
 uv run python run.py bench-render --engine remotion   # or ffmpeg; --scenes, --concurrency, --x264-preset
 uv run python run.py look-test           # three of reference A's shots in Blender beside A's frames -> data/looktest/ ($0)
+uv run python run.py ideas reference inventions   # the reference's shorts of a kind, against his median for their quarter; or --words "a,b*"
+uv run python run.py ideas taste         # what the owner liked, took and turned down, in their words (ideas/taste.json)
+uv run python run.py ideas check inventions   # a category's cards (data/ideas/<category>/cards.json): fields, his titles, the owner's answers
 uv run python run.py thing --search bird # free 3D models, with pictures to choose from -> data/things/_search/ ($0)
 uv run python run.py thing apple         # a thing from things/specs, fetched and sized, with a sheet -> data/things/apple/ ($0)
 uv run python run.py scene scenes/examples/bird_lands_on_head.json   # a scene file rendered -> data/scenes/<name>/ ($0)
@@ -117,6 +121,7 @@ So a full-length render holds the render card back about 13 minutes. The Remotio
 - `providers/`: `make_providers(config)` picks one per kind from `providers:` (`mode: stub` makes them all stubs). `llm.py` (the `LLM` protocol, `StubLLM`, `NoMeter`), `claude.py` (`ClaudeLLM`: what Claude is asked, in which schema, and how the reply is checked and read; no API), `prompts.py` (loads and fills prompt files), `checks.py` (checks on what the LLM writes, and the counts the prompts ask for), `elevenlabs.py` (`ElevenLabsTTS`), `fal.py` (`FalImages`, `FalVideo`, `clip_settings()`), stub `tts.py`, `images.py` (also the contact-sheet previews and `caption()`, the thumbnail text), `video.py`.
 - `stages/`: topics (per channel, not per video), outline, script, regen, voice, stills, clips, thumbs, assemble, publish, analytics (went live, then metrics and the reach import). Outline and script pass the last draft when there is one (a revision), and the script streams its scene count. A video stage's work can return seconds to wait before the video is claimed again (analytics uses it to re-check YouTube every 15 min).
 - `render/render.py`: `render_video(items, beats, out_dir, progress, engine, settings)`. The ffmpeg engine (per-scene segments cached by content hash, concat), the highlight reel (segments for ffmpeg, cut from the final MP4 for Remotion), SRT and chapters. `render/ffmpeg.py` uses system ffmpeg or the `imageio-ffmpeg` bundled binary; `duration_ms()` reads a file's length.
+- `ideas/`: finding ideas, with no server (phases 42 and 46). `leads.py` (Wikipedia's lists and what people type), `reference.py` (the reference's shorts as evidence, each against its own quarter), `briefs.py` (a category's brief in `prompts/ideas/`), `taste.py` and `taste.json` (the owner's answers, word for word), `cards.py` (the check). The `idea-researcher` and `idea-checker` agents use them.
 - `core/formats.py`: which stages run for which channel format. `things/`: `spec.py`, `get.py` (search and fetch, license rules, the spending gate), `build.py`. `blender/things.py`: importing, sizing and placing them. `scenes/direction.py`: a whole short's clock, its checks and captions. `stages/direct.py`, `stages/film.py`: a character short. `prompts/character/`: its prompts.
 - `render/remotion_render.py`: stages the scene files (hardlinks) as a public dir, writes `props.json`, runs `node .../remotion-cli.js render`, turns `Rendered N/M` lines into percent progress. Named so it doesn't shadow the `render/remotion/` folder.
 - `render/remotion/`: the Remotion project (pinned 4.0.539). `src/Video.tsx` (one `<Sequence>` per scene, start frames rounded per scene so 120 scenes never drift; a clip scene plays its clip once, then Ken Burns on the clip's last frame), `KenBurns.tsx` (1.0 → 1.08 zoom, pan direction from `idx % 8`), `Captions.tsx` (2–4 words at a time, current word highlighted), `types.ts` (mirrors `props.json`). `npm run studio` opens Remotion Studio; `npm run typecheck`.
@@ -683,7 +688,134 @@ The owner on the barometer's silent preview: "i mean animation is good, but reme
 
 **The frame reviewer on it** (12 things). Fixed: the air never seen leaving the straw (line 3 is now three close shots: the pump, the x-rayed straw's top with the air streaming up into it, and the puff out of the exhaust; wide over the parapet, the straw had been a line and the air specks); nothing seen stopping the pump before the column was gone (the wheel stops under ✕ PUMP OFF, then the column is seen falling back past its 10 mark); a red patch on his forehead while he sucks read as a rash (gone). **Fixed for every short:** air balls hid a label's dot from the tracker, so line 6's AIR never showed; they're a picture, not in the way (`obj["air"]`, `tracks._seen`). Left: the water drops between line 5 and line 6, which starts the straw empty to show it filling; no weight's landing is in the same picture as the water's top it lifts (13 m apart); the weight's and the air's arrows are never in one picture; the straw's staff and lowest clip are missing where the weights stand; the "10 M" label sits at 10.3, the stopping height, above the scale's 10; his lips and the straw's end, and how little his face strains, still to be seen at full size; "1 metres". **Open bug:** a label on the straw's `eleven` spot tracked about 30 cm above the point the camera aimed at, off the top of the picture, though labels on its `ten`, `three` and `five` spots land right; the EMPTY label was dropped rather than chased.
 
-**Not done:** the owner's look, and the full-size cut.
+**The owner on the force-pump cut** (Nov 8): "its more clearn now but its [not] a good example of a useful invention, and its not really interseting. force pump jhust stack seight on water and that s it? there is no motion? it needs to be clear." So, for every short (`outline.md`, `critic.md`): what's built is a machine that moves, in a cycle a viewer can follow, that people really use, never a still arrangement. Offered a moving force pump or a new idea, they said the straw "isn't a good idea", and to go to a new one; offered four new inventions (a safety elevator, a mine's steam engine, a hydraulic ram, a pendulum clock), they said: "i dont like any of these ideas. i think the [nail] example is just so much more engaging and other zach D videos, we need to figure out on how to land on good ideas", and "get ur ideas validated with me". **The straw short is shelved**, its versions and scripts kept in `data/benchmarks/straw/` (`draft_v2.json` barometer, `draft_v3_barometer.json`, `draft_v4_submersible.json`, `draft.json` the force pump; `made_with/` the scripts that made them).
+
+**What it leaves for every short:** the straightforward rules and marks above; nothing does its job unseen; the invention solves the opening problem, and is a moving machine people use; labels that ride on what they name; air that can't fit is refused; and that the idea has to be good before any of it matters.
+
+## The idea research agent (phase 46)
+
+The owner, Nov 8: "Maybe we should build a research agent that finds good ideas to build on. Also we can also simulate murder events or mysterious events. Ofc those would be in diff category channels, we need an agent like that too", and, asked, "Idea research agent first". For the mystery channels they chose all three kinds: old real mysteries, real murder cases, and invented cases. And: "get ur ideas validated with me". Then "go".
+
+**A correction first.** This section said the owner had turned down the 13 phase-42 cards. They hadn't: those were offered on Nov 7 and never judged, since the straw had already gone first. The straw itself came from an "any", when they were asked which of five ideas they'd watch first, and the session recommended it. So their only real turn-downs are the straw and the four inventions, and the taste file says so.
+
+**What makes the nail good, read from the scripts.** The four inventions turned down on Nov 8 followed every rule the outline has, so the rules aren't what makes an idea good. Set beside the nail and the house drain (the reference's other short built the same way), they lacked these:
+- the first second is something the viewer has done with their own hands, not history or a job nobody has;
+- each problem is one anyone sees coming, often funny, gross or dangerous;
+- each fix is a leap a viewer could almost have had (drop it; explosives; a car engine), added to the same machine;
+- the end is a machine the viewer has seen and never understood, moving in a five-word cycle;
+- the force behind it can be seen.
+
+That's `prompts/ideas/inventions.md`'s heart, in nine points, and `all.md` has what the nail and the woodpecker share.
+
+**What's built:**
+- **The reference's shorts as evidence**, `run.py ideas reference <category>` or `--words "a,b*"` (`ideas/reference.py`).
+  - It lists his shorts of a kind, best and worst, each set against the median of its own quarter: his median went from 9M (2022 Q2) to 31M (2024 Q1) and back to 10M.
+  - Each line has views, likes and comments, and how many of them reached their quarter's top tenth, with a 90% interval so a handful isn't read as a pattern.
+  - Long videos and anything under 28 days old are left out.
+  - What it showed: no kind of title stands out.
+    - "How X works": 218 shorts, 0.88x his median in the middle, 6% in his top tenth against 10%.
+    - Invent, machine or engine: 1.00x and 9%.
+    - Mysteries: 1.05x.
+    - Crime words: 0.96x.
+    - His invented stories, `(fiction)`: 1.49x over 27 shorts, 15%, likely somewhere from 7% to 29%, with far more comments.
+  - So it's there to read what his best promise in their first second, not to aim at a kind.
+- **A brief per category** (`prompts/ideas/<category>.md`, `ideas/briefs.py`). A YAML block on top gives:
+  - the words that find his shorts of that kind;
+  - the fields its cards hold, and how many a list holds;
+  - the outline shapes its ideas are built on.
+
+  A new category is a new file, with no code. `all.md` is what every idea needs: the owner decides, there's no score, the star references and what they share, how to search, what every card holds, and what the kit can show.
+
+  The four briefs:
+  - `inventions` and `explainers` for the shorts channel. Explainers takes over phase 42's `prompts/character/ideas.md`, which is gone.
+  - `mysteries` and `crimes` for the channels to come, with the rules for real people. `mystery` is a new outline shape (`checks.SHORT_SHAPES`, `outline.md`): the strange thing first, then the clues seen one at a time, then the answer shown happening.
+- **The owner's taste** (`ideas/taste.json`, `ideas/taste.py`, `run.py ideas taste`).
+  - It lives in the repo rather than `data/`, so starting a fresh pipeline doesn't lose it.
+  - What they've said about ideas, word for word and typos and all, and every idea they liked, took, turned down or were only offered, with the pitch they saw.
+  - Seeded with five statements and 20 ideas from the chats:
+    - liked: the nail and the woodpecker;
+    - turned down: the straw and the four inventions;
+    - only offered: 12 phase-42 cards and the spaghetti.
+  - A `reading` is the session's guess at why, kept apart from their words and always shown as "our reading, not theirs".
+  - `run.py ideas verdict <category> <card> took|turned_down|offered "<their words>"` keeps an answer with its whole card.
+- **The card check** (`run.py ideas check <category>`, on `data/ideas/<category>/cards.json`) asks for each category's own fields.
+  - `like` has to name 1 to 3 of his real titles. Emoji and punctuation don't matter, since a terminal that can't print emoji shows them as `?`. When the cards pass, it prints how each of those did.
+  - It refuses an idea the owner turned down, took or liked as made, quoting their last word on it. Two ideas are one subject when one's terms are all among the other's: "steam engine" and "engine", not "steam locomotive".
+- **The agents.**
+  - `idea-researcher` (`.claude/agents/`) reads the briefs, the taste and the evidence, searches the web, writes the cards, and runs the check until they pass.
+  - `idea-checker`, with no write tools, tests every claim at its source and says keep, fix or drop.
+  - The stickfleet skill's "Finding ideas" says how they go together: researcher, then checker, then the researcher fixes, then the owner takes or turns down, then `verdict`. Copies are in the workspace folder above.
+  - New agent types load when a session starts, so this session ran them as general-purpose agents told to follow their files.
+
+**The rules for real cases** are in `mysteries.md` and `crimes.md`. They were proposed and the owner hasn't confirmed them:
+- invented stand-ins, never a likeness;
+- only cases settled in the record, older first;
+- nobody named or hinted at as guilty who wasn't convicted;
+- nothing graphic, and no case where a child was harmed;
+- no method anyone could copy;
+- the story is the catching, and the killer is never the hero.
+
+**Channels:** the mystery and crime channels get YAMLs once the owner names them.
+
+**The first run** (Nov 8): three researchers in parallel, then a fresh checker on each batch, then the researchers applying the fixes. About 1.5M tokens of the Claude plan all told, about 25 to 40 minutes a researcher, and no money spent.
+- **Inventions, 6** (`data/ideas/inventions/cards.json`), each from something done by hand to a machine seen working today:
+  - a balloon let go, to the jet engine;
+  - a brick on a wall, to the tower crane that climbs its own tower;
+  - a wheelbarrow in mud, to the caterpillar track;
+  - a playground slide, to the roller coaster;
+  - a thumb over a hose, to the impact sprinkler;
+  - a muddy shirt, to a washing machine with concrete in it.
+
+  He's made airbags, seat belts, escalators, the bowling pinsetter, the concrete mixer truck, fireworks and the door key, so those were dropped. The checker sent all six back, mostly on order and mechanism:
+  - the roller coaster's hills don't take the speed away; the rails curving up do;
+  - the Tsar Tank of 1915 can't be a step before the 1904 track, so it's Boer War planks and Boydell's 1846 wheel;
+  - the turbine came before the piston-driven fan;
+  - no tower crane stands 300 m on its own;
+  - one sprinkler can't water a pitch;
+  - a washing machine's springs and concrete are on the tub, not the drum.
+- **Mysteries, 4** (`data/ideas/mysteries/cards.json`):
+  - Tunguska;
+  - Clever Hans;
+  - an empty house flooding with every tap off (invented: the ice plug and the pressure that bursts a pipe where there's no ice);
+  - a ship steered onto rocks by its compass (invented: a cargo of iron rails).
+
+  The Death Valley rocks, the infrasound ghost and Dyatlov Pass are his. The Mary Celeste had a child aboard. The checker found:
+  - NASA has since revised Tunguska's energy and how often such a blast comes;
+  - the ice plug was shown holding while water poured;
+  - the iron balls on a compass stand correct the ship's own iron, not a cargo, so the ending wouldn't have saved the ship.
+- **Crimes, 4** (`data/ideas/crimes/cards.json`):
+  - John Tawell, caught by the telegraph in 1845;
+  - the Strattons, Britain's first murder conviction by fingerprint (1905);
+  - frost on every car but one (invented);
+  - footprints the tide should have wiped (invented).
+
+  Both real cases passed every real-case rule. A case of a child menaced but unhurt was dropped, as were poisonings with a method someone could copy and remains as the clue.
+- **What the run changed for every batch:**
+  - every card says how it ends (`ending`), since the owner judges by the first second and the last;
+  - the nail's own opening ("This is a nail... Now make it a hundred times bigger") is a named hook form (`all.md`, `outline.md`);
+  - a title of his on the subject that makes a different promise isn't his idea, and the reply names it;
+  - in a ladder, a real attempt that failed counts as a step;
+  - a crime's or mystery's big moment comes from the clue or the catching, never the harm;
+  - a child menaced counts as harmed;
+  - a poisoning is told without the poison;
+  - an old mystery is fifty years or more;
+  - a case with someone to blame is a crime, not a mystery.
+- **What the researchers found hard**:
+  - court records and 1845 sources that refuse automated reads, so some steps rest on later histories, and the cards say so;
+  - `like`, since few of his shorts make a "you built this" promise.
+
+**Tests:** `tests/test_ideas.py` checks these:
+- each short against its own quarter, with the young and the long left out;
+- whole words, plurals and word starts;
+- the interval on a few shorts;
+- titles matching whatever their emoji;
+- every brief's block, and a broken one refused in words;
+- a category's own fields and shapes;
+- `like` as his real titles, and a passing file printing how they did;
+- the owner's answers refusing an idea, and an only-offered one not refused;
+- a verdict keeping the whole card;
+- the real taste file, with every reading marked as ours;
+- the agents' instructions.
 
 ## How a character short runs (phases 28 and 36)
 

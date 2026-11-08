@@ -10,6 +10,7 @@
   python run.py still-test <ch>      one picture from fal with the channel's character reference (~$0.04)
   python run.py clip-test <ch>       animate that picture with the clip model (models.clip; ~$0.90 for 8 s of Kling Pro)
   python run.py topics <ch>          check competitors now and list their top recent videos; --propose for topic ideas
+  python run.py ideas <what>         finding ideas (prompts/ideas/): the reference's shorts of a kind, the owner's taste, checking cards ($0)
   python run.py connect <channel>    sign in to YouTube for one channel (opens Google's consent screen)
   python run.py youtube-test <ch>    day-1 check: upload a 20-second unlisted clip, see if it stays unlisted
 
@@ -235,8 +236,17 @@ def cmd_thing(args) -> None:
 
 
 def cmd_ideas(args) -> None:
+    from ideas import briefs
+
+    try:
+        _ideas(args)
+    except (FileNotFoundError, briefs.BriefError, ValueError) as e:
+        sys.exit(str(e))
+
+
+def _ideas(args) -> None:
     from core import config
-    from ideas import cards, leads
+    from ideas import briefs, cards, leads, reference, taste
 
     cfg = config.load()
     folder = cfg.data_dir / "ideas"
@@ -244,7 +254,20 @@ def cmd_ideas(args) -> None:
         leads.fetch(folder)
     elif args.do == "show":
         leads.show(folder, args.what or "")
-    elif cards.check_file(args.what or folder / "cards.json", cfg.data_dir):
+    elif args.do == "reference":
+        if args.words:
+            reference.show(cfg.data_dir, [w for w in args.words.split(",") if w.strip()], top=args.top)
+        elif args.category:
+            brief = briefs.load(cfg.root, args.category)
+            reference.show(cfg.data_dir, list(brief.words), name=brief.name, top=args.top)
+        else:
+            sys.exit(f"give a category ({', '.join(briefs.names(cfg.root))}) or --words")
+    elif args.do == "taste":
+        taste.show(cfg.root / "ideas")
+    elif args.do == "verdict":
+        entry = taste.verdict(cfg.root / "ideas", cards.path_for(cfg.data_dir, args.category), args.card, args.answer, args.words, args.reading)
+        print(f"kept in {taste.path(cfg.root / 'ideas')}: {entry['verdict']}, {entry['idea']}")
+    elif cards.check_file(cards.path_for(cfg.data_dir, args.what), cfg.data_dir, cfg.root):
         sys.exit(1)
 
 
@@ -462,9 +485,25 @@ def main() -> None:
     p.add_argument("--propose", action="store_true", help="also ask for topic ideas (a Claude call in live mode)")
     p.set_defaults(fn=cmd_topics)
 
-    p = sub.add_parser("ideas", help="finding things to make shorts about (prompts/character/ideas.md): fetch leads, show them, check a file of cards")
-    p.add_argument("do", choices=("fetch", "show", "check"))
-    p.add_argument("what", nargs="?", help="show: part of a page's name, or \"asked\" for the questions. check: the file, or data/ideas/cards.json")
+    p = sub.add_parser("ideas", help="finding ideas (prompts/ideas/, and the idea-researcher agent): leads, the reference's shorts by kind, the "
+                                     "owner's taste, checking cards")
+    ideas = p.add_subparsers(dest="do", required=True)
+    ideas.add_parser("fetch", help="written leads and the questions people type, into data/ideas/leads.json (free)")
+    q = ideas.add_parser("show", help="the leads")
+    q.add_argument("what", nargs="?", default="", help="part of a page's name, or \"asked\" for the questions")
+    q = ideas.add_parser("reference", help="the reference's shorts of a kind, best first, against his median for their quarter")
+    q.add_argument("category", nargs="?", help="a category's brief (prompts/ideas/<category>.md), for its words")
+    q.add_argument("--words", help="these words instead, by commas: a whole word, singular or plural, or the start of one with *")
+    q.add_argument("--top", type=int, default=25, help="how many of the best to list")
+    ideas.add_parser("taste", help="what the owner liked, took, turned down and was offered, in their words (ideas/taste.json)")
+    q = ideas.add_parser("verdict", help="keep the owner's answer on one card in the taste file, with what they said")
+    q.add_argument("category", help="whose cards: a category (data/ideas/<category>/cards.json) or a file")
+    q.add_argument("card", type=int, help="the card's number, from 1, as the check lists them")
+    q.add_argument("answer", choices=("took", "turned_down", "offered", "liked"))
+    q.add_argument("words", nargs="?", default="", help="what the owner said, word for word")
+    q.add_argument("--reading", default="", help="the session's reading of it, kept apart from their words")
+    q = ideas.add_parser("check", help="check a file of cards: what's missing, his titles, the owner's answers")
+    q.add_argument("what", nargs="?", help="a category (data/ideas/<category>/cards.json) or a file; data/ideas/cards.json if left out")
     p.set_defaults(fn=cmd_ideas)
 
     p = sub.add_parser("connect", help="sign in to YouTube for one channel")

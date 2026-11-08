@@ -119,7 +119,14 @@ A channel with this format makes vertical 3D shorts with no code per video: you 
 
 ## Finding ideas
 
-When the owner wants ideas for a short, follow `prompts/character/ideas.md`, which doesn't need the server: `uv run python run.py ideas fetch`, read the leads with `run.py ideas show`, write the cards to `data/ideas/cards.json`, and `run.py ideas check` them. Read the reference's titles near anything you like, since a card's terms only catch exact words. A fresh reviewer with web search tests the claims before the owner sees them. Don't score or rank them.
+Every idea goes to the owner before anything's built on it ("get ur ideas validated with me"). Never pick one yourself, and an "any" isn't a pick. None of this needs the server.
+
+1. Launch the `idea-researcher` agent with a category and how many to bring, about six. The categories are the briefs in `prompts/ideas/`: `inventions` and `explainers` for the shorts channel, `mysteries` and `crimes` for the channels to come. It reads the briefs, the owner's taste and the reference's shorts of that kind, researches on the web, writes `data/ideas/<category>/cards.json`, and checks it (`run.py ideas check <category>`).
+2. Launch the `idea-checker` agent with the category. It tests every claim at its source, and says keep, fix or drop for each card. Send its fixes to the researcher (SendMessage) to apply and check again. Never fix a card's facts yourself from memory.
+3. Bring the owner the short list: each card's hook, what's seen first, how it ends, where it's known from, and the reference's shorts it's like, with how they did (`run.py ideas check <category>` prints them). No score and no ranking.
+4. Keep every answer in the taste file, in their words: `uv run python run.py ideas verdict <category> <card number> took|turned_down|offered "<what they said>"`. The researcher reads it next time, and the check refuses an idea they've turned down.
+
+If there's no `idea-researcher` or `idea-checker` agent type, launch a general-purpose agent with the instructions in `.claude/agents/idea-researcher.md` or `.claude/agents/idea-checker.md`.
 
 The owner posts on Instagram by hand, so give them the video and a caption with the credits its models need (each thing's `thing.json` has its license and credit), and remind them of the AI label.
 

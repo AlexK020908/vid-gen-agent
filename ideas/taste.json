@@ -1,0 +1,634 @@
+{
+ "about": "Every idea the owner was shown or praised, what they did with it, and what they said, word for word. `their_words` are theirs; `reading` is the session's reading of them, not theirs. Read all of it before proposing anything: never bring back what they turned down, or another idea with the same flaw.",
+ "said": [
+  {
+   "date": "2026-11-05",
+   "about": "the reference's ideas, asking for a pipeline that makes interesting scripts",
+   "their_words": "so video generation is in a good place, now we need to look at idea generation, Zach D has really inresteting and unique ideas, how do we come up with smt like that? usually he begins with a problem and build up the soltuion to the current best solution. So its very engaging. Of course, he makes impluassible situations too but explain with scienteic sense and common sense, he makes things really engaging, u can tell from a lot of the videos i've pasted."
+  },
+  {
+   "date": "2026-11-07",
+   "about": "landing a short on an invention",
+   "their_words": "ok yea so we need to connect to an av tual invention, and say \"congrautations you buildt this this this\" ,. similar to the hammer on nail video uk what i mean/"
+  },
+  {
+   "date": "2026-11-08",
+   "about": "the end of a short, for every video",
+   "their_words": "I think the eend solution shold solve the inital problem, which was having problem sucking water up, baraomoter doesnt solve that. It needs to solve the inherent problem ... KEEP THIS IN MIND FOR ALL FUTURE VFIDEO GENERATION S"
+  },
+  {
+   "date": "2026-11-08",
+   "about": "who picks ideas, and new kinds of channel",
+   "their_words": "get ur ideas validated with me. Maybe we should build a research agent that finds good ideas to build on. Also we can also simulate murder evets or mysterious events. Ofc those would be in diff cateogry channels, we need an agent like that too"
+  },
+  {
+   "date": "2026-11-08",
+   "about": "which cases the mystery and crime channels re-stage, asked as a choice",
+   "their_words": "Old real mysteries, Real murder cases, Invented cases"
+  }
+ ],
+ "entries": [
+  {
+   "date": "2026-11-08",
+   "category": "inventions",
+   "verdict": "liked",
+   "idea": "The nail: a nail made a hundred times bigger, fixed step by step into a diesel pile hammer",
+   "their_words": [
+    "ok yea so we need to connect to an av tual invention, and say \"congrautations you buildt this this this\" ,. similar to the hammer on nail video uk what i mean/",
+    "look at to samples we generated like the conussion and nail thing, those are star references.",
+    "i think the anil example is just su much more engaging and other zach D videos"
+   ],
+   "reading": "An everyday act everyone's done (tapping a nail in), made a hundred times bigger; each problem plain and seen going wrong; each fix a leap anyone could almost have had (drop it, explosives, a car engine, diesel), added to the same machine; it ends on a machine people hear on building sites, moving in a five-word cycle, and it solves the problem it opened with.",
+   "note": "The reference's short (reference A), rebuilt for practice in data/benchmarks/pile_hammer/. Never to be posted or copied.",
+   "terms": [
+    "pile"
+   ]
+  },
+  {
+   "date": "2026-11-08",
+   "category": "explainers",
+   "verdict": "liked",
+   "idea": "The woodpecker: why a woodpecker hammering a tree doesn't get a concussion",
+   "their_words": [
+    "its much better now",
+    "yea this looks good",
+    "looks good",
+    "look at to samples we generated like the conussion and nail thing, those are star references."
+   ],
+   "reading": "A bird everyone knows, doing something that would hurt you; one question a child gets; the answer seen inside its head; your own body in it (a concussion).",
+   "note": "Our short #6: data/benchmarks/woodpecker_v3/woodpecker_v9.mp4 is the cut to post. The first three words were said of the v5, v7 and v9 cuts.",
+   "terms": [
+    "woodpecker"
+   ]
+  },
+  {
+   "date": "2026-11-08",
+   "category": "inventions",
+   "verdict": "turned_down",
+   "idea": "The straw: a straw too tall to drink through, ending on the barometer, then a submersible pump, then a force pump",
+   "pitch": "Straw: nobody can drink through a straw taller than about 10 m, yet a 100 m redwood lifts water to its top.",
+   "their_words": [
+    "i mean animation is good, but remember this is for educating caveman like, it needs to be more straight forward, and also maybe just becuz i cant understand without the voiuce.",
+    "how is the straw realted to barometer tho lol. I think the eend solution shold solve the inital problem, which was having problem sucking water up, baraomoter doesnt solve that. It needs to solve the inherent problem",
+    "i mean its better but it doesnt really mae sense, how does the pump pump water? how does pump empties straw of air? im confused",
+    "its more clearn now but its a good example of a useful invention , and its not really interseting . force pump jhust stack seight on water and that s it? there is no motion? it needs to be clear.",
+    "i dont think its a good idea"
+   ],
+   "reading": "The force behind every step was air pressing, which nobody can see, so each step needed explaining; the pumps did their jobs unseen; the endings were a still tube or weights on a lid, with no machine in motion; and the barometer didn't solve the opening problem.",
+   "note": "Chosen by the session, not the owner: of five ideas, asked which they'd watch first, they said \"any\" (Nov 7), and the session recommended this one. Five versions and about 26 cents of voice; shelved Nov 8, its scripts in data/benchmarks/straw/.",
+   "terms": [
+    "straw"
+   ]
+  },
+  {
+   "date": "2026-11-08",
+   "category": "inventions",
+   "verdict": "turned_down",
+   "idea": "A safety elevator",
+   "pitch": "Climbing 10 floors is hell, so you hoist a box on a rope, but ropes snap and it drops. So: teeth up the walls, and hooks a spring flicks out the instant the rope goes slack. It falls, then catches. Every lift today still has it (Otis, 1850s).",
+   "their_words": [
+    "maybe do this after research agnet, i dont like any of these ideas. i think the anil example is just su much more engaging and other zach D videos, we need to figure out on how to land on good idfeas"
+   ],
+   "reading": "All four were chains of real fixes to a moving machine that solved its opening problem, so following the rules wasn't enough. Beside the nail, they open on history or a job the viewer's never had (a flooded mine, the time at night, water uphill) rather than something they've done with their own hands; their fixes are engineering, not leaps anyone could almost have had; and three of the four end on a machine nobody sees today.",
+   "note": "One of four offered together on Nov 8, as one question; the session had marked the elevator as its recommendation.",
+   "terms": [
+    "elevator"
+   ]
+  },
+  {
+   "date": "2026-11-08",
+   "category": "inventions",
+   "verdict": "turned_down",
+   "idea": "A steam engine for a flooded mine",
+   "pitch": "Your mine floods 50 m down and no pump at the top can suck past 10 m. So: a pump at the bottom, worked by a rocking beam, driven by steam that turns back to water and leaves a cylinder empty, so the air slams the piston down. Over and over. The engine that started the Industrial Revolution (1712).",
+   "their_words": [
+    "maybe do this after research agnet, i dont like any of these ideas. i think the anil example is just su much more engaging and other zach D videos, we need to figure out on how to land on good idfeas"
+   ],
+   "reading": "All four were chains of real fixes to a moving machine that solved its opening problem, so following the rules wasn't enough. Beside the nail, they open on history or a job the viewer's never had (a flooded mine, the time at night, water uphill) rather than something they've done with their own hands; their fixes are engineering, not leaps anyone could almost have had; and three of the four end on a machine nobody sees today.",
+   "note": "One of four offered together on Nov 8, as one question; the session had marked the elevator as its recommendation.",
+   "terms": [
+    "steam engine"
+   ]
+  },
+  {
+   "date": "2026-11-08",
+   "category": "inventions",
+   "verdict": "turned_down",
+   "idea": "A hydraulic ram pump",
+   "pitch": "Your house is up a hill above a stream, with no power. So: water rushes down a pipe, a valve slams shut, and the crash squirts water up a side pipe. Clack, clack, forever, with no fuel. Invented by a hot-air-balloon brother (1796), still used in villages.",
+   "their_words": [
+    "maybe do this after research agnet, i dont like any of these ideas. i think the anil example is just su much more engaging and other zach D videos, we need to figure out on how to land on good idfeas"
+   ],
+   "reading": "All four were chains of real fixes to a moving machine that solved its opening problem, so following the rules wasn't enough. Beside the nail, they open on history or a job the viewer's never had (a flooded mine, the time at night, water uphill) rather than something they've done with their own hands; their fixes are engineering, not leaps anyone could almost have had; and three of the four end on a machine nobody sees today.",
+   "note": "One of four offered together on Nov 8, as one question; the session had marked the elevator as its recommendation.",
+   "terms": [
+    "hydraulic ram"
+   ]
+  },
+  {
+   "date": "2026-11-08",
+   "category": "inventions",
+   "verdict": "turned_down",
+   "idea": "A pendulum clock",
+   "pitch": "You want the time at night, but water clocks drift. A swinging weight keeps perfect time but stops, so a falling weight drives the gears, and a catch lets one tooth through per swing and kicks it again. Tick, tock (Huygens, 1656).",
+   "their_words": [
+    "maybe do this after research agnet, i dont like any of these ideas. i think the anil example is just su much more engaging and other zach D videos, we need to figure out on how to land on good idfeas"
+   ],
+   "reading": "All four were chains of real fixes to a moving machine that solved its opening problem, so following the rules wasn't enough. Beside the nail, they open on history or a job the viewer's never had (a flooded mine, the time at night, water uphill) rather than something they've done with their own hands; their fixes are engineering, not leaps anyone could almost have had; and three of the four end on a machine nobody sees today.",
+   "note": "One of four offered together on Nov 8, as one question; the session had marked the elevator as its recommendation.",
+   "terms": [
+    "pendulum clock"
+   ]
+  },
+  {
+   "date": "2026-11-07",
+   "category": "explainers",
+   "verdict": "offered",
+   "idea": "Spaghetti: bend a dry strand and it almost never snaps in two",
+   "their_words": [
+    "any"
+   ],
+   "note": "One of five offered Nov 6, asked which they'd watch first; \"any\" was their answer to all five. He'd already made it (\"Breaking Spaghetti Without Extra Pieces\"), so it's out anyway.",
+   "terms": [
+    "spaghetti"
+   ]
+  },
+  {
+   "date": "2026-11-07",
+   "category": "explainers",
+   "verdict": "offered",
+   "idea": "The doctor who rode a rocket to find out what a crash does to you",
+   "their_words": [],
+   "note": "One of 13 cards offered Nov 7 (data/ideas/cards.json), never chosen or turned down: the straw had already gone first. Not a no.",
+   "terms": [
+    "rocket",
+    "sled"
+   ],
+   "card": {
+    "topic": "The doctor who rode a rocket to find out what a crash does to you",
+    "hook": "A doctor straps himself to a rocket sled and hits a thousand kilometres an hour, to find out what stops you dying in a crash.",
+    "people_think": "It's the speed that kills you, and nobody could survive stopping that fast.",
+    "truth": "Speed itself does nothing. It's how fast you stop and what you hit, and a body held properly can take far more than anyone believed: he took 46 times the force of gravity.",
+    "steps": [
+     "In the 1940s the limit a body could survive was thought to be about 18 g.",
+     "Crash reports showed pilots' seats breaking loose and harnesses failing in fairly mild crashes, so some probably survived the hit and died when the cockpit's fittings gave way.",
+     "So he rode a sled on rails into water brakes, going from 1,017 km/h to nothing in about 1.4 seconds.",
+     "A harness made his body stop with the seat, so nothing hit anything hard.",
+     "He took a peak of 46.2 g and lived, with the blood vessels in his eyes burst and his sight more or less back the next day."
+    ],
+    "turn": "He spent the rest of his life pushing for seat belts in cars, and a sensor wired backwards on his project gave Murphy's Law its name.",
+    "first_picture": "A man strapped upright to a sled on long rails, with a row of rockets lighting behind him.",
+    "inside": "His glass head and chest as the sled stops: held by the harness, his brain stays clear; without it, the same stop in the first short.",
+    "needs": [
+     "a person",
+     "a rocket sled",
+     "rails",
+     "a harness",
+     "a water brake"
+    ],
+    "shape": "true_story",
+    "source": "John Stapp's 1954 Sonic Wind run, US Air Force; the 2003 Ig Nobel in engineering",
+    "source_url": "https://ejectionsite.com/stapp.htm",
+    "terms": [
+     "rocket",
+     "sled"
+    ]
+   }
+  },
+  {
+   "date": "2026-11-07",
+   "category": "explainers",
+   "verdict": "offered",
+   "idea": "Why castles stopped being tall, and turned into stars",
+   "their_words": [],
+   "note": "One of 13 cards offered Nov 7 (data/ideas/cards.json), never chosen or turned down: the straw had already gone first. Not a no.",
+   "terms": [
+    "star",
+    "fort"
+   ],
+   "card": {
+    "topic": "Why castles stopped being tall, and turned into stars",
+    "hook": "A castle said to have once held out for seven years falls in eight hours.",
+    "people_think": "Higher, thicker walls are always stronger.",
+    "truth": "A tall stone wall is the perfect target for a cannon: hit its base and its own weight brings it down. So forts went low, backed with earth, and then shaped like stars so nothing could hide.",
+    "steps": [
+     "Walls were tall so ladders couldn't reach the top.",
+     "A cannonball hits the base, and the tall wall falls under its own weight and fills the ditch with a ramp.",
+     "So builders sank walls low and backed them with packed earth, which swallows a cannonball instead of shattering.",
+     "But a round tower has a blind spot at its foot, where attackers can stand safely.",
+     "So towers became sharp angles, each one firing along the face of the next, and the whole fort from above is a star."
+    ],
+    "turn": "They worked so well that armies stopped rushing them, and spent weeks digging zigzag trenches towards them instead.",
+    "first_picture": "A tall stone castle wall, a cannon fires, the base bursts and the whole wall slides down.",
+    "inside": "A cut through the wall, stone against packed earth taking the same cannonball; from above, lines of fire as glowing lines reaching every spot.",
+    "needs": [
+     "a cannon",
+     "a cannonball",
+     "walls built from data",
+     "a soldier"
+    ],
+    "shape": "ladder",
+    "source": "Monte San Giovanni, 1495; the bastion fort or trace italienne",
+    "source_url": "https://en.wikipedia.org/wiki/Castello_di_Monte_San_Giovanni_Campano",
+    "terms": [
+     "star",
+     "fort"
+    ]
+   }
+  },
+  {
+   "date": "2026-11-07",
+   "category": "explainers",
+   "verdict": "offered",
+   "idea": "The reason planes fly that your teacher got wrong",
+   "their_words": [],
+   "note": "One of 13 cards offered Nov 7 (data/ideas/cards.json), never chosen or turned down: the straw had already gone first. Not a no.",
+   "terms": [
+    "wing",
+    "lift"
+   ],
+   "card": {
+    "topic": "The reason planes fly that your teacher got wrong",
+    "hook": "If wings worked the way most schools teach, no plane could ever fly upside down.",
+    "people_think": "Air over the curved top has further to go, so it speeds up to meet the air below, and that's what makes the lift.",
+    "truth": "The air doesn't meet up at all. A wing works by turning air downwards: bending the flow lowers the pressure on top and raises it below, and that pushes the wing up.",
+    "steps": [
+     "The school version says air over the top must catch up with the air below.",
+     "Measure it, and the air over the top gets there first and never meets it.",
+     "If the longer path over the top did the work, flipping a wing would pull the plane into the ground.",
+     "A wing tilted into the air pushes air down whichever way up it is.",
+     "Pushing air down pushes the wing up, the same thing your hand feels out of a car window."
+    ],
+    "turn": "That pushed-down air rolls into invisible tornadoes behind a big jet, strong enough to flip a small plane following it.",
+    "first_picture": "A stunt plane flying level, upside down, the pilot hanging in the straps.",
+    "inside": "Air as moving balls round a cut through the wing, bending down behind it.",
+    "needs": [
+     "a plane",
+     "a wing cut in half",
+     "a person"
+    ],
+    "shape": "why_it_happens",
+    "source": "NASA Glenn Research Center, incorrect lift theories",
+    "source_url": "https://www.grc.nasa.gov/www/k-12/VirtualAero/BottleRocket/airplane/wrong1.html",
+    "terms": [
+     "wing",
+     "lift"
+    ]
+   }
+  },
+  {
+   "date": "2026-11-07",
+   "category": "explainers",
+   "verdict": "offered",
+   "idea": "The dead fish that swam upstream",
+   "their_words": [],
+   "note": "One of 13 cards offered Nov 7 (data/ideas/cards.json), never chosen or turned down: the straw had already gone first. Not a no.",
+   "terms": [
+    "trout"
+   ],
+   "card": {
+    "topic": "The dead fish that swam upstream",
+    "hook": "In a lab water channel, a dead trout on a loose line starts moving upstream.",
+    "people_think": "A dead fish can only drift downstream. Swimming takes muscles.",
+    "truth": "Behind a post, water spins off in whirlpools, left then right. A floppy body bending in them gets pushed forward, with no brain or muscle at all.",
+    "steps": [
+     "Water passing a post sheds whirlpools, one to the left, then one to the right.",
+     "Each whirlpool bends the soft body as it goes past.",
+     "The bent body meets the next whirlpool at an angle, like a wing, and that angle gives a push forward.",
+     "So it creeps towards the post against the current, and its line goes slack."
+    ],
+    "turn": "Live trout do this too: behind a post, they stop using most of their swimming muscles, and for moments all of them.",
+    "first_picture": "A limp grey fish on a thin line in a clear water channel, behind a post, and the line goes slack as it moves forward.",
+    "inside": "Water as swirling glowing lines round the post; a glass fish with its spine bending, nothing firing.",
+    "needs": [
+     "a trout",
+     "a post",
+     "a water channel",
+     "a thin line"
+    ],
+    "shape": "why_it_happens",
+    "source": "Beal, Hover, Triantafyllou, Liao and Lauder, Passive propulsion in vortex wakes, J. Fluid Mech. 2006; the 2024 Ig Nobel in physics",
+    "source_url": "https://doi.org/10.1017/S0022112005007925",
+    "terms": [
+     "trout"
+    ]
+   }
+  },
+  {
+   "date": "2026-11-07",
+   "category": "explainers",
+   "verdict": "offered",
+   "idea": "Why they fly rhinos upside down",
+   "their_words": [],
+   "note": "One of 13 cards offered Nov 7 (data/ideas/cards.json), never chosen or turned down: the straw had already gone first. Not a no.",
+   "terms": [
+    "rhino"
+   ],
+   "card": {
+    "topic": "Why they fly rhinos upside down",
+    "hook": "A helicopter lifts a sleeping rhino by its ankles and flies it upside down, on purpose.",
+    "people_think": "Hanging by its feet must be terrible, and lying on its side has to be kinder.",
+    "truth": "In one small study, 12 drugged rhinos hung by their feet for about ten minutes got slightly more oxygen into their blood than when lying on their sides, and nobody's sure why.",
+    "steps": [
+     "Black rhinos are endangered and live where no truck can reach, so they get moved between reserves by air.",
+     "The drug that knocks a rhino out also slows its breathing.",
+     "People expected hanging to be worse: a horse hung by its feet seems to struggle, with its gut pressing on its lungs.",
+     "Hung up, a rhino's blood had slightly more oxygen and less carbon dioxide, though it was short of oxygen both ways."
+    ],
+    "turn": "To test it, expecting the worst, the team hung twelve sedated rhinos by their feet from a crane on a truck in Namibia.",
+    "first_picture": "A rhino, legs up, hanging under a helicopter over the savanna.",
+    "inside": "A glass rhino with its lungs lit, and a gauge beside it showing the oxygen in its blood, on its side and then upside down.",
+    "needs": [
+     "a rhino",
+     "a helicopter",
+     "ankle straps",
+     "a crane on a truck"
+    ],
+    "shape": "true_story",
+    "source": "Radcliffe et al., Journal of Wildlife Diseases, 2021; the 2021 Ig Nobel in transportation",
+    "source_url": "https://doi.org/10.7589/2019-08-202",
+    "terms": [
+     "rhino"
+    ]
+   }
+  },
+  {
+   "date": "2026-11-07",
+   "category": "explainers",
+   "verdict": "offered",
+   "idea": "The man who built a fake moose to crash cars into",
+   "their_words": [],
+   "note": "One of 13 cards offered Nov 7 (data/ideas/cards.json), never chosen or turned down: the straw had already gone first. Not a no.",
+   "terms": [
+    "moose"
+   ],
+   "card": {
+    "topic": "The man who built a fake moose to crash cars into",
+    "hook": "A Swedish student builds a life-size moose out of rubber and crashes a car straight into it.",
+    "people_think": "A big animal hits you like a wall, so the bumper and engine take it.",
+    "truth": "A moose stands on long thin legs. The car takes them out from under it, and its heavy body comes through the windscreen at head height.",
+    "steps": [
+     "A deer's body is low enough to hit the bonnet.",
+     "A moose's body sits above the bonnet on long thin legs.",
+     "The bumper takes the legs away, and nothing slows the body down.",
+     "Hundreds of kilos slide up into the windscreen and roof, the weakest part of a car and exactly where you're sitting.",
+     "Crash tests needed a dummy that did that every time, so he stacked rubber plates, wire and steel tube into one."
+    ],
+    "turn": "Car makers crashed cars into it to see how they held up: in his tests the windscreen shattered and the roof was almost torn off.",
+    "first_picture": "A rubber moose standing on a test track, a car rushing at it, its legs at bumper height.",
+    "inside": "A cut through the car with the driver's glass head, the body of the moose arcing over the bonnet.",
+    "needs": [
+     "a moose",
+     "a car",
+     "a driver",
+     "a test track"
+    ],
+    "shape": "true_story",
+    "source": "Magnus Gens's degree project at KTH, 2001; the 2022 Ig Nobel in safety engineering",
+    "source_url": "https://www.kth.se/en/om/nyheter/centrala-nyheter/algkrock-docka-gor-sen-succe-1.1193919",
+    "terms": [
+     "moose"
+    ]
+   }
+  },
+  {
+   "date": "2026-11-07",
+   "category": "explainers",
+   "verdict": "offered",
+   "idea": "Why toast lands butter down, and why the universe decided it",
+   "their_words": [
+    "any"
+   ],
+   "note": "One of 13 cards offered Nov 7 (data/ideas/cards.json), never chosen or turned down: the straw had already gone first. Not a no. It was also one of five offered Nov 6, asked which they'd watch first, and \"any\" was their answer to all five.",
+   "terms": [
+    "toast"
+   ],
+   "card": {
+    "topic": "Why toast lands butter down, and why the universe decided it",
+    "hook": "Knock your toast off the table and it usually lands butter down, and the strength of atoms decided that.",
+    "people_think": "The butter makes that side heavier, or you only remember the bad times.",
+    "truth": "It's the spin. Toast tips over the table's edge and starts turning, and from table height it only has time for about half a turn.",
+    "steps": [
+     "Toast sliding off an edge tips, and gravity sets it turning as it goes.",
+     "It turns slowly: about half a turn by the time it reaches the floor.",
+     "So butter up ends up butter down, and the butter's too light to matter.",
+     "A table about three metres tall would give it time to come round butter-up.",
+     "Tables suit our height, and our height is limited, since a person much taller would break their skull falling over, and how hard a skull is comes down to the forces between atoms."
+    ],
+    "turn": "So you can't fix it: the people tall enough for a toast-safe table couldn't survive tripping over.",
+    "first_picture": "A slice of buttered toast sliding off a table edge, ghost copies showing it turning in the air.",
+    "inside": "An arc of the toast's spin beside the table; a three-metre man falling, with his glass skull lit.",
+    "needs": [
+     "a slice of toast",
+     "a table",
+     "a person"
+    ],
+    "shape": "absurd_test",
+    "source": "Robert Matthews, Tumbling toast, Murphy's Law and the fundamental constants, European Journal of Physics, 1995; the 1996 Ig Nobel in physics",
+    "source_url": "https://doi.org/10.1088/0143-0807/16/4/005",
+    "terms": [
+     "toast"
+    ]
+   }
+  },
+  {
+   "date": "2026-11-07",
+   "category": "explainers",
+   "verdict": "offered",
+   "idea": "The frog that floated in mid-air",
+   "their_words": [],
+   "note": "One of 13 cards offered Nov 7 (data/ideas/cards.json), never chosen or turned down: the straw had already gone first. Not a no.",
+   "terms": [
+    "frog",
+    "magnet"
+   ],
+   "card": {
+    "topic": "The frog that floated in mid-air",
+    "hook": "A live frog floats in mid-air inside a magnet, touching nothing, and then hops away unharmed.",
+    "people_think": "Magnets only pull on iron, and a frog has nothing magnetic in it.",
+    "truth": "Everything is slightly magnetic. Water is very weakly pushed away by a magnet, and a magnet thousands of times stronger than a fridge magnet makes that push beat gravity.",
+    "steps": [
+     "A magnetic field makes the electrons in every atom set up a tiny field of their own, pointing against it.",
+     "That pushes the atom away from the magnet, so weakly that you never notice.",
+     "A frog is mostly water, and water gets that push.",
+     "At 16 tesla, the push on every bit of water matches gravity, and since every bit is held up at once, nothing inside is squashed."
+    ],
+    "turn": "The man who did it won a joke Ig Nobel for it, and a real Nobel ten years later, the only individual to win both. And you're mostly water too.",
+    "first_picture": "A frog hanging in mid-air in a narrow glowing tube, its legs drifting.",
+    "inside": "A glass frog with its water as tiny balls, each with its own small arrow upwards.",
+    "needs": [
+     "a frog",
+     "a big magnet coil"
+    ],
+    "shape": "true_story",
+    "source": "Berry and Geim, Of flying frogs and levitrons, European Journal of Physics, 1997; the 2000 Ig Nobel and 2010 Nobel in physics",
+    "source_url": "https://doi.org/10.1088/0143-0807/18/4/012",
+    "terms": [
+     "frog",
+     "magnet"
+    ]
+   }
+  },
+  {
+   "date": "2026-11-07",
+   "category": "explainers",
+   "verdict": "offered",
+   "idea": "On the Moon you could run across a pond",
+   "their_words": [],
+   "note": "One of 13 cards offered Nov 7 (data/ideas/cards.json), never chosen or turned down: the straw had already gone first. Not a no.",
+   "terms": [
+    "moon",
+    "pond"
+   ],
+   "card": {
+    "topic": "On the Moon you could run across a pond",
+    "hook": "If you stood beside a pond on the Moon in a pair of fins, you could run on top of it without sinking.",
+    "people_think": "Water can't hold anyone up, so you'd just sink more slowly.",
+    "truth": "Running on water is about whether each foot can slap the water hard enough to hold up your weight, and on the Moon you weigh a sixth as much. It's one small study of six people, running on the spot.",
+    "steps": [
+     "To stay up, each step has to push water down as hard as your weight pushes you into it.",
+     "On Earth a person couldn't move their legs nearly fast enough.",
+     "A basilisk lizard can, since it weighs almost nothing.",
+     "On the Moon you weigh a sixth as much, so each step needs a sixth of the push.",
+     "People held up in a harness at Moon weight managed it on the spot in a pool, wearing fins, for a few seconds."
+    ],
+    "turn": "You'd need a dome, since a real pond on the Moon would boil away into space.",
+    "first_picture": "A man in fins running on the surface of a pond on the grey Moon, each step throwing up a slow splash.",
+    "inside": "A slow-motion foot slapping the water, with the arrow of its push growing to match the arrow of his weight.",
+    "needs": [
+     "a person running",
+     "a pond",
+     "fins",
+     "the Moon"
+    ],
+    "shape": "absurd_test",
+    "source": "Minetti et al., Humans running in place on water at simulated reduced gravity, PLoS ONE, 2012; the 2013 Ig Nobel in physics",
+    "source_url": "https://doi.org/10.1371/journal.pone.0037300",
+    "terms": [
+     "moon",
+     "pond"
+    ]
+   }
+  },
+  {
+   "date": "2026-11-07",
+   "category": "explainers",
+   "verdict": "offered",
+   "idea": "Why a bullet can't throw someone backwards",
+   "their_words": [],
+   "note": "One of 13 cards offered Nov 7 (data/ideas/cards.json), never chosen or turned down: the straw had already gone first. Not a no.",
+   "terms": [
+    "bullet",
+    "backwards"
+   ],
+   "card": {
+    "topic": "Why a bullet can't throw someone backwards",
+    "hook": "If a bullet could throw a man across the room, it would throw the shooter across the room too.",
+    "people_think": "It happens in every film: a bullet's so powerful that it knocks you off your feet.",
+    "truth": "A bullet carries no more push than the kick the gun gave the shooter's shoulder, and the shooter stays standing.",
+    "steps": [
+     "A gun pushes a bullet forwards and the bullet pushes the gun back, exactly as hard.",
+     "The shooter takes all of that in the shoulder and stays on their feet.",
+     "The bullet can't hand over more push than that.",
+     "So as a shove, a hit is no bigger than the gun's kick, and people go down for other reasons."
+    ],
+    "turn": "People often drop the moment they're hit, and the FBI's report puts it down to psychology: they know they've been shot and expect to fall.",
+    "first_picture": "A dummy on a smooth rail in front of a braced shooter, and at the shot it barely rolls.",
+    "inside": "Two equal arrows, one on the gun, one on the bullet; the dummy as glass, with nothing graphic.",
+    "needs": [
+     "a person",
+     "a gun",
+     "a dummy",
+     "a rail"
+    ],
+    "shape": "why_it_happens",
+    "source": "FBI Academy, Handgun Wounding Factors and Effectiveness, 1989",
+    "source_url": "https://randywakeman.com/ballltd73.htm",
+    "terms": [
+     "bullet",
+     "backwards"
+    ]
+   }
+  },
+  {
+   "date": "2026-11-07",
+   "category": "explainers",
+   "verdict": "offered",
+   "idea": "Why a giraffe doesn't faint when it lifts its head",
+   "their_words": [
+    "any"
+   ],
+   "note": "One of 13 cards offered Nov 7 (data/ideas/cards.json), never chosen or turned down: the straw had already gone first. Not a no. It was also one of five offered Nov 6, asked which they'd watch first, and \"any\" was their answer to all five.",
+   "terms": [
+    "giraffe",
+    "faint"
+   ],
+   "card": {
+    "topic": "Why a giraffe doesn't faint when it lifts its head",
+    "hook": "A giraffe lifts its head from the water to five metres up, and it doesn't faint.",
+    "people_think": "It has a long neck and a big heart, so the heart just pumps harder.",
+    "truth": "The pressure is only half of it. Its body is built like a pressure suit, with tight skin on its legs and valves in its neck.",
+    "steps": [
+     "To get blood two metres up its neck, its heart runs at about twice our pressure.",
+     "That same pressure at its feet would swell its legs, so the skin there is tight like a compression sock.",
+     "Bending down would let blood run back up its neck veins, so one-way valves stop it.",
+     "Lifting it again would drain its head, so the blood vessels in its brain widen and pressure sensors hold its blood pressure up."
+    ],
+    "turn": "Pilots wear the same idea in a g-suit, a squeeze on the legs.",
+    "first_picture": "A giraffe with its front legs splayed, head down at the water, flinging its head up.",
+    "inside": "A glass giraffe with its blood as a red flow, valves closing in its neck.",
+    "needs": [
+     "a giraffe",
+     "a pool of water"
+    ],
+    "shape": "why_it_happens",
+    "source": "Hargens et al., Gravitational haemodynamics and oedema prevention in the giraffe, Nature, 1987",
+    "source_url": "https://doi.org/10.1038/329059a0",
+    "terms": [
+     "giraffe",
+     "faint"
+    ]
+   }
+  },
+  {
+   "date": "2026-11-07",
+   "category": "explainers",
+   "verdict": "offered",
+   "idea": "The frog whose heart stops all winter",
+   "their_words": [
+    "any"
+   ],
+   "note": "One of 13 cards offered Nov 7 (data/ideas/cards.json), never chosen or turned down: the straw had already gone first. Not a no. It was also one of five offered Nov 6, asked which they'd watch first, and \"any\" was their answer to all five.",
+   "terms": [
+    "wood",
+    "frog"
+   ],
+   "card": {
+    "topic": "The frog whose heart stops all winter",
+    "hook": "A frog freezes hard in the leaves, its heart stops for weeks, and in spring it hops away.",
+    "people_think": "Ice kills anything, since it bursts the cells.",
+    "truth": "The ice forms between its cells, not inside them. The frog floods its cells with sugar, which keeps them from freezing, so they survive with up to about two thirds of its water turned to ice.",
+    "steps": [
+     "Ice touching its skin sets its liver dumping sugar into its blood within minutes.",
+     "The sugar fills its cells, and syrup doesn't freeze easily.",
+     "Ice grows in the spaces between the cells and draws water out of them.",
+     "Its heart and breathing stop, and its cells get by on stored fuel until the thaw."
+    ],
+    "turn": "When it thaws, its heart starts by itself, and transplant researchers have borrowed the trick to keep rat livers partly frozen five times longer.",
+    "first_picture": "A frog frozen stiff in dead leaves, ice crystals on its skin, then the camera goes in.",
+    "inside": "A glass frog with its heart lit and stopping; cells filling with sugar while ice grows between them.",
+    "needs": [
+     "a frog",
+     "leaves"
+    ],
+    "shape": "why_it_happens",
+    "source": "Costanzo and Lee on wood frog freeze tolerance; Larson et al., Journal of Experimental Biology, 2014",
+    "source_url": "https://doi.org/10.1242/jeb.101931",
+    "terms": [
+     "wood",
+     "frog"
+    ]
+   }
+  }
+ ]
+}

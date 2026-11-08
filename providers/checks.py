@@ -29,7 +29,7 @@ SHORT_WORDS = (60, 150)         # what the prompt asks for
 SHORT_WORDS_OK = (50, 165)      # what passes
 SHORT_HOOK_WORDS = 26           # a moment is short, but an "If you..." setup runs to about 25
 SHORT_SHAPES = ("true_story", "absurd_test", "why_it_happens", "thought_experiment", "fake_invention", "fix_in_steps", "ladder",
-                "you_invent")
+                "you_invent", "mystery")
 QUESTION_OPENS = ("why_it_happens",)     # the only shape that may open on a bare question
 TITLES = 3
 TITLE_MAX = 100                 # YouTube's limit
