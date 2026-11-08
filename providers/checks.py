@@ -23,8 +23,8 @@ TOTAL_WORDS_OK = (1500, 2000)   # passes: about 10 to 14 minutes
 WPM = 150                       # elevenlabs.speed slows the voices to about this; their own pace is 160 to 170
 # A character short: 30 to 60 seconds, read slowly (prompts/character/)
 SHORT_BEATS = (3, 6)
-SHORT_LINES = (4, 14)
-SHORT_LINE_WORDS = (3, 34)      # one sentence: the reference shorts' run about 18 words, up to 30 or so (BUILD.md, phase 39)
+SHORT_LINES = (4, 16)
+SHORT_LINE_WORDS = (3, 22)      # one step a line: the owner's two star shorts run 10 to 15 words, none over 22 (BUILD.md, phase 45)
 SHORT_WORDS = (60, 150)         # what the prompt asks for
 SHORT_WORDS_OK = (50, 165)      # what passes
 SHORT_HOOK_WORDS = 26           # a moment is short, but an "If you..." setup runs to about 25

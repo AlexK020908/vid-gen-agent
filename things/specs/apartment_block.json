@@ -1,0 +1,3687 @@
+{
+ "what": "a plain four-storey block of flats with a flat roof and a low parapet, its front facing -y",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "body",
+    "kind": "box",
+    "size": [
+     12.0,
+     9.0,
+     12.8
+    ],
+    "at": [
+     0,
+     0,
+     6.4
+    ],
+    "material": {
+     "color": [
+      0.36,
+      0.15,
+      0.09
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "plinth",
+    "kind": "box",
+    "size": [
+     12.1,
+     9.1,
+     0.5
+    ],
+    "at": [
+     0,
+     0,
+     0.25
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "roof",
+    "kind": "box",
+    "size": [
+     11.5,
+     8.5,
+     0.05
+    ],
+    "at": [
+     0,
+     0,
+     12.825
+    ],
+    "material": {
+     "color": [
+      0.2,
+      0.2,
+      0.21
+     ],
+     "rough": 0.95
+    }
+   },
+   {
+    "id": "band1",
+    "kind": "box",
+    "size": [
+     12.1,
+     9.1,
+     0.22
+    ],
+    "at": [
+     0,
+     0,
+     3.2
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "band2",
+    "kind": "box",
+    "size": [
+     12.1,
+     9.1,
+     0.22
+    ],
+    "at": [
+     0,
+     0,
+     6.4
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "band3",
+    "kind": "box",
+    "size": [
+     12.1,
+     9.1,
+     0.22
+    ],
+    "at": [
+     0,
+     0,
+     9.6
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "parapet_front",
+    "kind": "box",
+    "size": [
+     12.0,
+     0.25,
+     0.6
+    ],
+    "at": [
+     0,
+     -4.375,
+     13.1
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "coping_front",
+    "kind": "box",
+    "size": [
+     12.06,
+     0.31,
+     0.06
+    ],
+    "at": [
+     0,
+     -4.375,
+     13.43
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "parapet_back",
+    "kind": "box",
+    "size": [
+     12.0,
+     0.25,
+     0.6
+    ],
+    "at": [
+     0,
+     4.375,
+     13.1
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "coping_back",
+    "kind": "box",
+    "size": [
+     12.06,
+     0.31,
+     0.06
+    ],
+    "at": [
+     0,
+     4.375,
+     13.43
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "parapet_left",
+    "kind": "box",
+    "size": [
+     0.25,
+     8.5,
+     0.6
+    ],
+    "at": [
+     -5.875,
+     0,
+     13.1
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "coping_left",
+    "kind": "box",
+    "size": [
+     0.31,
+     8.56,
+     0.06
+    ],
+    "at": [
+     -5.875,
+     0,
+     13.43
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "parapet_right",
+    "kind": "box",
+    "size": [
+     0.25,
+     8.5,
+     0.6
+    ],
+    "at": [
+     5.875,
+     0,
+     13.1
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "coping_right",
+    "kind": "box",
+    "size": [
+     0.31,
+     8.56,
+     0.06
+    ],
+    "at": [
+     5.875,
+     0,
+     13.43
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "w0-4.4.hole",
+    "kind": "box",
+    "size": [
+     1.2,
+     0.5,
+     1.3
+    ],
+    "at": [
+     -4.4,
+     -4.53,
+     1.65
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "w0-4.4.frame",
+    "kind": "box",
+    "size": [
+     1.4,
+     0.1,
+     1.5
+    ],
+    "at": [
+     -4.4,
+     -4.53,
+     1.65
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "w0-4.4.hole"
+    ]
+   },
+   {
+    "id": "w0-4.4.pane",
+    "kind": "box",
+    "size": [
+     1.22,
+     0.02,
+     1.32
+    ],
+    "at": [
+     -4.4,
+     -4.512,
+     1.65
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "w0-4.4.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -4.4,
+     -4.54,
+     1.65
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "w0-4.4.sill",
+    "kind": "box",
+    "size": [
+     1.5,
+     0.16,
+     0.06
+    ],
+    "at": [
+     -4.4,
+     -4.57,
+     0.87
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "w0+4.4.hole",
+    "kind": "box",
+    "size": [
+     1.2,
+     0.5,
+     1.3
+    ],
+    "at": [
+     4.4,
+     -4.53,
+     1.65
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "w0+4.4.frame",
+    "kind": "box",
+    "size": [
+     1.4,
+     0.1,
+     1.5
+    ],
+    "at": [
+     4.4,
+     -4.53,
+     1.65
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "w0+4.4.hole"
+    ]
+   },
+   {
+    "id": "w0+4.4.pane",
+    "kind": "box",
+    "size": [
+     1.22,
+     0.02,
+     1.32
+    ],
+    "at": [
+     4.4,
+     -4.512,
+     1.65
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "w0+4.4.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     4.4,
+     -4.54,
+     1.65
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "w0+4.4.sill",
+    "kind": "box",
+    "size": [
+     1.5,
+     0.16,
+     0.06
+    ],
+    "at": [
+     4.4,
+     -4.57,
+     0.87
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sl0-2.6.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     -6.03,
+     -2.6,
+     1.65
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sl0-2.6.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     -6.03,
+     -2.6,
+     1.65
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sl0-2.6.hole"
+    ]
+   },
+   {
+    "id": "sl0-2.6.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     -6.012,
+     -2.6,
+     1.65
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sl0-2.6.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -6.04,
+     -2.6,
+     1.65
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sl0-2.6.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     -6.07,
+     -2.6,
+     0.87
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sl0+0.0.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     -6.03,
+     0.0,
+     1.65
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sl0+0.0.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     -6.03,
+     0.0,
+     1.65
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sl0+0.0.hole"
+    ]
+   },
+   {
+    "id": "sl0+0.0.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     -6.012,
+     0.0,
+     1.65
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sl0+0.0.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -6.04,
+     0.0,
+     1.65
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sl0+0.0.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     -6.07,
+     0.0,
+     0.87
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sl0+2.6.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     -6.03,
+     2.6,
+     1.65
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sl0+2.6.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     -6.03,
+     2.6,
+     1.65
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sl0+2.6.hole"
+    ]
+   },
+   {
+    "id": "sl0+2.6.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     -6.012,
+     2.6,
+     1.65
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sl0+2.6.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -6.04,
+     2.6,
+     1.65
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sl0+2.6.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     -6.07,
+     2.6,
+     0.87
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sr0-2.6.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     6.03,
+     -2.6,
+     1.65
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sr0-2.6.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     6.03,
+     -2.6,
+     1.65
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sr0-2.6.hole"
+    ]
+   },
+   {
+    "id": "sr0-2.6.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     6.012,
+     -2.6,
+     1.65
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sr0-2.6.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     6.04,
+     -2.6,
+     1.65
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sr0-2.6.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     6.07,
+     -2.6,
+     0.87
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sr0+0.0.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     6.03,
+     0.0,
+     1.65
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sr0+0.0.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     6.03,
+     0.0,
+     1.65
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sr0+0.0.hole"
+    ]
+   },
+   {
+    "id": "sr0+0.0.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     6.012,
+     0.0,
+     1.65
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sr0+0.0.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     6.04,
+     0.0,
+     1.65
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sr0+0.0.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     6.07,
+     0.0,
+     0.87
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sr0+2.6.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     6.03,
+     2.6,
+     1.65
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sr0+2.6.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     6.03,
+     2.6,
+     1.65
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sr0+2.6.hole"
+    ]
+   },
+   {
+    "id": "sr0+2.6.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     6.012,
+     2.6,
+     1.65
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sr0+2.6.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     6.04,
+     2.6,
+     1.65
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sr0+2.6.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     6.07,
+     2.6,
+     0.87
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "w1-4.4.hole",
+    "kind": "box",
+    "size": [
+     1.2,
+     0.5,
+     1.3
+    ],
+    "at": [
+     -4.4,
+     -4.53,
+     4.85
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "w1-4.4.frame",
+    "kind": "box",
+    "size": [
+     1.4,
+     0.1,
+     1.5
+    ],
+    "at": [
+     -4.4,
+     -4.53,
+     4.85
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "w1-4.4.hole"
+    ]
+   },
+   {
+    "id": "w1-4.4.pane",
+    "kind": "box",
+    "size": [
+     1.22,
+     0.02,
+     1.32
+    ],
+    "at": [
+     -4.4,
+     -4.512,
+     4.85
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "w1-4.4.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -4.4,
+     -4.54,
+     4.85
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "w1-4.4.sill",
+    "kind": "box",
+    "size": [
+     1.5,
+     0.16,
+     0.06
+    ],
+    "at": [
+     -4.4,
+     -4.57,
+     4.07
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "w1-1.5.hole",
+    "kind": "box",
+    "size": [
+     1.2,
+     0.5,
+     1.3
+    ],
+    "at": [
+     -1.5,
+     -4.53,
+     4.85
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "w1-1.5.frame",
+    "kind": "box",
+    "size": [
+     1.4,
+     0.1,
+     1.5
+    ],
+    "at": [
+     -1.5,
+     -4.53,
+     4.85
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "w1-1.5.hole"
+    ]
+   },
+   {
+    "id": "w1-1.5.pane",
+    "kind": "box",
+    "size": [
+     1.22,
+     0.02,
+     1.32
+    ],
+    "at": [
+     -1.5,
+     -4.512,
+     4.85
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "w1-1.5.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -1.5,
+     -4.54,
+     4.85
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "w1-1.5.sill",
+    "kind": "box",
+    "size": [
+     1.5,
+     0.16,
+     0.06
+    ],
+    "at": [
+     -1.5,
+     -4.57,
+     4.07
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "w1+1.5.hole",
+    "kind": "box",
+    "size": [
+     1.2,
+     0.5,
+     1.3
+    ],
+    "at": [
+     1.5,
+     -4.53,
+     4.85
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "w1+1.5.frame",
+    "kind": "box",
+    "size": [
+     1.4,
+     0.1,
+     1.5
+    ],
+    "at": [
+     1.5,
+     -4.53,
+     4.85
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "w1+1.5.hole"
+    ]
+   },
+   {
+    "id": "w1+1.5.pane",
+    "kind": "box",
+    "size": [
+     1.22,
+     0.02,
+     1.32
+    ],
+    "at": [
+     1.5,
+     -4.512,
+     4.85
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "w1+1.5.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     1.5,
+     -4.54,
+     4.85
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "w1+1.5.sill",
+    "kind": "box",
+    "size": [
+     1.5,
+     0.16,
+     0.06
+    ],
+    "at": [
+     1.5,
+     -4.57,
+     4.07
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "w1+4.4.hole",
+    "kind": "box",
+    "size": [
+     1.2,
+     0.5,
+     1.3
+    ],
+    "at": [
+     4.4,
+     -4.53,
+     4.85
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "w1+4.4.frame",
+    "kind": "box",
+    "size": [
+     1.4,
+     0.1,
+     1.5
+    ],
+    "at": [
+     4.4,
+     -4.53,
+     4.85
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "w1+4.4.hole"
+    ]
+   },
+   {
+    "id": "w1+4.4.pane",
+    "kind": "box",
+    "size": [
+     1.22,
+     0.02,
+     1.32
+    ],
+    "at": [
+     4.4,
+     -4.512,
+     4.85
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "w1+4.4.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     4.4,
+     -4.54,
+     4.85
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "w1+4.4.sill",
+    "kind": "box",
+    "size": [
+     1.5,
+     0.16,
+     0.06
+    ],
+    "at": [
+     4.4,
+     -4.57,
+     4.07
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sl1-2.6.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     -6.03,
+     -2.6,
+     4.85
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sl1-2.6.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     -6.03,
+     -2.6,
+     4.85
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sl1-2.6.hole"
+    ]
+   },
+   {
+    "id": "sl1-2.6.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     -6.012,
+     -2.6,
+     4.85
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sl1-2.6.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -6.04,
+     -2.6,
+     4.85
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sl1-2.6.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     -6.07,
+     -2.6,
+     4.07
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sl1+0.0.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     -6.03,
+     0.0,
+     4.85
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sl1+0.0.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     -6.03,
+     0.0,
+     4.85
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sl1+0.0.hole"
+    ]
+   },
+   {
+    "id": "sl1+0.0.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     -6.012,
+     0.0,
+     4.85
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sl1+0.0.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -6.04,
+     0.0,
+     4.85
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sl1+0.0.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     -6.07,
+     0.0,
+     4.07
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sl1+2.6.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     -6.03,
+     2.6,
+     4.85
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sl1+2.6.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     -6.03,
+     2.6,
+     4.85
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sl1+2.6.hole"
+    ]
+   },
+   {
+    "id": "sl1+2.6.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     -6.012,
+     2.6,
+     4.85
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sl1+2.6.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -6.04,
+     2.6,
+     4.85
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sl1+2.6.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     -6.07,
+     2.6,
+     4.07
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sr1-2.6.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     6.03,
+     -2.6,
+     4.85
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sr1-2.6.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     6.03,
+     -2.6,
+     4.85
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sr1-2.6.hole"
+    ]
+   },
+   {
+    "id": "sr1-2.6.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     6.012,
+     -2.6,
+     4.85
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sr1-2.6.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     6.04,
+     -2.6,
+     4.85
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sr1-2.6.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     6.07,
+     -2.6,
+     4.07
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sr1+0.0.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     6.03,
+     0.0,
+     4.85
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sr1+0.0.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     6.03,
+     0.0,
+     4.85
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sr1+0.0.hole"
+    ]
+   },
+   {
+    "id": "sr1+0.0.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     6.012,
+     0.0,
+     4.85
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sr1+0.0.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     6.04,
+     0.0,
+     4.85
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sr1+0.0.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     6.07,
+     0.0,
+     4.07
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sr1+2.6.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     6.03,
+     2.6,
+     4.85
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sr1+2.6.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     6.03,
+     2.6,
+     4.85
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sr1+2.6.hole"
+    ]
+   },
+   {
+    "id": "sr1+2.6.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     6.012,
+     2.6,
+     4.85
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sr1+2.6.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     6.04,
+     2.6,
+     4.85
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sr1+2.6.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     6.07,
+     2.6,
+     4.07
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "w2-4.4.hole",
+    "kind": "box",
+    "size": [
+     1.2,
+     0.5,
+     1.3
+    ],
+    "at": [
+     -4.4,
+     -4.53,
+     8.05
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "w2-4.4.frame",
+    "kind": "box",
+    "size": [
+     1.4,
+     0.1,
+     1.5
+    ],
+    "at": [
+     -4.4,
+     -4.53,
+     8.05
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "w2-4.4.hole"
+    ]
+   },
+   {
+    "id": "w2-4.4.pane",
+    "kind": "box",
+    "size": [
+     1.22,
+     0.02,
+     1.32
+    ],
+    "at": [
+     -4.4,
+     -4.512,
+     8.05
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "w2-4.4.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -4.4,
+     -4.54,
+     8.05
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "w2-4.4.sill",
+    "kind": "box",
+    "size": [
+     1.5,
+     0.16,
+     0.06
+    ],
+    "at": [
+     -4.4,
+     -4.57,
+     7.27
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "w2-1.5.hole",
+    "kind": "box",
+    "size": [
+     1.2,
+     0.5,
+     1.3
+    ],
+    "at": [
+     -1.5,
+     -4.53,
+     8.05
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "w2-1.5.frame",
+    "kind": "box",
+    "size": [
+     1.4,
+     0.1,
+     1.5
+    ],
+    "at": [
+     -1.5,
+     -4.53,
+     8.05
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "w2-1.5.hole"
+    ]
+   },
+   {
+    "id": "w2-1.5.pane",
+    "kind": "box",
+    "size": [
+     1.22,
+     0.02,
+     1.32
+    ],
+    "at": [
+     -1.5,
+     -4.512,
+     8.05
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "w2-1.5.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -1.5,
+     -4.54,
+     8.05
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "w2-1.5.sill",
+    "kind": "box",
+    "size": [
+     1.5,
+     0.16,
+     0.06
+    ],
+    "at": [
+     -1.5,
+     -4.57,
+     7.27
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "w2+1.5.hole",
+    "kind": "box",
+    "size": [
+     1.2,
+     0.5,
+     1.3
+    ],
+    "at": [
+     1.5,
+     -4.53,
+     8.05
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "w2+1.5.frame",
+    "kind": "box",
+    "size": [
+     1.4,
+     0.1,
+     1.5
+    ],
+    "at": [
+     1.5,
+     -4.53,
+     8.05
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "w2+1.5.hole"
+    ]
+   },
+   {
+    "id": "w2+1.5.pane",
+    "kind": "box",
+    "size": [
+     1.22,
+     0.02,
+     1.32
+    ],
+    "at": [
+     1.5,
+     -4.512,
+     8.05
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "w2+1.5.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     1.5,
+     -4.54,
+     8.05
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "w2+1.5.sill",
+    "kind": "box",
+    "size": [
+     1.5,
+     0.16,
+     0.06
+    ],
+    "at": [
+     1.5,
+     -4.57,
+     7.27
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "w2+4.4.hole",
+    "kind": "box",
+    "size": [
+     1.2,
+     0.5,
+     1.3
+    ],
+    "at": [
+     4.4,
+     -4.53,
+     8.05
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "w2+4.4.frame",
+    "kind": "box",
+    "size": [
+     1.4,
+     0.1,
+     1.5
+    ],
+    "at": [
+     4.4,
+     -4.53,
+     8.05
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "w2+4.4.hole"
+    ]
+   },
+   {
+    "id": "w2+4.4.pane",
+    "kind": "box",
+    "size": [
+     1.22,
+     0.02,
+     1.32
+    ],
+    "at": [
+     4.4,
+     -4.512,
+     8.05
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "w2+4.4.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     4.4,
+     -4.54,
+     8.05
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "w2+4.4.sill",
+    "kind": "box",
+    "size": [
+     1.5,
+     0.16,
+     0.06
+    ],
+    "at": [
+     4.4,
+     -4.57,
+     7.27
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sl2-2.6.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     -6.03,
+     -2.6,
+     8.05
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sl2-2.6.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     -6.03,
+     -2.6,
+     8.05
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sl2-2.6.hole"
+    ]
+   },
+   {
+    "id": "sl2-2.6.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     -6.012,
+     -2.6,
+     8.05
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sl2-2.6.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -6.04,
+     -2.6,
+     8.05
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sl2-2.6.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     -6.07,
+     -2.6,
+     7.27
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sl2+0.0.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     -6.03,
+     0.0,
+     8.05
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sl2+0.0.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     -6.03,
+     0.0,
+     8.05
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sl2+0.0.hole"
+    ]
+   },
+   {
+    "id": "sl2+0.0.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     -6.012,
+     0.0,
+     8.05
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sl2+0.0.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -6.04,
+     0.0,
+     8.05
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sl2+0.0.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     -6.07,
+     0.0,
+     7.27
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sl2+2.6.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     -6.03,
+     2.6,
+     8.05
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sl2+2.6.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     -6.03,
+     2.6,
+     8.05
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sl2+2.6.hole"
+    ]
+   },
+   {
+    "id": "sl2+2.6.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     -6.012,
+     2.6,
+     8.05
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sl2+2.6.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -6.04,
+     2.6,
+     8.05
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sl2+2.6.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     -6.07,
+     2.6,
+     7.27
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sr2-2.6.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     6.03,
+     -2.6,
+     8.05
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sr2-2.6.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     6.03,
+     -2.6,
+     8.05
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sr2-2.6.hole"
+    ]
+   },
+   {
+    "id": "sr2-2.6.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     6.012,
+     -2.6,
+     8.05
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sr2-2.6.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     6.04,
+     -2.6,
+     8.05
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sr2-2.6.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     6.07,
+     -2.6,
+     7.27
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sr2+0.0.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     6.03,
+     0.0,
+     8.05
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sr2+0.0.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     6.03,
+     0.0,
+     8.05
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sr2+0.0.hole"
+    ]
+   },
+   {
+    "id": "sr2+0.0.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     6.012,
+     0.0,
+     8.05
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sr2+0.0.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     6.04,
+     0.0,
+     8.05
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sr2+0.0.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     6.07,
+     0.0,
+     7.27
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sr2+2.6.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     6.03,
+     2.6,
+     8.05
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sr2+2.6.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     6.03,
+     2.6,
+     8.05
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sr2+2.6.hole"
+    ]
+   },
+   {
+    "id": "sr2+2.6.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     6.012,
+     2.6,
+     8.05
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sr2+2.6.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     6.04,
+     2.6,
+     8.05
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sr2+2.6.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     6.07,
+     2.6,
+     7.27
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "w3-4.4.hole",
+    "kind": "box",
+    "size": [
+     1.2,
+     0.5,
+     1.3
+    ],
+    "at": [
+     -4.4,
+     -4.53,
+     11.25
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "w3-4.4.frame",
+    "kind": "box",
+    "size": [
+     1.4,
+     0.1,
+     1.5
+    ],
+    "at": [
+     -4.4,
+     -4.53,
+     11.25
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "w3-4.4.hole"
+    ]
+   },
+   {
+    "id": "w3-4.4.pane",
+    "kind": "box",
+    "size": [
+     1.22,
+     0.02,
+     1.32
+    ],
+    "at": [
+     -4.4,
+     -4.512,
+     11.25
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "w3-4.4.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -4.4,
+     -4.54,
+     11.25
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "w3-4.4.sill",
+    "kind": "box",
+    "size": [
+     1.5,
+     0.16,
+     0.06
+    ],
+    "at": [
+     -4.4,
+     -4.57,
+     10.47
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "w3-1.5.hole",
+    "kind": "box",
+    "size": [
+     1.2,
+     0.5,
+     1.3
+    ],
+    "at": [
+     -1.5,
+     -4.53,
+     11.25
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "w3-1.5.frame",
+    "kind": "box",
+    "size": [
+     1.4,
+     0.1,
+     1.5
+    ],
+    "at": [
+     -1.5,
+     -4.53,
+     11.25
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "w3-1.5.hole"
+    ]
+   },
+   {
+    "id": "w3-1.5.pane",
+    "kind": "box",
+    "size": [
+     1.22,
+     0.02,
+     1.32
+    ],
+    "at": [
+     -1.5,
+     -4.512,
+     11.25
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "w3-1.5.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -1.5,
+     -4.54,
+     11.25
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "w3-1.5.sill",
+    "kind": "box",
+    "size": [
+     1.5,
+     0.16,
+     0.06
+    ],
+    "at": [
+     -1.5,
+     -4.57,
+     10.47
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "w3+1.5.hole",
+    "kind": "box",
+    "size": [
+     1.2,
+     0.5,
+     1.3
+    ],
+    "at": [
+     1.5,
+     -4.53,
+     11.25
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "w3+1.5.frame",
+    "kind": "box",
+    "size": [
+     1.4,
+     0.1,
+     1.5
+    ],
+    "at": [
+     1.5,
+     -4.53,
+     11.25
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "w3+1.5.hole"
+    ]
+   },
+   {
+    "id": "w3+1.5.pane",
+    "kind": "box",
+    "size": [
+     1.22,
+     0.02,
+     1.32
+    ],
+    "at": [
+     1.5,
+     -4.512,
+     11.25
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "w3+1.5.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     1.5,
+     -4.54,
+     11.25
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "w3+1.5.sill",
+    "kind": "box",
+    "size": [
+     1.5,
+     0.16,
+     0.06
+    ],
+    "at": [
+     1.5,
+     -4.57,
+     10.47
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "w3+4.4.hole",
+    "kind": "box",
+    "size": [
+     1.2,
+     0.5,
+     1.3
+    ],
+    "at": [
+     4.4,
+     -4.53,
+     11.25
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "w3+4.4.frame",
+    "kind": "box",
+    "size": [
+     1.4,
+     0.1,
+     1.5
+    ],
+    "at": [
+     4.4,
+     -4.53,
+     11.25
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "w3+4.4.hole"
+    ]
+   },
+   {
+    "id": "w3+4.4.pane",
+    "kind": "box",
+    "size": [
+     1.22,
+     0.02,
+     1.32
+    ],
+    "at": [
+     4.4,
+     -4.512,
+     11.25
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "w3+4.4.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     4.4,
+     -4.54,
+     11.25
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "w3+4.4.sill",
+    "kind": "box",
+    "size": [
+     1.5,
+     0.16,
+     0.06
+    ],
+    "at": [
+     4.4,
+     -4.57,
+     10.47
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sl3-2.6.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     -6.03,
+     -2.6,
+     11.25
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sl3-2.6.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     -6.03,
+     -2.6,
+     11.25
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sl3-2.6.hole"
+    ]
+   },
+   {
+    "id": "sl3-2.6.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     -6.012,
+     -2.6,
+     11.25
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sl3-2.6.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -6.04,
+     -2.6,
+     11.25
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sl3-2.6.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     -6.07,
+     -2.6,
+     10.47
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sl3+0.0.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     -6.03,
+     0.0,
+     11.25
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sl3+0.0.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     -6.03,
+     0.0,
+     11.25
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sl3+0.0.hole"
+    ]
+   },
+   {
+    "id": "sl3+0.0.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     -6.012,
+     0.0,
+     11.25
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sl3+0.0.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -6.04,
+     0.0,
+     11.25
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sl3+0.0.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     -6.07,
+     0.0,
+     10.47
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sl3+2.6.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     -6.03,
+     2.6,
+     11.25
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sl3+2.6.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     -6.03,
+     2.6,
+     11.25
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sl3+2.6.hole"
+    ]
+   },
+   {
+    "id": "sl3+2.6.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     -6.012,
+     2.6,
+     11.25
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sl3+2.6.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     -6.04,
+     2.6,
+     11.25
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sl3+2.6.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     -6.07,
+     2.6,
+     10.47
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sr3-2.6.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     6.03,
+     -2.6,
+     11.25
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sr3-2.6.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     6.03,
+     -2.6,
+     11.25
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sr3-2.6.hole"
+    ]
+   },
+   {
+    "id": "sr3-2.6.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     6.012,
+     -2.6,
+     11.25
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sr3-2.6.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     6.04,
+     -2.6,
+     11.25
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sr3-2.6.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     6.07,
+     -2.6,
+     10.47
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sr3+0.0.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     6.03,
+     0.0,
+     11.25
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sr3+0.0.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     6.03,
+     0.0,
+     11.25
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sr3+0.0.hole"
+    ]
+   },
+   {
+    "id": "sr3+0.0.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     6.012,
+     0.0,
+     11.25
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sr3+0.0.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     6.04,
+     0.0,
+     11.25
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sr3+0.0.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     6.07,
+     0.0,
+     10.47
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "sr3+2.6.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     1.1,
+     1.3
+    ],
+    "at": [
+     6.03,
+     2.6,
+     11.25
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sr3+2.6.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.3,
+     1.5
+    ],
+    "at": [
+     6.03,
+     2.6,
+     11.25
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "sr3+2.6.hole"
+    ]
+   },
+   {
+    "id": "sr3+2.6.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     1.12,
+     1.32
+    ],
+    "at": [
+     6.012,
+     2.6,
+     11.25
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "sr3+2.6.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.3
+    ],
+    "at": [
+     6.04,
+     2.6,
+     11.25
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "sr3+2.6.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.4,
+     0.06
+    ],
+    "at": [
+     6.07,
+     2.6,
+     10.47
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "door.hole",
+    "kind": "box",
+    "size": [
+     1.3,
+     0.5,
+     2.3
+    ],
+    "at": [
+     0,
+     -4.53,
+     1.15
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "door.frame",
+    "kind": "box",
+    "size": [
+     1.6,
+     0.12,
+     2.5
+    ],
+    "at": [
+     0,
+     -4.54,
+     1.25
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "door.hole"
+    ]
+   },
+   {
+    "id": "door",
+    "kind": "box",
+    "size": [
+     1.32,
+     0.05,
+     2.3
+    ],
+    "at": [
+     0,
+     -4.51,
+     1.15
+    ],
+    "material": "wood"
+   },
+   {
+    "id": "canopy",
+    "kind": "box",
+    "size": [
+     2.4,
+     1.1,
+     0.12
+    ],
+    "at": [
+     0,
+     -5.05,
+     2.8
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   }
+  ]
+ },
+ "spots": {
+  "roof": [
+   0,
+   0,
+   12.850000000000001
+  ],
+  "roof_front": [
+   2.8,
+   -3.9,
+   12.850000000000001
+  ],
+  "straw_foot": [
+   2.8,
+   -4.9,
+   0.03
+  ],
+  "front": [
+   0,
+   -4.5,
+   6.4
+  ],
+  "door": [
+   0,
+   -4.5,
+   1.2
+  ],
+  "foot": [
+   0,
+   -4.5,
+   0
+  ]
+ }
+}

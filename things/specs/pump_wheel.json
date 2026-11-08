@@ -1,0 +1,98 @@
+{
+ "what": "a pump's spoked steel flywheel, its axle along z",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "rim",
+    "kind": "torus",
+    "major": 0.11,
+    "minor": 0.012,
+    "material": "bright_steel"
+   },
+   {
+    "id": "hub",
+    "kind": "cylinder",
+    "r": 0.025,
+    "h": 0.04,
+    "at": [
+     0,
+     0,
+     -0.02
+    ],
+    "material": "black_steel"
+   },
+   {
+    "id": "spokes",
+    "kind": "rods",
+    "pairs": [
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      [
+       0.105,
+       0.0,
+       0
+      ]
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      [
+       -0.0525,
+       0.091,
+       0
+      ]
+     ],
+     [
+      [
+       0,
+       0,
+       0
+      ],
+      [
+       -0.0525,
+       -0.0909,
+       0
+      ]
+     ]
+    ],
+    "r": 0.008,
+    "material": "bright_steel"
+   },
+   {
+    "id": "mark",
+    "kind": "box",
+    "size": [
+     0.03,
+     0.012,
+     0.026
+    ],
+    "at": [
+     0.098,
+     0,
+     0
+    ],
+    "material": "red_paint"
+   }
+  ]
+ },
+ "spots": {
+  "axle": [
+   0,
+   0,
+   -0.02
+  ],
+  "middle": [
+   0,
+   0,
+   0
+  ]
+ }
+}

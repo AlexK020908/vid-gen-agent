@@ -1,0 +1,73 @@
+{
+ "what": "a small glass cylinder with 5 cm of mercury in it",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "glass",
+    "kind": "lathe",
+    "segments": 48,
+    "points": [
+     [
+      0,
+      0
+     ],
+     [
+      0.045,
+      0
+     ],
+     [
+      0.045,
+      0.08
+     ],
+     [
+      0.041,
+      0.08
+     ],
+     [
+      0.041,
+      0.004
+     ],
+     [
+      0,
+      0.004
+     ]
+    ],
+    "material": "clear_glass"
+   },
+   {
+    "id": "mercury",
+    "kind": "cylinder",
+    "r": 0.0406,
+    "h": 0.074,
+    "at": [
+     0,
+     0,
+     0.0045
+    ],
+    "material": {
+     "color": [
+      0.4,
+      0.41,
+      0.43
+     ],
+     "metal": 1.0,
+     "rough": 0.1
+    },
+    "liquid": true
+   }
+  ]
+ },
+ "spots": {
+  "base": [
+   0,
+   0,
+   0.004
+  ],
+  "top": [
+   0,
+   0,
+   0.0545
+  ]
+ }
+}

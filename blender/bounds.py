@@ -18,17 +18,32 @@ OUT_WAYS = tuple(Vector(v).normalized() for v in ((0.0123, 0.0177, 1.0), (0.81, 
 
 
 CARRIED = "carried"    # marks what rides inside something: it goes where that goes, and it's a thing of its own
+LIQUID = "liquid"      # marks what fills something: it isn't solid, so things go into it and nothing rests on it (blender/liquid.py)
 
 
 def meshes_of(root) -> list:
-    """The meshes that make up something, leaving out what's never drawn, and what's riding inside it, which is something else."""
+    """The meshes that make up something, leaving out what's never drawn, what's riding inside it, which is something else, and the liquid in it,
+    which isn't solid."""
     found, waiting = [], [root]
     while waiting:
         obj = waiting.pop()
         if obj is not root and obj.get(CARRIED):
             continue
-        if obj.type == "MESH" and not obj.hide_viewport and obj.display_type != "WIRE" and not obj.get("light"):
+        if obj.type == "MESH" and not obj.hide_viewport and obj.display_type != "WIRE" and not obj.get("light") and not obj.get(LIQUID):
             found.append(obj)
+        waiting += obj.children
+    return found
+
+
+def liquids_of(root) -> dict:
+    """The liquids in something, by the part each one is."""
+    found, waiting = {}, [root]
+    while waiting:
+        obj = waiting.pop()
+        if obj is not root and obj.get(CARRIED):
+            continue
+        if obj.type == "MESH" and obj.get(LIQUID):
+            found[obj[LIQUID]] = obj
         waiting += obj.children
     return found
 

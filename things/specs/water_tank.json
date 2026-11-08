@@ -1,0 +1,78 @@
+{
+ "what": "a round glass tank of water, 40 cm across, standing on the street",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "glass",
+    "kind": "lathe",
+    "segments": 64,
+    "points": [
+     [
+      0,
+      0
+     ],
+     [
+      0.2,
+      0
+     ],
+     [
+      0.2,
+      0.45
+     ],
+     [
+      0.192,
+      0.45
+     ],
+     [
+      0.192,
+      0.02
+     ],
+     [
+      0,
+      0.02
+     ]
+    ],
+    "material": "clear_glass"
+   },
+   {
+    "id": "water",
+    "kind": "cylinder",
+    "r": 0.1915,
+    "h": 0.42,
+    "at": [
+     0,
+     0,
+     0.0205
+    ],
+    "material": {
+     "color": [
+      0.05,
+      0.27,
+      0.85
+     ],
+     "rough": 0.04,
+     "clear": 0.3
+    },
+    "liquid": true
+   }
+  ]
+ },
+ "spots": {
+  "middle": [
+   0,
+   0,
+   0.02
+  ],
+  "rim": [
+   0.2,
+   0,
+   0.45
+  ],
+  "surface": [
+   0,
+   0,
+   0.32
+  ]
+ }
+}

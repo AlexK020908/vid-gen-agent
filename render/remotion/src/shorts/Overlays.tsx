@@ -111,30 +111,32 @@ export const CalloutLabel: React.FC<{c: Callout; track: Point[] | undefined; fir
   const x = fx * SHORT_W;
   const y = fy * SHORT_H;
   const s = pop(frame, c.from, fps);
+  const size = c.size ?? LABEL_SIZE;
+  const k = size / LABEL_SIZE;       // the dot, line and leader grow with the letters
   const lo = SAFE.left * SHORT_W + 10;
   const hi = (1 - SAFE.right) * SHORT_W - 10;
   // Inter ExtraBold capitals run about 0.68 em wide; a label that wouldn't fit on its side goes on the other
-  const width = c.label.length * LABEL_SIZE * 0.68 + 16;
+  const width = c.label.length * size * 0.68 + 16;
   let dir = c.side === 'right' ? 1 : -1;
-  if (!c.stay && dir > 0 && x + LEADER + width > hi) dir = -1;
-  else if (!c.stay && dir < 0 && x - LEADER - width < lo) dir = 1;
-  const end = Math.max(lo + 40, Math.min(hi - 40, x + dir * LEADER * s));
-  const ly = y - 34 * s;
+  if (!c.stay && dir > 0 && x + LEADER * k + width > hi) dir = -1;
+  else if (!c.stay && dir < 0 && x - LEADER * k - width < lo) dir = 1;
+  const end = Math.max(lo + 40, Math.min(hi - 40, x + dir * LEADER * k * s));
+  const ly = y - 34 * k * s;
   const color = TONES[c.tone];
   return (
     <AbsoluteFill style={{opacity: (seen ? 1 : 0) * fade(frame, c.from, c.to, 3)}}>
       <svg width={SHORT_W} height={SHORT_H} style={{position: 'absolute'}}>
-        <line x1={x} y1={y} x2={end} y2={ly} stroke="rgba(255,255,255,0.92)" strokeWidth={3} />
-        <circle cx={x} cy={y} r={8 * s} fill={color} stroke={OUTLINE} strokeWidth={2.5} />
+        <line x1={x} y1={y} x2={end} y2={ly} stroke="rgba(255,255,255,0.92)" strokeWidth={3 * k} />
+        <circle cx={x} cy={y} r={8 * k * s} fill={color} stroke={OUTLINE} strokeWidth={2.5 * k} />
       </svg>
       <div
         style={{
           position: 'absolute',
-          top: ly - LABEL_SIZE * 0.65,
+          top: ly - size * 0.65,
           ...(dir > 0 ? {left: end + 8} : {right: SHORT_W - end + 8}),
           transform: `scale(${s})`,
           transformOrigin: dir > 0 ? 'left center' : 'right center',
-          ...labelStyle(color, LABEL_SIZE),
+          ...labelStyle(color, size),
         }}
       >
         {c.label}
@@ -143,8 +145,8 @@ export const CalloutLabel: React.FC<{c: Callout; track: Point[] | undefined; fir
   );
 };
 
-const Icon: React.FC<{icon: Tag['icon']; color: string}> = ({icon, color}) => {
-  const common = {width: 38, height: 38, viewBox: '0 0 24 24', style: {marginRight: 8, flexShrink: 0}};
+const Icon: React.FC<{icon: Tag['icon']; color: string; size?: number}> = ({icon, color, size = 38}) => {
+  const common = {width: size, height: size, viewBox: '0 0 24 24', style: {marginRight: size * 0.21, flexShrink: 0}};
   const stroke = {stroke: color, strokeWidth: 3.2, strokeLinecap: 'round' as const, fill: 'none'};
   if (icon === 'clock') {
     return (
@@ -203,10 +205,10 @@ export const TagMark: React.FC<{t: Tag}> = ({t}) => {
         display: 'flex',
         alignItems: 'center',
         opacity,
-        ...labelStyle(color, 38),
+        ...labelStyle(color, t.size ?? 38),
       }}
     >
-      {t.kind === 'fail' || t.kind === 'ok' ? <Icon icon={t.icon ?? (t.kind === 'ok' ? 'check' : 'x')} color={color} /> : null}
+      {t.kind === 'fail' || t.kind === 'ok' ? <Icon icon={t.icon ?? (t.kind === 'ok' ? 'check' : 'x')} color={color} size={t.size ?? 38} /> : null}
       {t.text}
     </div>
   );

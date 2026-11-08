@@ -1,0 +1,657 @@
+{
+ "what": "a small white house with a red tiled gable roof, a red door, green shutters and a chimney, its front facing -y",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "walls",
+    "kind": "box",
+    "size": [
+     7.0,
+     5.5,
+     2.9
+    ],
+    "at": [
+     0,
+     0,
+     1.45
+    ],
+    "material": {
+     "color": [
+      0.82,
+      0.79,
+      0.72
+     ],
+     "rough": 0.85
+    }
+   },
+   {
+    "id": "plinth",
+    "kind": "box",
+    "size": [
+     7.1,
+     5.6,
+     0.3
+    ],
+    "at": [
+     0,
+     0,
+     0.15
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "roof",
+    "kind": "extrude",
+    "outline": [
+     [
+      -3.9,
+      2.75
+     ],
+     [
+      3.9,
+      2.75
+     ],
+     [
+      0,
+      5.0
+     ]
+    ],
+    "depth": 6.1,
+    "material": {
+     "color": [
+      0.45,
+      0.11,
+      0.06
+     ],
+     "rough": 0.7
+    },
+    "bevel": 0.02
+   },
+   {
+    "id": "chimney",
+    "kind": "box",
+    "size": [
+     0.55,
+     0.55,
+     1.6
+    ],
+    "at": [
+     1.8,
+     0.9,
+     4.3
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.2,
+      0.14
+     ],
+     "rough": 0.85
+    }
+   },
+   {
+    "id": "chimney_cap",
+    "kind": "box",
+    "size": [
+     0.7,
+     0.7,
+     0.1
+    ],
+    "at": [
+     1.8,
+     0.9,
+     5.15
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "door.hole",
+    "kind": "box",
+    "size": [
+     1.0,
+     0.5,
+     2.0
+    ],
+    "at": [
+     0,
+     -2.78,
+     1.0
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "door.frame",
+    "kind": "box",
+    "size": [
+     1.25,
+     0.12,
+     2.15
+    ],
+    "at": [
+     0,
+     -2.79,
+     1.075
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "door.hole"
+    ]
+   },
+   {
+    "id": "door",
+    "kind": "box",
+    "size": [
+     1.02,
+     0.05,
+     2.0
+    ],
+    "at": [
+     0,
+     -2.76,
+     1.0
+    ],
+    "material": {
+     "color": [
+      0.45,
+      0.06,
+      0.05
+     ],
+     "rough": 0.4,
+     "coat": 0.4
+    }
+   },
+   {
+    "id": "step",
+    "kind": "box",
+    "size": [
+     1.6,
+     0.6,
+     0.18
+    ],
+    "at": [
+     0,
+     -3.05,
+     0.09
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "w-2.3.hole",
+    "kind": "box",
+    "size": [
+     1.1,
+     0.5,
+     1.1
+    ],
+    "at": [
+     -2.3,
+     -2.78,
+     1.6
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "w-2.3.frame",
+    "kind": "box",
+    "size": [
+     1.3,
+     0.1,
+     1.3
+    ],
+    "at": [
+     -2.3,
+     -2.78,
+     1.6
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "w-2.3.hole"
+    ]
+   },
+   {
+    "id": "w-2.3.pane",
+    "kind": "box",
+    "size": [
+     1.12,
+     0.02,
+     1.12
+    ],
+    "at": [
+     -2.3,
+     -2.762,
+     1.6
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "w-2.3.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.1
+    ],
+    "at": [
+     -2.3,
+     -2.79,
+     1.6
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "w-2.3.sill",
+    "kind": "box",
+    "size": [
+     1.4,
+     0.16,
+     0.06
+    ],
+    "at": [
+     -2.3,
+     -2.82,
+     0.92
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "shutter-2.3l",
+    "kind": "box",
+    "size": [
+     0.45,
+     0.04,
+     1.35
+    ],
+    "at": [
+     -3.2,
+     -2.78,
+     1.6
+    ],
+    "material": {
+     "color": [
+      0.05,
+      0.2,
+      0.12
+     ],
+     "rough": 0.5
+    }
+   },
+   {
+    "id": "shutter-2.3r",
+    "kind": "box",
+    "size": [
+     0.45,
+     0.04,
+     1.35
+    ],
+    "at": [
+     -1.4,
+     -2.78,
+     1.6
+    ],
+    "material": {
+     "color": [
+      0.05,
+      0.2,
+      0.12
+     ],
+     "rough": 0.5
+    }
+   },
+   {
+    "id": "w+2.3.hole",
+    "kind": "box",
+    "size": [
+     1.1,
+     0.5,
+     1.1
+    ],
+    "at": [
+     2.3,
+     -2.78,
+     1.6
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "w+2.3.frame",
+    "kind": "box",
+    "size": [
+     1.3,
+     0.1,
+     1.3
+    ],
+    "at": [
+     2.3,
+     -2.78,
+     1.6
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "w+2.3.hole"
+    ]
+   },
+   {
+    "id": "w+2.3.pane",
+    "kind": "box",
+    "size": [
+     1.12,
+     0.02,
+     1.12
+    ],
+    "at": [
+     2.3,
+     -2.762,
+     1.6
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "w+2.3.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.1
+    ],
+    "at": [
+     2.3,
+     -2.79,
+     1.6
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "w+2.3.sill",
+    "kind": "box",
+    "size": [
+     1.4,
+     0.16,
+     0.06
+    ],
+    "at": [
+     2.3,
+     -2.82,
+     0.92
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "shutter+2.3l",
+    "kind": "box",
+    "size": [
+     0.45,
+     0.04,
+     1.35
+    ],
+    "at": [
+     1.4,
+     -2.78,
+     1.6
+    ],
+    "material": {
+     "color": [
+      0.05,
+      0.2,
+      0.12
+     ],
+     "rough": 0.5
+    }
+   },
+   {
+    "id": "shutter+2.3r",
+    "kind": "box",
+    "size": [
+     0.45,
+     0.04,
+     1.35
+    ],
+    "at": [
+     3.2,
+     -2.78,
+     1.6
+    ],
+    "material": {
+     "color": [
+      0.05,
+      0.2,
+      0.12
+     ],
+     "rough": 0.5
+    }
+   },
+   {
+    "id": "s-1.2.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     0.9,
+     1.1
+    ],
+    "at": [
+     -3.53,
+     -1.2,
+     1.6
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "s-1.2.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.1,
+     1.3
+    ],
+    "at": [
+     -3.53,
+     -1.2,
+     1.6
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "s-1.2.hole"
+    ]
+   },
+   {
+    "id": "s-1.2.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     0.92,
+     1.12
+    ],
+    "at": [
+     -3.512,
+     -1.2,
+     1.6
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "s-1.2.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.1
+    ],
+    "at": [
+     -3.54,
+     -1.2,
+     1.6
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "s-1.2.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.2,
+     0.06
+    ],
+    "at": [
+     -3.57,
+     -1.2,
+     0.92
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   },
+   {
+    "id": "s+1.2.hole",
+    "kind": "box",
+    "size": [
+     0.5,
+     0.9,
+     1.1
+    ],
+    "at": [
+     -3.53,
+     1.2,
+     1.6
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "s+1.2.frame",
+    "kind": "box",
+    "size": [
+     0.1,
+     1.1,
+     1.3
+    ],
+    "at": [
+     -3.53,
+     1.2,
+     1.6
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "s+1.2.hole"
+    ]
+   },
+   {
+    "id": "s+1.2.pane",
+    "kind": "box",
+    "size": [
+     0.02,
+     0.92,
+     1.12
+    ],
+    "at": [
+     -3.512,
+     1.2,
+     1.6
+    ],
+    "material": "black_glass"
+   },
+   {
+    "id": "s+1.2.mullion",
+    "kind": "box",
+    "size": [
+     0.06,
+     0.06,
+     1.1
+    ],
+    "at": [
+     -3.54,
+     1.2,
+     1.6
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "s+1.2.sill",
+    "kind": "box",
+    "size": [
+     0.16,
+     1.2,
+     0.06
+    ],
+    "at": [
+     -3.57,
+     1.2,
+     0.92
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.42,
+      0.41
+     ],
+     "rough": 0.9
+    }
+   }
+  ]
+ },
+ "spots": {
+  "door": [
+   0,
+   -2.75,
+   1.0
+  ],
+  "roof": [
+   0,
+   0,
+   3.9
+  ],
+  "ridge": [
+   0,
+   0,
+   5.0
+  ],
+  "inside": [
+   -1.2,
+   0.4,
+   0
+  ]
+ }
+}

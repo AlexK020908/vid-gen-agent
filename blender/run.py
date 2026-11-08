@@ -84,7 +84,8 @@ def main() -> None:
         shot = stage.run(job, fps)
         first, last = 1, shot["frames"]
         scene.frame_start, scene.frame_end = first, last
-        track, events = {}, shot["events"]
+        track = tracks.export(scene, shot["anchors"], first, last) if shot["anchors"] else {}     # where the labels' things are on screen
+        events = shot["events"]
     elif job.get("kind") == "segment":
         seg = shots.run(job, out, scene)
         first, last = seg["f0"], seg["f1"]

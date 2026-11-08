@@ -61,7 +61,8 @@ def film(config, scene: dict, out: Path, samples=None, frames=None, size=(1080, 
     raw = None if frames else blender_render.encode(out / "frames", out / "scene_raw.mp4", tracks["fps"])
     (out / "bench.json").write_text(json.dumps(bench, indent=1), encoding="utf-8")
     (out / "credits.txt").write_text("\n".join(credits), encoding="utf-8")   # for the video's description
-    return {**bench, "raw": raw, "fps": tracks["fps"], "total_frames": tracks["frames"], "events": tracks["events"]}
+    return {**bench, "raw": raw, "fps": tracks["fps"], "total_frames": tracks["frames"], "events": tracks["events"],
+            "anchors": tracks.get("anchors") or {}}
 
 
 def render(config, scene: dict, out: Path, samples=None, frames=None, size=(1080, 1920), say=print) -> dict:

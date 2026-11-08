@@ -15,6 +15,7 @@ Look for these, and name anything else a viewer would stop believing:
 - **Bodies.** Would a person move like this, and a bird? Twisted limbs, a neck at a wrong angle, hands that don't hold, feet sliding on the ground, a face gone wrong, a stiff body in a fall.
 - **Size.** Things the wrong size for each other, for how they're shown or for what's being said.
 - **From one frame to the next.** Something that jumps, pops in or out, changes place across a cut for no reason, or crosses the picture the wrong way for what just happened. The camera lurching, or going through something.
+- **Liquids and air.** A liquid's top that isn't flat and level, or that rises or falls with nothing in the picture making it: a pour, a pump, air drawn off. A pour that doesn't land where the level's rising. A tall thin tube standing on its end with nothing holding it. Air balls popping in or out of the picture rather than going in and out of it, or sitting still.
 - **Light.** A shadow missing or pointing the wrong way, a person lit differently from where they stand, a bright halo with nothing making it, something blown out.
 - **How it's made showing.** A thing near the lens that's blurred, blocky or has straight-edged facets, a seam in the ground, the edge of a set, anything a viewer would read as a mistake in the model.
 - **Why is that there?** Something arrives that nothing led to: a new object, a new place or a jump to something else, where a viewer would ask what it has to do with what came before. The pictures have to connect, as well as the words.

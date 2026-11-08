@@ -1,0 +1,156 @@
+{
+ "what": "a section of a cream room wall with a white four-paned window in it, a sill below",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "hole",
+    "kind": "box",
+    "size": [
+     1.3,
+     0.6,
+     1.25
+    ],
+    "at": [
+     0,
+     0,
+     1.1
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "wall",
+    "kind": "box",
+    "size": [
+     2.8,
+     0.2,
+     2.6
+    ],
+    "at": [
+     0,
+     0,
+     1.3
+    ],
+    "material": {
+     "color": [
+      0.78,
+      0.74,
+      0.66
+     ],
+     "rough": 0.85
+    },
+    "subtract": [
+     "hole"
+    ]
+   },
+   {
+    "id": "frame.hole",
+    "kind": "box",
+    "size": [
+     1.18,
+     0.5,
+     1.13
+    ],
+    "at": [
+     0,
+     -0.06,
+     1.1
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "frame",
+    "kind": "box",
+    "size": [
+     1.3,
+     0.08,
+     1.25
+    ],
+    "at": [
+     0,
+     -0.06,
+     1.1
+    ],
+    "material": "white_paint",
+    "subtract": [
+     "frame.hole"
+    ]
+   },
+   {
+    "id": "bar_v",
+    "kind": "box",
+    "size": [
+     0.05,
+     0.05,
+     1.13
+    ],
+    "at": [
+     0,
+     -0.06,
+     1.1
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "bar_h",
+    "kind": "box",
+    "size": [
+     1.18,
+     0.05,
+     0.05
+    ],
+    "at": [
+     0,
+     -0.06,
+     1.225
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "glass",
+    "kind": "box",
+    "size": [
+     1.18,
+     0.006,
+     1.13
+    ],
+    "at": [
+     0,
+     -0.05,
+     1.1
+    ],
+    "material": "clear_glass"
+   },
+   {
+    "id": "sill",
+    "kind": "box",
+    "size": [
+     1.5,
+     0.12,
+     0.04
+    ],
+    "at": [
+     0,
+     -0.1,
+     0.455
+    ],
+    "material": "white_paint",
+    "bevel": 0.008
+   }
+  ]
+ },
+ "spots": {
+  "window": [
+   0,
+   -0.1,
+   1.1
+  ],
+  "sill": [
+   0,
+   -0.1,
+   0.4750000000000001
+  ]
+ }
+}

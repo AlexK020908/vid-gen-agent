@@ -626,4 +626,69 @@ key = bpy.data.objects["Key"]
 person = s.people["walt"]
 out["light"] = {"key_in_front": (key.matrix_world.translation - person.middle(person.eyes)).dot(s._directions("walt")[0])}
 
+# a liquid's top: flat, level, where the scene says, counted from another's top; a pour lands on it; air never ends up in anything
+from blender import liquid  # noqa: E402
+
+DISH = {"type": "prop", "prop": "dish", "on": "set", "at": [0, 0], "level": 0.01}
+TUBE = {"type": "prop", "prop": "tube", "on": "dish", "above": "dish", "level": 0.45}
+s = staged({"length": 2.0, "set": "sky_counter", "cast": {"dish": DISH, "tube": TUBE, "jug": {"type": "prop", "prop": "jug", "at": [0.04, 0.0, 0.2], "floats": True}},
+            "happens": [{"do": "fill", "prop": "tube", "t": 0.2, "over": 1.0, "level": 0.3, "ease": "linear"},
+                        {"do": "pour", "from": "jug:spout", "into": "dish", "t": 0.1, "to": 1.5},
+                        {"do": "fill", "prop": "dish", "t": 0.2, "over": 1.2, "level": 0.02, "ease": "linear"},
+                        {"do": "air", "t": 0, "box": [[-0.12, -0.12, 0.0], [0.12, 0.12, 0.3]], "count": 120, "radius": 0.004, "speed": 0.3,
+                         "leave": [{"t": 1.0, "through": [0, 0, 0.6], "share": 0.5, "over": 0.5}]}],
+            "shots": [{"t": 0, "on": "dish:middle", "frame": 0.4, "angle": [0, 20], "fstop": 16, "square": True}]})
+scene = bpy.context.scene
+dish_bottom = liquid.lowest(s._liquid_of("dish"))
+stream = next(o for o in bpy.data.objects if o.name.startswith("jug.pour"))
+balls = [o for o in bpy.data.objects if o.name.startswith("Air")]
+solid = bounds.Solid([obj for cid in ("dish", "tube", "jug") for obj in bounds.meshes_of(s.props[cid]["root"])] + list(s.solids))
+inside, under = 0, 0
+for f in range(1, s.total + 1, 4):
+    scene.frame_set(f)
+    bpy.context.view_layer.update()
+    wet = liquid.tree_of([s._liquid_of("dish")])
+    for ball in balls:
+        if ball.scale[0] < 0.5:
+            continue
+        at = ball.matrix_world.translation
+        inside += solid._holds(at)
+        under += at.z < s.tops["dish"][f] - 0.001 and liquid.holds(wet, at)
+scene.frame_set(45)
+bpy.context.view_layer.update()
+out["liquid"] = {"dish_from_bottom": [round(s.tops["dish"][f] - dish_bottom, 4) for f in (1, 7, 43)],
+                 "tube_above_dish": [round(s.tops["tube"][f] - s.tops["dish"][f], 4) for f in (1, 7, 37, 60)],
+                 "spout_moved": (stream.matrix_world.translation - s.aim("jug:spout", 45)).length,
+                 "balls_inside_solids": inside, "balls_under_a_top": under,
+                 "balls_left": sum(1 for b in balls if b.scale[0] > 0.5), "balls": len(balls),
+                 "solid_has_no_liquid": all(not obj.get("liquid") for obj in bounds.meshes_of(s.props["tube"]["root"])),
+                 "glass_seen_through": s._see_through("dish"), "steel_seen_through": s._see_through("jug")}
+out["liquid_refused"] = {
+    "misses": refused({"length": 1.0, "set": "sky_counter", "cast": {"dish": DISH, "jug": {"type": "prop", "prop": "jug", "at": [0.3, 0.0, 0.2], "floats": True}},
+                       "happens": [{"do": "pour", "from": "jug:spout", "into": "dish", "t": 0.1, "to": 0.8}, {"do": "fill", "prop": "dish", "t": 0.2, "over": 0.5, "level": 0.02}],
+                       "shots": [{"t": 0, "on": "dish:middle", "frame": 0.6, "angle": [0, 20], "fstop": 16, "square": True}]}),
+    "into_empty": refused({"length": 1.0, "set": "sky_counter", "cast": {"dish": {**DISH, "level": 0.0}, "jug": {"type": "prop", "prop": "jug", "at": [0.04, 0.0, 0.2], "floats": True}},
+                           "happens": [{"do": "pour", "from": "jug:spout", "into": "dish", "t": 0.1, "to": 0.8}, {"do": "fill", "prop": "dish", "t": 0.2, "over": 0.5, "level": 0.02}],
+                           "shots": [{"t": 0, "on": "dish:middle", "frame": 0.6, "angle": [0, 20], "fstop": 16, "square": True}]}),
+    "dipped": refused({"length": 0.5, "set": "sky_counter", "cast": {"dish": {**DISH, "level": 0.03}, "tube": {**TUBE, "level": 0.2}},
+                       "shots": [{"t": 0, "on": "dish:middle", "frame": 0.4, "angle": [0, 20], "fstop": 16, "square": True}]}),
+    "no_room": refused({"length": 0.5, "set": "sky_counter", "cast": {"dish": DISH, "tube": {**TUBE, "level": 0.1}},
+                        "happens": [{"do": "air", "t": 0, "box": [[-0.01, -0.01, 0.2], [0.01, 0.01, 0.45]], "inside": "tube", "count": 20, "radius": 0.004}],
+                        "shots": [{"t": 0, "on": "dish:middle", "frame": 0.4, "angle": [0, 20], "fstop": 16, "square": True}]})}
+
+# a label's thing tracked on screen: in the middle of a shot that's on it, and seen through its own glass, a tube's glass and liquids
+from blender import tracks  # noqa: E402
+
+fresh()
+s = stage.Stage({"length": 1.0, "set": "sky_counter", "cast": {"dish": DISH, "tube": TUBE, "jug": {"type": "prop", "prop": "jug", "at": [0.04, 0.0, 0.2], "floats": True}},
+                 "anchors": ["dish:middle", "jug:spout"],
+                 "shots": [{"t": 0, "on": "dish:middle", "frame": 0.8, "angle": [0, 20], "fstop": 16, "square": True}]}, job["folders"], job["catalog"], 30, job["things"])
+shot = s.run()
+track = tracks.export(bpy.context.scene, shot["anchors"], 1, s.total)
+out["anchors_first"] = {name: points[0] for name, points in track.items()}
+out["anchors"] = {"names": sorted(shot["anchors"]), "frames": len(track["dish:middle"]), "total": s.total,
+                  "dish_from_middle": max(math.hypot(x - 0.5, y - 0.5) for x, y, _ in track["dish:middle"]),
+                  "dish_seen": all(seen for _, _, seen in track["dish:middle"]), "spout_seen": all(seen for _, _, seen in track["jug:spout"]),
+                  "spout_above_dish": all(sp[1] < d[1] for sp, d in zip(track["jug:spout"], track["dish:middle"]))}
+
 (folder / "out.json").write_text(json.dumps(out, indent=1), encoding="utf-8")

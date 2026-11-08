@@ -14,7 +14,13 @@ A spec:
     {"kind": "built", "parts": [...]}            made here from exact shapes, free, in the machine kit's format (machines/spec.py):
                                                  each part has an id, a kind and its sizes in meters, a material, and optionally
                                                  at, rot and parent. A material is one of the palette's, or a part's own
-                                                 {"color": [r, g, b], "metal": 0 to 1, "rough": 0 to 1, "coat": 0 to 1, "glow": n, "pores": how wide the holes in it are, in meters, for a sponge or bread}.
+                                                 {"color": [r, g, b], "metal": 0 to 1, "rough": 0 to 1, "coat": 0 to 1, "glow": n, "pores": how wide the holes in it are, in meters, for a sponge or bread,
+                                                 "clear": how much you see through it, 0 to 1}. clear_glass in the palette is a clean glass: a tube, a beaker,
+                                                 a dish, a pane, with what's in it showing.
+                                                 A part with "liquid": true is what's in it, shaped as it is at its fullest: water in a cup, mercury in a
+                                                 tube, a drink in a straw. It's never solid: things go into it and nothing rests on it, and a scene says how
+                                                 full it is (scenes/spec.py, `level` and `fill`), its top always flat and level whichever way it's turned.
+                                                 Make it a fraction of a millimeter inside what holds it.
                                                  Anything simple and geometric comes out sharper this way than from a download:
                                                  a magnet, a pan, a stand, a coil, an arrow, a counter's fittings. A scan is for
                                                  what can't be drawn: food, animals, faces
@@ -72,15 +78,19 @@ def _built_problems(parts) -> list[str]:
     for part in parts:
         material = part.get("material") if isinstance(part, dict) else None
         if isinstance(material, dict):
-            unknown = set(material) - {"color", "metal", "rough", "coat", "glow", "pores"}
+            unknown = set(material) - {"color", "metal", "rough", "coat", "glow", "pores", "clear"}
             if unknown:
                 out.append(f"part {part.get('id')}: its material has no {', '.join(sorted(unknown))}")
             color = material.get("color")
             if not (isinstance(color, list) and len(color) == 3 and all(_num(v) and 0 <= v <= 1 for v in color)):
                 out.append(f"part {part.get('id')}: its material's color has to be [r, g, b], each 0 to 1")
+            if "clear" in material and not (_num(material["clear"]) and 0 <= material["clear"] <= 1):
+                out.append(f"part {part.get('id')}: clear is how much you see through it, 0 to 1")
             plain.append({**part, "material": "steel"})
         else:
             plain.append(part)
+        if isinstance(part, dict) and "liquid" in part and not (part["liquid"] is True and part.get("kind") not in ("group", "spring", "spiral", "text", "rods", "truss")):
+            out.append(f"part {part.get('id')}: liquid is true, on a part shaped like what it fills at its fullest")
     return out + machine_spec.check({"name": "built", "parts": plain})
 
 

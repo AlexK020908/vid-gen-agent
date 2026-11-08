@@ -12,6 +12,15 @@ from bpy_extras.object_utils import world_to_camera_view
 from mathutils import Vector
 
 
+def _belongs(obj, name: str) -> bool:
+    """Whether an object is part of the thing called `name`: it, or anything under it."""
+    while obj is not None:
+        if obj.name == name:
+            return True
+        obj = obj.parent
+    return False
+
+
 def _seen(scene, depsgraph, cam_pos: Vector, point: Vector, owner) -> bool:
     direction = point - cam_pos
     dist = direction.length
@@ -25,10 +34,13 @@ def _seen(scene, depsgraph, cam_pos: Vector, point: Vector, owner) -> bool:
             return True
         if obj is not None and (obj.original is owner or obj.original.parent is owner):
             return True
+        if obj is not None and owner.get("of") and _belongs(obj.original, owner["of"]):
+            return True   # a stage's label on a thing: that thing's own surface is where the label's dot is
         group = owner.get("group")
         if obj is not None and group and obj.original.get("group") == group:
             return True   # one air ball in front of another is still the air the label points at
-        if obj is not None and not obj.original.hide_render:
+        see_through = obj is not None and (obj.original.get("clear") or obj.original.get("liquid"))
+        if obj is not None and not obj.original.hide_render and not see_through:
             return False
         step = (loc - origin).length + 1e-3   # hidden helper (the cutter): look past it
         travelled += step

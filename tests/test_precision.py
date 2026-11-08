@@ -144,6 +144,40 @@ def test_a_mark_is_checked_and_drawn():
     assert short.tags([{"kind": "count", "from": 1, "to": 2}])[0]["at"] == [0.5, 0.36]
 
 
+TWO_SCENES = [{"from": 0, "to": 3, "cast": {"tank": {"type": "prop", "prop": "water_tank"}}},
+              {"from": 3, "to": 6, "cast": {"pump": {"type": "prop", "prop": "vacuum_pump"}}}]
+
+
+def test_what_goes_wrong_is_marked_and_a_question_asked():
+    fail = {"kind": "fail", "text": "TOO TALL", "from": 1, "to": 2}
+    assert short.mark_problems([fail, {"kind": "question", "from": 2, "to": 3}], 5) == []
+    assert "clock" in short.mark_problems([{**fail, "icon": "bell"}], 5)[0]
+    assert "says went wrong" in short.mark_problems([{**fail, "text": ""}], 5)[0]
+    assert "tone" in short.mark_problems([{**fail, "tone": "gold"}], 5)[0]
+    assert short.tags([fail])[0]["at"] == [0.5, 0.3] and short.tags([fail])[0]["text"] == "TOO TALL"
+    assert short.tags([fail])[0]["size"] == short.TAG_SIZE and "size" not in short.tags([{"kind": "count", "from": 1, "to": 2}])[0]    # big enough to read on mute
+    assert short.mark_problems([{"kind": "warn", "text": "STORM WARNING", "from": 1, "to": 2}], 5) == []
+    assert "warns of" in short.mark_problems([{"kind": "warn", "from": 1, "to": 2}], 5)[0]
+
+
+def test_a_label_names_a_thing_in_the_scene_playing_and_follows_it():
+    label = {"kind": "label", "on": "pump:body", "text": "pump", "from": 3.5, "to": 5}
+    assert short.mark_problems([label], 6, TWO_SCENES) == []
+    assert "isn't in the scene playing" in short.mark_problems([{**label, "from": 1, "to": 2}], 6, TWO_SCENES)[0]
+    assert "inside one scene" in short.mark_problems([{**label, "from": 2, "to": 4}], 6, TWO_SCENES)[0]
+    assert "a word or two" in short.mark_problems([{**label, "text": "the pump on the roof"}], 6, TWO_SCENES)[0]
+    assert short.anchors_for([label], TWO_SCENES[1]) == ["pump:body"] and short.anchors_for([label], TWO_SCENES[0]) == []
+    drawn = short.labels([label], TWO_SCENES)[0]
+    assert drawn["anchor"] == "1:pump:body" and drawn["label"] == "PUMP" and drawn["from"] == 3.5 and drawn["size"] == short.LABEL_SIZE
+    assert short.tags([label]) == []       # drawn on its track, not where a tag goes
+
+
+def test_a_labels_track_is_on_the_shorts_frames():
+    from stages import film
+    filmed = [{"from": 0.0, "anchors": {}}, {"from": 3.0, "anchors": {"pump:body": [[0.5, 0.5, True], [0.51, 0.5, True]]}}]
+    assert film.tracks_of(filmed) == {"1:pump:body": {"first": 90, "points": [[0.5, 0.5, True], [0.51, 0.5, True]]}}
+
+
 PARTS = [{"id": "base", "kind": "cylinder", "r": 0.1, "h": 0.02, "material": "steel"},
          {"id": "wire", "kind": "spiral", "r_in": 0.01, "r_out": 0.09, "turns": 3, "wire": 0.004, "at": [0, 0, 0.02], "material": {"color": [0.6, 0.2, 0.0], "metal": 0.8}}]
 
@@ -219,11 +253,22 @@ def measured(tmp_path_factory):
              {"id": "near", "kind": "box", "size": [0.5, 0.01, 0.5], "at": [0, -0.245, 0.25], "material": "steel"}, {"id": "far", "kind": "box", "size": [0.5, 0.01, 0.5], "at": [0, 0.245, 0.25], "material": "steel"}]}}
     round_side = [[round(0.1 * math.sin(i * math.pi / 12), 5), round(0.1 - 0.1 * math.cos(i * math.pi / 12), 5)] for i in range(1, 12)]
     orb = {"what": "a ball", "source": {"kind": "built", "parts": [{"id": "ball", "kind": "lathe", "segments": 32, "points": [[0.0, 0.0], *round_side, [0.0, 0.2]], "material": "steel"}]}}
-    for name, spec in (("block", block), ("hat", dome), ("corner", corner), ("wall", wall), ("rod", rod), ("shell", shell), ("orb", orb)):
+    mercury = {"color": [0.5, 0.51, 0.53], "metal": 1.0, "rough": 0.12}
+    tube = {"what": "a glass tube full of mercury, sealed at the top", "source": {"kind": "built", "parts": [
+            {"id": "glass", "kind": "lathe", "segments": 24, "points": [[0.0045, 0.0], [0.007, 0.0], [0.007, 0.5], [0.0, 0.507], [0.0, 0.503], [0.0045, 0.497]], "material": "clear_glass"},
+            {"id": "mercury", "kind": "cylinder", "r": 0.0044, "h": 0.4965, "at": [0, 0, 0.0005], "material": mercury, "liquid": True}]}, "spots": {"sealed_end": [0, 0, 0.507]}}
+    dish = {"what": "a glass dish of mercury", "source": {"kind": "built", "parts": [
+            {"id": "glass", "kind": "lathe", "segments": 48, "points": [[0.0, 0.0], [0.07, 0.0], [0.075, 0.045], [0.071, 0.045], [0.066, 0.005], [0.0, 0.005]], "material": "clear_glass"},
+            {"id": "mercury", "kind": "lathe", "segments": 48, "points": [[0.0, 0.0052], [0.0658, 0.0052], [0.0705, 0.0402], [0.0, 0.0402]], "material": mercury, "liquid": True}]},
+            "spots": {"middle": [0, 0, 0.005]}}
+    jug = {"what": "a jug of mercury", "source": {"kind": "built", "parts": [
+           {"id": "body", "kind": "tube", "r_out": 0.03, "r_in": 0.027, "h": 0.08, "material": "stainless"},
+           {"id": "mercury", "kind": "cylinder", "r": 0.0268, "h": 0.06, "at": [0, 0, 0.0005], "material": mercury, "liquid": True}]}, "spots": {"spout": [0.0, 0.0, -0.002]}}
+    for name, spec in (("block", block), ("hat", dome), ("corner", corner), ("wall", wall), ("rod", rod), ("shell", shell), ("orb", orb), ("tube", tube), ("dish", dish), ("jug", jug)):
         blender_render.make_thing(CFG, spec, {"file": "", "license": "own", "credit": ""}, tmp / name)
     found = clips.catalog(CFG)
     job = {"folders": {"walt": str(_fake_person(tmp))}, "catalog": {name: found[name] for name in ("Idle_relaxed", "Walk_forwards", "Run_jog_forwards", "Hit_to_the_head", "Death_fall_backwards")},
-           "things": {name: str(tmp / name) for name in ("block", "hat", "corner", "wall", "rod", "shell", "orb")}, "out": str(tmp),
+           "things": {name: str(tmp / name) for name in ("block", "hat", "corner", "wall", "rod", "shell", "orb", "tube", "dish", "jug")}, "out": str(tmp),
            "textures": {t: assets.texture(CFG.data_dir, t) for t in blender_render.TEXTURES}}
     (tmp / "job.json").write_text(json.dumps(job), encoding="utf-8")
     done = subprocess.run([str(blender_render.exe(CFG)), "-b", "--factory-startup", "--python-exit-code", "1", "-P",
@@ -794,3 +839,132 @@ def test_sinking_needs_something_to_sink_into():
     assert not [p for p in check({"pad": pad, "brain": {"type": "prop", "prop": "brain", "on": "pad", "sinks": 0.02}}) if "sinks" in p]
     assert [p for p in check({"pad": pad, "brain": {"type": "prop", "prop": "brain", "sinks": 0.02}}) if "sinks" in p]
     assert [p for p in check({"pad": pad, "brain": {"type": "prop", "prop": "brain", "on": "pad", "sinks": -1}}) if "sinks" in p]
+
+
+# --- what fills things, what pours, and air (phase 43) ----------------------------------------------------------------
+
+WET = {"tube": {"moves": [], "spots": ["sealed_end", "open_end"], "lines": [], "liquids": ["mercury"], "glass": True},
+       "dish": {"moves": [], "spots": ["middle"], "lines": [], "liquids": ["mercury"], "glass": True},
+       "jug": {"moves": [], "spots": ["spout"], "lines": [], "liquids": ["mercury"], "glass": False},
+       "flask": {"moves": [], "spots": [], "lines": [], "liquids": ["oil", "water"], "glass": True},
+       "block": {"moves": [], "spots": [], "lines": [], "liquids": [], "glass": False}}
+WET_CAST = {"dish": {"type": "prop", "prop": "dish", "on": "set", "at": [0, 0], "level": 0.004},
+            "tube": {"type": "prop", "prop": "tube", "on": "dish", "above": "dish", "level": 0.95},
+            "jug": {"type": "prop", "prop": "jug", "at": [0, 0, 0.3], "floats": True}}
+WET_SHOT = [{"t": 0, "on": "dish:middle", "frame": 0.3, "angle": [0, 20], "fstop": 16, "square": True}]
+
+
+def _wet(cast=None, happens=(), shots=None):
+    return scene_spec.check({"length": 3.0, "set": "sky_counter", "cast": {**WET_CAST, **(cast or {})}, "happens": list(happens), "shots": shots or WET_SHOT}, [], [], WET)
+
+
+def test_a_liquid_starts_at_a_level_counted_from_its_own_bottom_or_from_another_liquids_top():
+    assert _wet() == []
+    assert "has no liquid" in " ".join(_wet({"stand": {"type": "prop", "prop": "block", "on": "set", "at": [0.3, 0], "level": 0.1}}))
+    assert "more than one liquid" in " ".join(_wet({"flask": {"type": "prop", "prop": "flask", "on": "set", "at": [0.3, 0], "level": 0.1}}))
+    assert _wet({"flask": {"type": "prop", "prop": "flask", "on": "set", "at": [0.3, 0], "level": 0.1, "part": "oil"}}) == []
+    assert "above needs a level" in " ".join(_wet({"tube": {"type": "prop", "prop": "tube", "on": "dish", "above": "dish"}}))
+    assert "another thing in the cast with a liquid" in " ".join(_wet({"tube": {"type": "prop", "prop": "tube", "on": "dish", "above": "tube", "level": 0.2}}))
+    circle = _wet({"dish": {**WET_CAST["dish"], "above": "tube", "level": 0.0}})
+    assert "counted above another's that's counted above it" in " ".join(circle)
+    assert "level is meters" in " ".join(_wet({"dish": {**WET_CAST["dish"], "level": -0.1}}))
+
+
+def test_a_level_moves_over_time_and_a_pour_has_to_raise_what_it_fills():
+    drop = {"do": "fill", "prop": "tube", "t": 0.5, "over": 1.2, "level": 0.76, "ease": "out"}
+    assert _wet(happens=[drop]) == []
+    assert "over needs seconds" in " ".join(_wet(happens=[{**drop, "over": 0}]))
+    assert "ease" in " ".join(_wet(happens=[{**drop, "ease": "bounce"}]))
+    pour = {"do": "pour", "from": "jug:spout", "into": "dish", "t": 0.3, "to": 2.0}
+    rise = {"do": "fill", "prop": "dish", "t": 0.4, "over": 1.6, "level": 0.02}
+    assert _wet(happens=[pour, rise]) == []
+    assert "has to fill it" in " ".join(_wet(happens=[pour]))
+    assert "takes it from 0.004 to 0.002" in " ".join(_wet(happens=[pour, {**rise, "level": 0.002}]))
+    full = _wet({"dish": {"type": "prop", "prop": "dish", "on": "set", "at": [0, 0]}, "tube": {"type": "prop", "prop": "tube", "on": "dish"}}, happens=[pour, rise])
+    assert "starts full" in " ".join(full)
+    assert "spot it pours from" in " ".join(_wet(happens=[{**pour, "from": "jug:lid"}, rise]))
+    assert "to is when it stops" in " ".join(_wet(happens=[{**pour, "to": 0.2}, rise]))
+
+
+def test_air_is_balls_in_a_box_and_what_draws_it_off_says_where_through():
+    air = {"do": "air", "t": 0, "box": [[-0.1, -0.1, 0.0], [0.1, 0.1, 0.3]], "count": 160, "radius": 0.004, "speed": 0.25,
+           "leave": [{"t": 1.5, "through": "tube:sealed_end", "share": 0.25, "over": 1.0, "from": [[-0.01, -0.01, 0.0], [0.01, 0.01, 0.3]]}]}
+    assert _wet(happens=[air]) == []
+    assert _wet(happens=[{**air, "leave": [{"t": 1.0, "through": [0, 0, 0.6]}]}]) == []
+    assert "low corner" in " ".join(_wet(happens=[{**air, "box": [[0.1, 0, 0], [-0.1, 0.1, 0.3]]}]))
+    assert "a whole number from 1 to 600" in " ".join(_wet(happens=[{**air, "count": 5000}]))
+    assert "not before the air's there" in " ".join(_wet(happens=[{**air, "t": 1.0, "leave": [{"t": 0.5, "through": [0, 0, 1]}]}]))
+    assert "nothing called" in " ".join(_wet(happens=[{**air, "leave": [{"t": 1.0, "through": "pump:inlet"}]}]))
+    assert "thins is meters" in " ".join(_wet(happens=[{**air, "thins": 0}]))
+
+
+def test_a_shot_of_something_made_of_glass_cant_be_shallow():
+    """Blended glass has no depth for a camera to focus on, so a tube's walls blurred with the sky behind them while the mercury inside stayed sharp."""
+    shallow = _wet(shots=[{**WET_SHOT[0], "fstop": 2}])
+    assert "something's gone to glass here" in " ".join(shallow)
+    assert _wet(shots=[{**WET_SHOT[0], "fstop": 2, "shows": ["jug"], "on": "jug:spout"}]) == []      # the jug isn't glass
+
+
+def test_when_a_scene_is_cut_from_the_short_its_air_leaves_on_its_own_clock():
+    from scenes import direction
+    scene = {"from": 10.0, "to": 13.0, "set": "sky_counter", "cast": {}, "shots": [{"t": 10.0}],
+             "happens": [{"do": "air", "t": 10.5, "box": [[0, 0, 0], [1, 1, 1]], "count": 9, "leave": [{"t": 11.5, "through": [0, 0, 2]}]}]}
+    made = direction.local(scene)
+    assert made["happens"][0]["t"] == 0.5 and made["happens"][0]["leave"][0]["t"] == 1.5
+
+
+@needs_blender
+def test_a_liquids_top_is_where_the_scene_says_and_moves_as_it_fills(measured):
+    wet = measured["liquid"]
+    assert wet["dish_from_bottom"] == pytest.approx([0.01, 0.01, 0.02], abs=0.0005)
+    assert wet["tube_above_dish"] == pytest.approx([0.45, 0.45, 0.3, 0.3], abs=0.0005)     # counted from the dish's top as that rises
+    assert wet["solid_has_no_liquid"]
+
+
+@needs_blender
+def test_a_pour_comes_from_its_spout_and_has_to_land_in_what_it_fills(measured):
+    assert measured["liquid"]["spout_moved"] < 0.001
+    assert "isn't over what's in dish" in " ".join(measured["liquid_refused"]["misses"])
+    assert measured["liquid_refused"]["dipped"] == []         # a tube stood in mercury isn't passing through anything solid
+
+
+@needs_blender
+def test_air_never_ends_up_in_anything_and_what_is_drawn_off_goes(measured):
+    wet = measured["liquid"]
+    assert wet["balls_inside_solids"] == 0 and wet["balls_under_a_top"] == 0
+    assert wet["balls"] >= 100 and wet["balls_left"] <= wet["balls"] * 0.75
+
+
+def test_a_shot_where_only_a_liquid_or_air_moves_isnt_held_still():
+    from scenes import direction
+    base = {"from": 0.0, "to": 4.0, "set": "sky_counter", "cast": {}, "shots": [{"t": 0.0, "on": "dish:middle", "frame": 0.3}]}
+    assert "nothing moving" in " ".join(direction._still_shots({**base, "happens": []}))
+    assert direction._still_shots({**base, "happens": [{"do": "fill", "t": 0.5, "over": 3.0, "prop": "dish", "level": 0.02}]}) == []
+    assert direction._still_shots({**base, "happens": [{"do": "air", "t": 0.0, "box": [[0, 0, 0], [1, 1, 1]], "count": 9}]}) == []     # air goes on till it's stopped
+    assert direction._still_shots({**base, "happens": [{"do": "pour", "t": 0.2, "to": 3.8, "from": "jug:spout", "into": "dish"}]}) == []
+
+
+def test_air_can_start_only_inside_something_in_the_cast():
+    air = {"do": "air", "t": 0, "box": [[-0.1, -0.1, 0.0], [0.1, 0.1, 0.3]], "count": 20, "inside": "tube"}
+    assert _wet(happens=[air]) == []
+    assert "isn't in the cast" in " ".join(_wet(happens=[{**air, "inside": "bottle"}]))
+
+
+@needs_blender
+def test_a_pour_can_start_into_something_empty_and_glass_doesnt_block_a_shot(measured):
+    assert measured["liquid_refused"]["into_empty"] == []        # found on the barometer short: an empty tube's pour was refused as missing it
+    assert measured["liquid"]["glass_seen_through"] and not measured["liquid"]["steel_seen_through"]
+
+
+@needs_blender
+def test_air_with_no_room_for_its_balls_is_refused_rather_than_drawn_as_nothing(measured):
+    assert "found room for 0 of its 20 balls inside tube" in " ".join(measured["liquid_refused"]["no_room"])   # the barometer's straw: balls too big for its bore
+
+
+@needs_blender
+def test_what_a_label_names_is_tracked_on_screen_through_glass_and_liquid(measured):
+    got = measured["anchors"]
+    assert got["names"] == ["dish:middle", "jug:spout"] and got["frames"] == got["total"]
+    assert got["dish_from_middle"] < 0.02                     # the shot's on it, so it's in the middle of the picture
+    assert got["dish_seen"] and got["spout_seen"]             # the dish's glass, the tube's glass and the mercury don't hide it
+    assert got["spout_above_dish"]

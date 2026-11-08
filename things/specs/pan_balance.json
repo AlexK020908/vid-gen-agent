@@ -1,0 +1,160 @@
+{
+ "what": "a big top-pan balance: two round steel pans on a beam, and a red pointer that stands upright when they balance",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "base",
+    "kind": "box",
+    "size": [
+     1.9,
+     0.5,
+     0.08
+    ],
+    "at": [
+     0,
+     0,
+     0.04
+    ],
+    "material": "black_steel",
+    "bevel": 0.01
+   },
+   {
+    "id": "pillar",
+    "kind": "box",
+    "size": [
+     0.09,
+     0.09,
+     0.5
+    ],
+    "at": [
+     0,
+     0,
+     0.33
+    ],
+    "material": "black_steel",
+    "bevel": 0.005
+   },
+   {
+    "id": "beam",
+    "kind": "box",
+    "size": [
+     1.7,
+     0.06,
+     0.06
+    ],
+    "at": [
+     0,
+     0,
+     0.61
+    ],
+    "material": "bright_steel",
+    "bevel": 0.006
+   },
+   {
+    "id": "pivot",
+    "kind": "cylinder",
+    "r": 0.035,
+    "h": 0.1,
+    "at": [
+     0,
+     -0.05,
+     0.61
+    ],
+    "rot": [
+     90,
+     0,
+     0
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "pointer",
+    "kind": "box",
+    "size": [
+     0.016,
+     0.01,
+     0.32
+    ],
+    "at": [
+     0,
+     -0.075,
+     0.79
+    ],
+    "material": "red_paint"
+   },
+   {
+    "id": "post_l",
+    "kind": "cylinder",
+    "r": 0.025,
+    "h": 0.32,
+    "at": [
+     -0.75,
+     0,
+     0.64
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "post_r",
+    "kind": "cylinder",
+    "r": 0.025,
+    "h": 0.32,
+    "at": [
+     0.75,
+     0,
+     0.64
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "pan_l",
+    "kind": "cylinder",
+    "r": 0.3,
+    "h": 0.03,
+    "at": [
+     -0.75,
+     0,
+     0.96
+    ],
+    "material": "stainless",
+    "bevel": 0.006
+   },
+   {
+    "id": "pan_r",
+    "kind": "cylinder",
+    "r": 0.3,
+    "h": 0.03,
+    "at": [
+     0.75,
+     0,
+     0.96
+    ],
+    "material": "stainless",
+    "bevel": 0.006
+   }
+  ]
+ },
+ "spots": {
+  "pan_l": [
+   -0.75,
+   0,
+   0.99
+  ],
+  "pan_r": [
+   0.75,
+   0,
+   0.99
+  ],
+  "pointer": [
+   0,
+   -0.08,
+   0.9
+  ],
+  "middle": [
+   0,
+   0,
+   0.6
+  ]
+ }
+}

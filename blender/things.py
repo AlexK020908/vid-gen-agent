@@ -18,6 +18,9 @@ from mathutils import Euler, Vector
 from blender import envs, kit, look, materials, shapes
 
 EASE_FRAMES = 6     # how long one move takes to ease into the next
+LIQUID = "liquid"        # marks a part that is what fills something: blender/bounds.py leaves it out of what's solid
+CLEAR = "clear"          # marks a part you see through, such as glass: it isn't in the way of a shot
+CLEAR_ENOUGH = 0.8       # how see-through a part's own paint has to be to count
 MOST_FACES = 200_000     # a museum scan comes with up to a million: its texture carries the detail, and every check reads every face
 VIEWS = (("front", 0, 4), ("three quarter", -38, 10), ("side", 90, 4), ("back", 180, 4), ("from above", 20, 55))
 LENS = 60.0
@@ -285,6 +288,13 @@ def make(job: dict, out: Path) -> dict:
     before = set(bpy.data.objects)
     built = spec["source"]["kind"] == "built"
     parts = _built(spec) if built else None
+    liquids = [part["id"] for part in spec["source"].get("parts") or [] if part.get("liquid")] if built else []
+    for pid in liquids:             # what's in it: never solid, and cut off at a level the scene gives (blender/liquid.py)
+        parts[pid][LIQUID] = pid
+    for part in (spec["source"].get("parts") or []) if built else []:      # what you see through: it doesn't stand in a lens's way
+        paint = part.get("material")
+        if not part.get("liquid") and (paint == "clear_glass" or (isinstance(paint, dict) and paint.get("clear", 0) >= CLEAR_ENOUGH)):
+            parts[part["id"]][CLEAR] = True
     if not built:
         _import(job["source"]["file"])
     scene.render.fps = fps
@@ -344,7 +354,9 @@ def make(job: dict, out: Path) -> dict:
     manifest = {"spec": spec, "root": root.name, "holder": holder.name, "objects": sorted(o.name for o in [root, holder, *objects]),
                 "size": [round(v, 5) for v in high - low], "materials": paints, "clips": clips, "moves": moves, "license": job["source"]["license"],
                 "texels_per_meter": None if built else _texels_per_meter(meshes),
-                "credit": job["source"].get("credit", ""), "page": job["source"].get("page", "")}
+                "credit": job["source"].get("credit", ""), "page": job["source"].get("page", ""), "liquids": liquids,
+                "glass": built and any(part.get("material") == "clear_glass" or (isinstance(part.get("material"), dict) and part["material"].get("clear", 0) > 0)
+                                       for part in spec["source"]["parts"])}
     if built:      # its spots and lines were written in its parts' meters: from here on they count from its middle, like any thing's
         bpy.context.view_layer.update()
         manifest["spots"] = {name: [round(v, 5) for v in holder.matrix_basis @ Vector(at)] for name, at in (spec.get("spots") or {}).items()}
@@ -457,8 +469,8 @@ def sheet(job: dict, out: Path, scene) -> dict:
     envs.sky_set()
     scene.render.use_motion_blur = False
     thing = Thing(job["thing"])
-    thing.root.location = (0, 0, 0)
-    middle = Vector((0, 0, 0))
+    middle = Vector((0, 0, thing.size.z / 2))      # standing on the floor: the set's floor hides whatever's under it, which was half of every thing
+    thing.root.location = middle
     envs.portrait_lights(middle, reach=max(max(thing.size) / 1.2, 0.6))
     cam, aim = look.camera(scene, (0, -3, 0), middle, lens=LENS, fstop=0)
     height = max(thing.size) * 1.35
@@ -475,7 +487,7 @@ def sheet(job: dict, out: Path, scene) -> dict:
             _show(thing.actions[clip["action"]], clip["slots"], thing.saved)
             scene.frame_set(int(round(at)))
         turn, lift = math.radians(around), math.radians(up)
-        cam.location = Vector((math.sin(turn) * math.cos(lift), -math.cos(turn) * math.cos(lift), math.sin(lift))) * distance
+        cam.location = middle + Vector((math.sin(turn) * math.cos(lift), -math.cos(turn) * math.cos(lift), math.sin(lift))) * distance
         bpy.context.view_layer.update()
         file = f"{i:02d}.png"
         scene.render.filepath = str(out / file)

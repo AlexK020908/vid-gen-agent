@@ -1,0 +1,78 @@
+{
+ "what": "a tall glass cylinder with 68 cm of water in it, as wide as the mercury one",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "glass",
+    "kind": "lathe",
+    "segments": 48,
+    "points": [
+     [
+      0,
+      0
+     ],
+     [
+      0.045,
+      0
+     ],
+     [
+      0.045,
+      0.72
+     ],
+     [
+      0.041,
+      0.72
+     ],
+     [
+      0.041,
+      0.004
+     ],
+     [
+      0,
+      0.004
+     ]
+    ],
+    "material": "clear_glass"
+   },
+   {
+    "id": "water",
+    "kind": "cylinder",
+    "r": 0.0406,
+    "h": 0.714,
+    "at": [
+     0,
+     0,
+     0.0045
+    ],
+    "material": {
+     "color": [
+      0.05,
+      0.27,
+      0.85
+     ],
+     "rough": 0.04,
+     "clear": 0.3
+    },
+    "liquid": true
+   }
+  ]
+ },
+ "spots": {
+  "base": [
+   0,
+   0,
+   0.004
+  ],
+  "top": [
+   0,
+   0,
+   0.6845
+  ],
+  "mid": [
+   0,
+   0,
+   0.35
+  ]
+ }
+}

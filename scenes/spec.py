@@ -36,8 +36,13 @@ A scene:
      "at": [x, y, z] where its underside sits, for what isn't on anything, "floats": true if it's meant to hang in the air,
            a marker such as an arrow or a bulb over a head,
      "facing": degrees or a cast id, as for a person, or "points" and "up" [x, y, z] to aim its own z and y,
-     "size": times its real size, 1 by default, "smooth": how many times its surface is smoothed, 40 taking the folds out of a brain}
+     "size": times its real size, 1 by default, "smooth": how many times its surface is smoothed, 40 taking the folds out of a brain,
+     "level": for a thing with a liquid in it (things/spec.py), how full it starts: meters above the bottom of its liquid, or with "above": a cast
+           id, meters above the top of that thing's liquid, which is how a straw dipped in a drink starts (0: level with it) and how mercury stands
+           in a tube over a dish. Left out, it's full. Its top is always flat and level. "part": which liquid, if it has more than one}
   touching  optional, [[id, id], ...]: what's meant to overlap, such as a shaft inside the motor that turns it
+  anchors   optional, [aim, ...]: where these are on screen is tracked frame by frame, for a label drawn on them. A short's
+            film step writes it from the direction's label marks
   happens   what happens, each with "do" and "t" unless it's for the whole scene:
     wear       who, prop, size                                    for the whole scene; a hat. The head and the inside of the hat
                                                                   are measured, it's fitted and seated, it rides on the head, and
@@ -162,6 +167,27 @@ A scene:
                                                                   flies off wood or stone. A strike's own come with its
                                                                   "sparks": false, true or "chips". slow: the share of real speed they fly at, 0.3 by default: 1 unless the shot's in slow motion, or they drift as if they weighed nothing. away: [x, y, z], the way the surface they come off faces, -y by default
     knock      who, size (degrees), axis [x, y, z]                a blow: head, neck and chest ring down together
+    fill       prop, level, over, ease, part                      its liquid's top goes to `level` (as the cast's level counts it) from t, over `over`
+                                                                  seconds: up as it's poured into or pushed up, down as it drains or the push on it
+                                                                  drops. A level only moves for a reason the picture shows: a pour, air being drawn off, a pump
+    pour       from ("id:spot"), into, to, width, speed           a stream straight down from that spot, from t until `to`, into what's in `into`, which
+                                                                  has to be right under it with nothing solid in the way, and has to fill while it pours.
+                                                                  It falls under gravity, narrowing as it speeds up: its front falls from the spout at t
+                                                                  and its tail after `to`. width: meters across at the spout, 0.006 by default. speed:
+                                                                  how fast it leaves, 0.3 m/s
+    air        box, count, radius, speed, color, to, thins, leave, walled, glow, inside
+                                                                  the air in a box ([[x, y, z], [x, y, z]], its low and high corners, in meters) as `count` balls
+                                                                  going every way at once at a spread of speeds about `speed` m/s (0.4), from t until `to`, the way
+                                                                  a gas's molecules do. They bounce off everything solid and off the top of every liquid, and that
+                                                                  is the push air gives, so show it there. radius: meters, 0.01. The box is open air going on past
+                                                                  its sides, so what leaves one side comes in at the other: make it reach past the picture. Its top
+                                                                  and bottom are unseen lids, also out of the picture, or on what the air's resting on. walled: true
+                                                                  for air shut in a box you can see. thins: meters: there's half as much this much higher up, as the
+                                                                  sky thins, with the box's bottom for its floor and no top. leave: [{"t", "through" (an aim or [x, y, z]), "share" of them, "from": a box,
+                                                                  "over": seconds}]: drawn off out through a point, as a pump or a mouth draws air, and gone once they're
+                                                                  through, or once they leave the box, so make the box reach past what holds them. A ball only starts
+                                                                  one and a half times its radius from anything solid: in a tube, keep it under a third of the bore. Up to 600 of them. inside: a cast id: they only start in its hollow, the air in a tube,
+                                                                  a bottle or a column, rather than anywhere in the box that's clear
   shots     cuts, in order, the first at 0:
     {"t": when, "on": what it's aimed at (see `aim`), "frame": meters of picture top to bottom, "angle": [round them,
      up], 0 being in front of them, "square": true: `round` counts from the set rather than from the way a thing faces, so
@@ -201,6 +227,9 @@ COLORS = ("green", "red", "blue", "yellow", "white", "orange", "cream", "cyan", 
 AIMS = ("eyes", "mouth", "forehead", "jaw", "neck", "chest", "stomach", "hips", "body", "crown", "shoulder_r", "shoulder_l",
         "hand_r", "hand_l", "touch")
 EVENTS = {
+    "fill": ("t", "prop", "over", "level"),
+    "pour": ("t", "to", "from", "into"),
+    "air": ("t", "box", "count"),
     "hold": ("who", "prop", "hand", "grip"),
     "bite": ("who", "prop"),
     "move": ("t", "prop", "grip", "over"),
@@ -243,6 +272,7 @@ MOST_WALK_ASIDE = 25       # degrees someone can go from the way they face, befo
 MOST_SWING_PER_SECOND = 160 # and how fast it can swing round, in degrees
 AXES = ("x", "y", "z")
 EASES = ("in", "out", "inout")
+MOST_BALLS = 600            # air drawn as balls: more than this is a fog, and slow to stage
 
 
 class Refused(ValueError):
@@ -423,8 +453,43 @@ def _cast_problems(cast: dict, characters: list[str], clips: list[str], things: 
             facing = c.get("facing", 0)
             if not _num(facing) and facing not in cast:
                 out.append(f"cast {cid}: facing {facing!r} is neither degrees nor in the cast")
+            if any(key in c for key in ("level", "above", "part")):
+                out += _level_problems(cid, c, cast, things)
         else:
             out.append(f"cast {cid}: type {kind!r} isn't person or prop")
+    return out
+
+
+def _liquids(cid: str, cast: dict, things: dict) -> list:
+    return (things.get((cast.get(cid) or {}).get("prop")) or {}).get("liquids") or []
+
+
+def _part_problems(label: str, cid: str, part, cast: dict, things: dict) -> list[str]:
+    """Which liquid in a thing: it has to have one, and say which if it has more."""
+    liquids = _liquids(cid, cast, things)
+    if not liquids:
+        return [f"{label}: {cid} has no liquid in it. A thing that holds one is built with a part marked liquid (things/spec.py)"]
+    if part is None:
+        return [] if len(liquids) == 1 else [f"{label}: {cid} has more than one liquid: say which part, one of {', '.join(liquids)}"]
+    return [] if part in liquids else [f"{label}: part {part!r} isn't a liquid in {cid}: {', '.join(liquids)}"]
+
+
+def _level_problems(cid: str, c: dict, cast: dict, things: dict) -> list[str]:
+    out = _part_problems(f"cast {cid}", cid, c.get("part"), cast, things)
+    if "level" in c and not (_num(c["level"]) and c["level"] >= 0):
+        out.append(f"cast {cid}: level is meters, 0 or more")
+    if "above" in c:
+        if "level" not in c:
+            out.append(f"cast {cid}: above needs a level: meters above the top of {c['above']}'s liquid")
+        if c["above"] == cid or not _liquids(c["above"], cast, things):
+            out.append(f"cast {cid}: above {c['above']!r} has to be another thing in the cast with a liquid in it")
+        seen, at = {cid}, c["above"]
+        while at in cast and cast[at].get("above"):
+            if at in seen:
+                out.append(f"cast {cid}: its level is counted above another's that's counted above it")
+                break
+            seen.add(at)
+            at = cast[at]["above"]
     return out
 
 
@@ -614,6 +679,42 @@ def _event_problems(e: dict, i: int, scene: dict, things: dict) -> list[str]:
             out.append(f"{label}: rate is turns a second")
         if "to" in e and not (_num(e["to"]) and e["t"] < e["to"]):
             out.append(f"{label}: to must come after t")
+    if kind == "fill":
+        out += _part_problems(label, e["prop"], e.get("part"), cast, things)
+        if not (_num(e["level"]) and e["level"] >= 0):
+            out.append(f"{label}: level is meters, 0 or more, as the cast's level counts it")
+        if not (_num(e["over"]) and e["over"] > 0):
+            out.append(f"{label}: over needs seconds")
+        out += _named(f"{label}: ease", e.get("ease", "inout"), EASES + ("linear",))
+    if kind == "pour":
+        who, _, spot = str(e["from"]).partition(":")
+        spots = (things.get((cast.get(who) or {}).get("prop")) or {}).get("spots") or []
+        if who not in cast or spot not in spots:
+            out.append(f"{label}: from is the spot it pours from, on a thing in the cast: " + (f"{who} has {', '.join(spots)}" if spots else f"{who!r} has no spots"))
+        if e["into"] not in cast:
+            out.append(f"{label}: into {e['into']!r} isn't in the cast")
+        else:
+            out += _part_problems(label, e["into"], e.get("part"), cast, things)
+            filling = [f for f in scene.get("happens") or [] if isinstance(f, dict) and f.get("do") == "fill" and f.get("prop") == e["into"] and _num(f.get("t")) and _num(f.get("over"))
+                       and _num(e.get("to")) and f["t"] < e["to"] and f["t"] + f["over"] > e["t"]]
+            if not filling:
+                out.append(f"{label}: what's poured into {e['into']} has to fill it: give {e['into']} a fill while it pours")
+            else:
+                fills = sorted((f for f in scene.get("happens") or [] if isinstance(f, dict) and f.get("do") == "fill" and f.get("prop") == e["into"] and _num(f.get("t"))), key=lambda f: f["t"])
+                earlier = [f for f in fills if f["t"] < filling[0]["t"]]
+                before = earlier[-1].get("level") if earlier else cast[e["into"]].get("level")
+                if before is None:
+                    out.append(f"{label}: {e['into']} starts full, with no room to pour into: give it a level to start at")
+                elif _num(before) and _num(filling[0].get("level")) and filling[0]["level"] <= before:
+                    out.append(f"{label}: what's poured into {e['into']} raises it, but its fill takes it from {before} to {filling[0]['level']} m")
+        if not (_num(e["to"]) and e["to"] > e["t"]):
+            out.append(f"{label}: to is when it stops, after t")
+        if "width" in e and not (_num(e["width"]) and 0 < e["width"] <= 0.2):
+            out.append(f"{label}: width is meters across at the spout, up to 0.2")
+        if "speed" in e and not (_num(e["speed"]) and 0 <= e["speed"] <= 5):
+            out.append(f"{label}: speed is how fast it leaves the spout, up to 5 m/s")
+    if kind == "air":
+        out += _air_problems(label, e, cast, things)
     if kind == "slide":
         if sum(key in e for key in ("from", "by", "until")) != 1:
             out.append(f"{label}: says from or by or until, one of them")
@@ -628,6 +729,46 @@ def _event_problems(e: dict, i: int, scene: dict, things: dict) -> list[str]:
     return out
 
 
+def _box(value) -> bool:
+    return (isinstance(value, list) and len(value) == 2 and all(isinstance(v, list) and len(v) == 3 and all(_num(x) for x in v) for v in value)
+            and all(value[0][i] < value[1][i] for i in range(3)))
+
+
+def _air_problems(label: str, e: dict, cast: dict, things: dict) -> list[str]:
+    out = []
+    if not _box(e["box"]):
+        out.append(f"{label}: box is [[x, y, z], [x, y, z]], its low corner and its high one, in meters")
+    if not (isinstance(e["count"], int) and not isinstance(e["count"], bool) and 1 <= e["count"] <= MOST_BALLS):
+        out.append(f"{label}: count is how many balls, a whole number from 1 to {MOST_BALLS}")
+    if "radius" in e and not (_num(e["radius"]) and 0.0005 <= e["radius"] <= 0.3):
+        out.append(f"{label}: radius is meters, from 0.0005 to 0.3")
+    if "speed" in e and not (_num(e["speed"]) and 0 < e["speed"] <= 30):
+        out.append(f"{label}: speed is m/s, above 0 and up to 30")
+    if "thins" in e and not (_num(e["thins"]) and e["thins"] > 0):
+        out.append(f"{label}: thins is meters: how much higher there's half as much")
+    if "color" in e:
+        out += _named(f"{label}: color", e["color"], COLORS)
+    if "to" in e and not (_num(e["to"]) and e["to"] > e["t"]):
+        out.append(f"{label}: to must come after t")
+    if "inside" in e and e["inside"] not in cast:
+        out.append(f"{label}: inside {e['inside']!r} isn't in the cast")
+    for i, g in enumerate(e.get("leave") or []):
+        part = f"{label}: leave {i + 1}"
+        if not isinstance(g, dict) or not _num(g.get("t")) or g["t"] < e["t"]:
+            out.append(f"{part}: t is when they start to go, not before the air's there")
+            continue
+        through = g.get("through")
+        if not (isinstance(through, list) and len(through) == 3 and all(_num(v) for v in through)):
+            out += _aim(f"{part}: through", through, cast, things)
+        if "share" in g and not (_num(g["share"]) and 0 < g["share"] <= 1):
+            out.append(f"{part}: share is how many of them go, above 0 and up to 1")
+        if "over" in g and not (_num(g["over"]) and g["over"] > 0):
+            out.append(f"{part}: over is seconds")
+        if "from" in g and not _box(g["from"]):
+            out.append(f"{part}: from is the box they go from, [[x, y, z], [x, y, z]]")
+    return out
+
+
 def _way(shot: dict) -> tuple[float, float, float]:
     around, up = (math.radians(v) for v in shot.get("angle", (0, 0)))
     return math.sin(around) * math.cos(up), -math.cos(around) * math.cos(up), math.sin(up)
@@ -639,9 +780,12 @@ def _shift_problems(label: str, shift) -> list[str]:
     return [f"{label} shift is [across, up], each a share of the picture from its middle, from -0.45 to 0.45"]
 
 
-def _glass_in_focus(shot: dict, scene: dict, ends: float, label: str) -> list[str]:
-    """Glass has no depth of its own for a camera to focus on, so depth of field blurs it as if it were as far off as whatever's behind it, and an x-ray's outline goes soft while the bark beside it stays sharp."""
-    if not any(e.get("do") == "ghost" and _num(e.get("t")) and e["t"] < ends for e in scene.get("happens") or []):
+def _glass_in_focus(shot: dict, scene: dict, ends: float, label: str, things: dict | None = None) -> list[str]:
+    """Glass has no depth of its own for a camera to focus on, so depth of field blurs it as if it were as far off as whatever's behind it, and an x-ray's outline goes soft while the bark beside it stays sharp.
+    A thing made with glass in it, a tube or a dish, is the same."""
+    shown = shot.get("shows") or list(scene.get("cast") or {})
+    glass = any((things or {}).get(((scene.get("cast") or {}).get(cid) or {}).get("prop"), {}).get("glass") for cid in shown)
+    if not glass and not any(e.get("do") == "ghost" and _num(e.get("t")) and e["t"] < ends for e in scene.get("happens") or []):
         return []
     frames = [shot.get("frame"), (shot.get("to") or {}).get("frame", shot.get("frame"))]
     lens, fstop = shot.get("lens", 28), shot.get("fstop", DEFAULT_FSTOP)
@@ -764,7 +908,7 @@ def check(scene: dict, characters: list[str], clips: list[str], things: dict | N
         if _num(s.get("frame")) and s["frame"] < sharp:
             out.append(f"{label}: at a frame of {s['frame']} m its texture is stretched until it's blurry: {subject['prop']} is only sharp from {round(sharp, 2)} m. "
                        f"Pull back, or get a more detailed model")
-        out += _glass_in_focus(s, scene, times[i + 1], label)
+        out += _glass_in_focus(s, scene, times[i + 1], label, things)
         if times[i + 1] <= times[i]:
             out.append(f"{label}: starts after the next one")
         elif times[i + 1] - times[i] > LONGEST_SHOT:
@@ -806,6 +950,8 @@ def check(scene: dict, characters: list[str], clips: list[str], things: dict | N
     for pair in scene.get("touching") or []:
         if not (isinstance(pair, list) and len(pair) == 2 and all(cid in scene["cast"] for cid in pair)):
             out.append(f"touching: {pair!r} is a pair of cast ids")
+    for i, aim in enumerate(scene.get("anchors") or []):
+        out += _aim(f"anchors {i}", aim, scene["cast"], things)
     for i, c in enumerate(scene.get("captions") or []):
         if not (isinstance(c.get("text"), str) and _num(c.get("t")) and _num(c.get("to")) and c["t"] < c["to"]):
             out.append(f"caption {i}: needs text, t, and a later to")

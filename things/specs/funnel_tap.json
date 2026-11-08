@@ -1,0 +1,48 @@
+{
+ "what": "the white handle of a glass tap, a flat key on a short barrel, its barrel along z",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "barrel",
+    "kind": "cylinder",
+    "r": 0.0045,
+    "h": 0.04,
+    "at": [
+     0,
+     0,
+     -0.02
+    ],
+    "material": "white_paint"
+   },
+   {
+    "id": "key",
+    "kind": "box",
+    "size": [
+     0.006,
+     0.026,
+     0.012
+    ],
+    "at": [
+     0,
+     0,
+     0.024
+    ],
+    "material": "white_paint",
+    "bevel": 0.001
+   }
+  ]
+ },
+ "spots": {
+  "middle": [
+   0,
+   0,
+   0
+  ],
+  "key": [
+   0,
+   0,
+   0.024
+  ]
+ }
+}

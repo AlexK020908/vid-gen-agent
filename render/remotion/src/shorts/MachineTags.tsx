@@ -48,15 +48,16 @@ export const MachineTag: React.FC<{t: MTag; tracks: Record<string, Track>}> = ({
   const opacity = fadeIn(frame, a, b);
   const [ax, ay] = t.at ?? [0.5, 0.3];
   const color = TONES[t.tone ?? 'white'];
-  if (t.kind === 'fail' || t.kind === 'mode') {
-    return <TagMark t={{kind: t.kind, text: t.text, icon: t.icon === 'clock' ? 'clock' : 'x', from: a, to: b,
-      at: t.at}} />;
+  if (t.kind === 'fail' || t.kind === 'mode' || t.kind === 'ok') {
+    return <TagMark t={{kind: t.kind, text: t.text, icon: t.kind === 'ok' ? 'check' : t.icon === 'clock' ? 'clock' : 'x', from: a, to: b,
+      at: t.at, size: t.size}} />;
   }
   if (t.kind === 'warn') {
+    const size = t.size ?? 40;
     return (
       <div style={{position: 'absolute', left: ax * SHORT_W, top: ay * SHORT_H, transform: 'translate(-50%,-50%)',
-        display: 'flex', alignItems: 'center', opacity, ...heavy(TONES.red, 40)}}>
-        <svg width={44} height={40} viewBox="0 0 24 22" style={{marginRight: 10}}>
+        display: 'flex', alignItems: 'center', opacity, ...heavy(TONES.red, size)}}>
+        <svg width={size * 1.1} height={size} viewBox="0 0 24 22" style={{marginRight: size * 0.25}}>
           <path d="M12 1.5 L23 20.5 L1 20.5 Z" fill={TONES.yellow} stroke={OUTLINE} strokeWidth={1.4} />
           <path d="M12 8 L12 14 M12 16.5 L12 17.6" stroke={OUTLINE} strokeWidth={2.2} strokeLinecap="round" />
         </svg>

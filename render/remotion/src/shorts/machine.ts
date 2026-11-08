@@ -14,10 +14,10 @@ export type Screen = {kind: 'crossfade' | 'black' | 'white' | 'tint' | 'smoke' |
 export type Track = {first: number; points: Point[]};
 
 export type Label = {label: string; anchor: string; tone: Tone; from: number; to: number; side: 'left' | 'right';
-  stay?: boolean};
+  stay?: boolean; size?: number};
 
 export type MTag = {
-  kind: 'fail' | 'warn' | 'question' | 'multiplier' | 'section' | 'mode' | 'stat' | 'title' | 'dimension' | 'deeper' |
+  kind: 'fail' | 'ok' | 'warn' | 'question' | 'multiplier' | 'section' | 'mode' | 'stat' | 'title' | 'dimension' | 'deeper' |
     'footage' | 'credit' | 'count';
   text: string;
   from: number;
@@ -31,6 +31,7 @@ export type MTag = {
   end?: number;                 // ...and its last, reached a little before it goes
   anchor?: string;              // dimension and deeper: from this anchor's point...
   anchor2?: string;             // ...to this one's
+  size?: number;                // fail and warn: their letters' height, bigger in the character shorts
 };
 
 export type Sound = {src: string; from: number; volume?: number};

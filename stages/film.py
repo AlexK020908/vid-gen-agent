@@ -116,9 +116,13 @@ def _film_all(ctx, video, direction: dict) -> list[dict]:
     where = ctx.media(video["id"]) / "film"
     for i, directed in enumerate(direction["scenes"]):
         scene = short.local(directed)
+        aims = short.anchors_for(direction.get("marks"), directed)
+        if aims:
+            scene["anchors"] = aims        # what the labels name, tracked on screen
         out = where / _key(scene)
         raw = out / "scene_raw.mp4"
         events: list = []
+        anchors: dict = {}
         if _stub(ctx):
             if not raw.exists():
                 _placeholder(scene, raw, "0x5588bb" if i % 2 else "0x336699")
@@ -127,14 +131,21 @@ def _film_all(ctx, video, direction: dict) -> list[dict]:
             if not record.exists():
                 ctx.events.emit("stage_progress", video["id"], stage=NAME, done=i, total=len(direction["scenes"]), unit="scenes")
                 filmed = filming.film(ctx.config, scene, out)
-                record.write_text(json.dumps({"events": filmed["events"]}), encoding="utf-8")
+                record.write_text(json.dumps({"events": filmed["events"], "anchors": filmed["anchors"]}), encoding="utf-8")
                 shutil.rmtree(out / "frames", ignore_errors=True)   # thousands of big pictures, now in the clip
-            events = json.loads(record.read_text(encoding="utf-8"))["events"]
-        made.append({"clip": str(raw), "from": float(directed["from"]), "to": float(directed["to"]), "events": events})
+            kept = json.loads(record.read_text(encoding="utf-8"))
+            events, anchors = kept["events"], kept.get("anchors") or {}
+        made.append({"clip": str(raw), "from": float(directed["from"]), "to": float(directed["to"]), "events": events, "anchors": anchors})
     return made
 
 
-def _props(ctx, video, conn, filmed: list[dict], clock: dict, marks: list | None = None) -> tuple[dict, dict]:
+def tracks_of(filmed: list[dict]) -> dict:
+    """Every scene's tracked aims, on the short's frames: "scene:aim" -> its screen place from the frame the scene starts on."""
+    return {f"{i}:{aim}": {"first": round(f["from"] * FPS), "points": points}
+            for i, f in enumerate(filmed) for aim, points in (f.get("anchors") or {}).items()}
+
+
+def _props(ctx, video, conn, filmed: list[dict], clock: dict, marks: list | None = None, scenes: list | None = None) -> tuple[dict, dict]:
     """What Remotion needs: the clips, the narration line by line, sound on the hits, and the big captions."""
     files, segments, sounds = {}, [], []
     for i, f in enumerate(filmed):
@@ -153,7 +164,8 @@ def _props(ctx, video, conn, filmed: list[dict], clock: dict, marks: list | None
     voice = narration.track(read, starts, ctx.media(video["id"]) / "film" / "voice.wav")
     files[voice.name] = str(voice)
     sounds = narration.duck([{"src": voice.name, "from": 0, "volume": 1.0}, *sounds], read, starts, voice.name)
-    props = {"duration": clock["total"], "segments": segments, "screens": [], "labels": [], "tags": short.tags(marks), "tracks": {},
+    props = {"duration": clock["total"], "segments": segments, "screens": [], "labels": short.labels(marks, scenes or []), "tags": short.tags(marks),
+             "tracks": tracks_of(filmed),
              "sounds": sounds, "footage": None, "captionStyle": "big", "captions": short.captions(clock)}
     return props, files
 
@@ -227,7 +239,7 @@ def _work(ctx, conn, video) -> None:
     out = ctx.media(video["id"]) / "film" / "short.mp4"
     if _stub(ctx) and remotion_render.missing():
         raise FinalError("this needs Remotion: cd render/remotion && npm install")
-    props, files = _props(ctx, video, conn, filmed, clock, direction.get("marks"))
+    props, files = _props(ctx, video, conn, filmed, clock, direction.get("marks"), direction["scenes"])
     stamp = out.with_suffix(".key")                 # this stage runs again from the top when the reviewer answers: the same short needn't be put together twice
     key = hashlib.sha256(json.dumps(props, sort_keys=True).encode("utf-8")).hexdigest()
     if not (out.exists() and stamp.exists() and stamp.read_text(encoding="utf-8") == key):

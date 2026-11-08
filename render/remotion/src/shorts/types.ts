@@ -12,14 +12,15 @@ export type Caption = {text: string; from: number; to: number};
 // A part's label: a dot on the anchor, a leader line, the label beside it on `side`
 // `stay` keeps a label on its side past the safe area, where the other side would put it on something it can't be
 // read against
+// `size` is its letters' height in px of the 1080-wide picture: A's are 32, the character shorts' bigger, to read on mute
 export type Callout = {label: string; anchor: string; tone: Tone; from: number; to: number; side: 'left' | 'right';
-  stay?: boolean};
+  stay?: boolean; size?: number};
 
 export type TagKind = 'fail' | 'ok' | 'warn' | 'question' | 'multiplier' | 'section' | 'mode' | 'stat';
 
 // `at` places it (fractions of the picture); without it each kind has its own place
 export type Tag = {kind: TagKind; text: string; icon?: 'x' | 'clock' | 'check' | 'warn'; from: number; to: number;
-  at?: [number, number]};
+  at?: [number, number]; size?: number};
 
 export type ShortClipProps = {
   clip: string;

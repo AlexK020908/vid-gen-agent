@@ -389,12 +389,14 @@ def test_the_outline_as_the_script_reads_it_has_the_shape_and_the_turn():
     assert "Shape" not in prompts.outline_text(old) and "Turn" not in prompts.outline_text(old)
 
 
-def test_a_line_can_run_long_while_each_part_leads_to_the_next():
+def test_a_line_is_one_step_as_long_as_the_owners_star_shorts_run():
     from providers import checks
     built = Answers([OUTLINE]).outline(SHORTS, "Woodpeckers", [], None, NoMeter())
     line = lambda beat, count: {"beat": beat, "narration": " ".join(["word"] * count) + ".", "shows": "a beak"}
-    assert checks.short_script([line(1, 30), line(2, 20), line(3, 10), line(3, 10)], built) == []
-    assert "line 1 is 35 words" in " ".join(checks.short_script([line(1, 35), line(2, 20), line(3, 10), line(3, 10)], built))
+    assert checks.short_script([line(1, 22), line(2, 20), line(3, 10), line(3, 10)], built) == []
+    assert "line 1 is 24 words" in " ".join(checks.short_script([line(1, 24), line(2, 20), line(3, 10), line(3, 10)], built))
+    sixteen = [line(1, 8)] * 6 + [line(2, 8)] * 5 + [line(3, 8)] * 5
+    assert checks.short_script(sixteen, built) == []
 
 
 def test_a_short_gets_its_own_prompts_and_the_cards_shape():

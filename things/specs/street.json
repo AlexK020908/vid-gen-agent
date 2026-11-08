@@ -1,0 +1,60 @@
+{
+ "what": "a wide asphalt street with a raised paved pavement round where a building stands",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "road",
+    "kind": "box",
+    "size": [
+     160,
+     160,
+     0.2
+    ],
+    "at": [
+     0,
+     0,
+     0.1
+    ],
+    "material": {
+     "color": [
+      0.11,
+      0.11,
+      0.115
+     ],
+     "rough": 0.92
+    }
+   },
+   {
+    "id": "pavement",
+    "kind": "box",
+    "size": [
+     17.0,
+     14.0,
+     0.15
+    ],
+    "at": [
+     0,
+     0,
+     0.275
+    ],
+    "material": {
+     "color": [
+      0.5,
+      0.49,
+      0.46
+     ],
+     "rough": 0.9
+    },
+    "bevel": 0.02
+   }
+  ]
+ },
+ "spots": {
+  "middle": [
+   0,
+   0,
+   0.35
+  ]
+ }
+}

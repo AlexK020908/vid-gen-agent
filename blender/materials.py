@@ -252,14 +252,44 @@ def _counter_wood(name):
     return mat
 
 
-def custom(name: str, color=(0.5, 0.5, 0.5), metal: float = 0.0, rough: float = 0.5, coat: float = 0.0, glow: float = 0.0, pores: float = 0.0):
+def custom(name: str, color=(0.5, 0.5, 0.5), metal: float = 0.0, rough: float = 0.5, coat: float = 0.0, glow: float = 0.0, pores: float = 0.0,
+           clear: float = 0.0):
     """A part's own paint, by name, for what the palette doesn't have (`color` is linear, each 0 to 1). `pores` is how wide the holes in it are, in
-    meters, for something soft and full of them: a sponge, bread, pumice."""
+    meters, for something soft and full of them: a sponge, bread, pumice. `clear` is how much you see through it, 0 to 1: glass is nearly 1, and
+    water about half."""
     if name not in _made:
         _made[name] = _plain(name, tuple(color), metallic=metal, roughness=rough, emission=glow, coat=coat)
         if pores:
             _with_pores(_made[name], float(pores))
+        if clear:
+            see_through(_made[name], tuple(color), float(clear))
     return _made[name]
+
+
+CLEAR_TINT = 0.7      # how much of the light coming through something clear keeps its own color, rather than taking the thing's
+
+
+def see_through(mat, color, clear: float) -> None:
+    """You see through it where it faces you, by `clear`, tinted a little by its own color, and its edges catch the light as glass's do. It's
+    blended, not dithered, so it's clean at any number of samples; blended glass has no depth for a camera to focus on, so a shot of it can't be
+    shallow (scenes/spec.py says how deep it has to be)."""
+    mat.surface_render_method = "BLENDED"
+    mat.use_transparency_overlap = True      # glass behind glass still shows
+    mat.use_transparent_shadow = True        # light comes through it
+    tree = mat.node_tree
+    output = next(n for n in tree.nodes if n.type == "OUTPUT_MATERIAL" and n.is_active_output)
+    before = output.inputs["Surface"].links[0].from_socket
+    facing = _node(tree, "ShaderNodeLayerWeight", Blend=0.12)
+    shows = _node(tree, "ShaderNodeMath", operation="MAXIMUM")
+    tree.links.new(facing.outputs["Fresnel"], shows.inputs[0])
+    shows.inputs[1].default_value = 1.0 - clear
+    through = _node(tree, "ShaderNodeBsdfTransparent")
+    through.inputs["Color"].default_value = (*[CLEAR_TINT + (1 - CLEAR_TINT) * c for c in color], 1)
+    mix = _node(tree, "ShaderNodeMixShader")
+    tree.links.new(shows.outputs[0], mix.inputs[0])
+    tree.links.new(through.outputs[0], mix.inputs[1])
+    tree.links.new(before, mix.inputs[2])
+    tree.links.new(mix.outputs[0], output.inputs["Surface"])
 
 
 def _with_pores(mat, size: float) -> None:
@@ -502,6 +532,8 @@ _BUILD = {
     "soil_low": lambda n: _soil(n, (0.52, 0.38, 0.22)),       # tan,
     "soil_deep": lambda n: _soil(n, (0.16, 0.20, 0.26)),      # and blue-grey at the bottom
     "air": lambda n: _plain(n, (0.46, 0.68, 0.87), roughness=0.25, emission=0.12),
+    "clear_glass": lambda n: custom(n, (0.78, 0.8, 0.83), metal=1.0, rough=0.04, clear=0.96),     # a tube, a beaker, a dish, a pane: what's in it shows. Its mirror's
+                                                                                                    # toned down: at a grazing angle a full one is the studio's white
     "wood": _wood,             # varnished oak with its grain: a hammer's handle
     "pale_wood": _pale_wood,
     "wood_cut": _wood_cut,

@@ -50,8 +50,12 @@ def menu(config) -> dict:
         spec = thing_spec.load(thing_spec.path_for(tid))
         manifest = made(config, tid)
         moves = (manifest or {}).get("moves") or spec.get("moves") or {}
-        lines = [part["id"] for part in spec["source"].get("parts") or [] if part.get("kind") in ("pipe", "spiral")]
-        out[tid] = {"moves": sorted(moves), "spots": sorted(spec.get("spots") or {}), "lines": sorted(lines), "sharp_from": sharp_from(manifest)}
+        parts = spec["source"].get("parts") or []
+        lines = [part["id"] for part in parts if part.get("kind") in ("pipe", "spiral")]
+        liquids = [part["id"] for part in parts if part.get("liquid")]
+        glass = any(part.get("material") == "clear_glass" or (isinstance(part.get("material"), dict) and part["material"].get("clear", 0) > 0) for part in parts)
+        out[tid] = {"moves": sorted(moves), "spots": sorted(spec.get("spots") or {}), "lines": sorted(lines), "sharp_from": sharp_from(manifest),
+                    "liquids": sorted(liquids), "glass": glass}
     return out
 
 

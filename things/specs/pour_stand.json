@@ -1,0 +1,159 @@
+{
+ "what": "a laboratory stand with a clamp ring for a glass tube, and a ring above for a funnel",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "foot",
+    "kind": "box",
+    "size": [
+     0.24,
+     0.3,
+     0.018
+    ],
+    "at": [
+     0,
+     0.06,
+     0.009
+    ],
+    "material": "black_steel",
+    "bevel": 0.004
+   },
+   {
+    "id": "rod",
+    "kind": "cylinder",
+    "r": 0.007,
+    "h": 1.35,
+    "at": [
+     0,
+     0.11,
+     0.018
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "cap",
+    "kind": "sphere",
+    "r": 0.009,
+    "at": [
+     0,
+     0.11,
+     1.368
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "clamp.boss",
+    "kind": "box",
+    "size": [
+     0.03,
+     0.03,
+     0.035
+    ],
+    "at": [
+     0,
+     0.11,
+     0.4
+    ],
+    "material": "black_steel",
+    "bevel": 0.003
+   },
+   {
+    "id": "clamp.arm",
+    "kind": "cylinder",
+    "r": 0.004,
+    "h": 0.084,
+    "at": [
+     0,
+     0.011,
+     0.4
+    ],
+    "rot": [
+     -90,
+     0,
+     0
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "clamp.ring",
+    "kind": "torus",
+    "major": 0.011,
+    "minor": 0.004,
+    "at": [
+     0,
+     0,
+     0.4
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "ring.boss",
+    "kind": "box",
+    "size": [
+     0.03,
+     0.03,
+     0.035
+    ],
+    "at": [
+     0,
+     0.11,
+     1.23
+    ],
+    "material": "black_steel",
+    "bevel": 0.003
+   },
+   {
+    "id": "ring.arm",
+    "kind": "cylinder",
+    "r": 0.004,
+    "h": 0.061,
+    "at": [
+     0,
+     0.034,
+     1.23
+    ],
+    "rot": [
+     -90,
+     0,
+     0
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "ring.ring",
+    "kind": "torus",
+    "major": 0.034,
+    "minor": 0.004,
+    "at": [
+     0,
+     0,
+     1.23
+    ],
+    "material": "bright_steel"
+   }
+  ]
+ },
+ "spots": {
+  "clamp": [
+   0,
+   0,
+   0.4
+  ],
+  "rod_top": [
+   0,
+   0.11,
+   1.35
+  ],
+  "dish_at": [
+   0,
+   0,
+   0.0184
+  ],
+  "funnel_ring": [
+   0,
+   0,
+   1.23
+  ]
+ }
+}

@@ -1,0 +1,90 @@
+{
+ "what": "a submersible pump, a steel can that sits in the water at the bottom of a tank or well and pushes it up the pipe from its top",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "body",
+    "kind": "tube",
+    "r_out": 0.045,
+    "r_in": 0.014,
+    "h": 0.15,
+    "material": "black_steel",
+    "bevel": 0.004
+   },
+   {
+    "id": "grille",
+    "kind": "tube",
+    "r_out": 0.0465,
+    "r_in": 0.044,
+    "h": 0.03,
+    "at": [
+     0,
+     0,
+     0.04
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "cap",
+    "kind": "tube",
+    "r_out": 0.034,
+    "r_in": 0.014,
+    "h": 0.025,
+    "at": [
+     0,
+     0,
+     0.15
+    ],
+    "material": "bright_steel",
+    "bevel": 0.003
+   },
+   {
+    "id": "cable",
+    "kind": "pipe",
+    "path": [
+     [
+      0,
+      0.03,
+      0.17
+     ],
+     [
+      0,
+      0.03,
+      0.4
+     ],
+     [
+      0,
+      0.25,
+      0.49
+     ],
+     [
+      0,
+      0.33,
+      -0.0135
+     ]
+    ],
+    "r": 0.005,
+    "bend": 0.03,
+    "material": "black_steel"
+   }
+  ]
+ },
+ "spots": {
+  "base": [
+   0,
+   0,
+   0
+  ],
+  "body": [
+   0,
+   0,
+   0.08
+  ],
+  "top": [
+   0,
+   0,
+   0.175
+  ]
+ }
+}

@@ -47,7 +47,7 @@ from pathlib import Path
 PALETTE = ("steel", "bright_steel", "black_steel", "dark_steel", "pile_paint", "glass_rod", "safety_yellow", "hazard_stripes", "cut", "chrome",
            "rubber", "white_paint", "red_paint", "blue_paint", "orange_paint", "barrier_stripes", "air", "wood",
            "pale_wood", "wood_cut", "sand", "far", "soil_top", "soil_mid", "soil_low", "soil_deep", "copper", "stainless", "cast_iron",
-           "black_glass", "bakelite", "counter_wood")
+           "black_glass", "bakelite", "counter_wood", "clear_glass")
 
 SHAPES = {
     "box": ("size",),

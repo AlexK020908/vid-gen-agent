@@ -30,7 +30,7 @@ import bpy
 import numpy as np
 from mathutils import Matrix, Quaternion, Vector
 
-from blender import bounds, clips, envs, glow, look, materials, people, shapes, things
+from blender import bounds, clips, envs, glow, liquid, look, materials, people, shapes, things
 
 UP = Vector((0, 0, 1))
 COLORS = glow.COLORS
@@ -126,6 +126,7 @@ REST_GAP = 0.0004                 # how far above what it rests on a thing is le
 TOO_DEEP = 0.003                  # how far two things can pass through each other before it shows (m)
 TOUCHING = 0.005                  # how near something has to be to be holding a thing up (m)
 FLOORED = ("sky_set", "gym", "desert_lot", "studio", "place")     # sets whose floor is at z 0, with no mesh to measure
+MOST_AIR_SHORT = 0.5      # air that finds room for less than this share of its balls is refused: drawn, it would be nothing (found on the barometer's straw)
 CHECK_EVERY = 2                   # frames apart that moving things are checked
 PERSON_EVERY = 10                 # and people: a body is many faces, and it moves slowly
 PERSON_ACTING = 4                 # unless they're doing something
@@ -962,7 +963,7 @@ class Stage:
             turn = Quaternion(UP, math.radians(self._facing(cid)))
         root.location, root.rotation_quaternion = palm, turn
         self.props[cid] = {"root": root, "kind": c["prop"], "thing": thing, "palm": palm, "points": turn @ UP,
-                           "fingers": turn @ Vector((0, 1, 0)), "holder": None}
+                           "fingers": turn @ Vector((0, 1, 0)), "holder": None, "liquids": bounds.liquids_of(root)}
 
     def _under(self, under: str) -> bounds.Solid | None:
         if under == "set":
@@ -2369,6 +2370,10 @@ class Stage:
                 self._clean_rings(e, f, self.aim(e["on"], f), self._facing_shot(e["t"]))
             elif kind == "sparks":
                 self._sparks(self.aim(e["on"], f), f, kind=e.get("kind", "sparks"), count=int(e.get("count", 26)), slow=float(e.get("slow", SLOW)), away=e.get("away"))
+            elif kind == "pour":
+                self._pour(e)
+            elif kind == "air":
+                self._air(e)
             elif kind == "play":
                 end = self.frame(e["to"]) if "to" in e else self.total + 1
                 self.props[e["prop"]]["thing"].play(f, end, e["move"], float(e.get("speed", 1.0)))
@@ -2420,6 +2425,165 @@ class Stage:
             while f < until - 8:
                 person.blink(f)
                 f += rng.randint(70, 130)
+
+    # --- what fills things, what pours, and air ----------------------------------------------------------------------
+
+    def _liquid_of(self, cid: str, part: str | None = None):
+        found = self.props[cid].get("liquids") or {}
+        return found[part] if part else next(iter(found.values()))
+
+    def _moves(self, cid: str) -> bool:
+        p = self.props.get(cid) or {}
+        return bool(p.get("track") or p.get("carried") or p.get("pressed")) or any(e.get("prop") == cid and e["do"] in MOVERS for e in self.events)
+
+    def _liquids(self) -> None:
+        """Each liquid's top, in the world, frame by frame: where the scene says it starts (`level`, meters above the bottom of the liquid, or above
+        the top of another's with `above`), then each `fill`. A liquid nobody gives a level is full. Then each is cut off there, so its top is flat
+        and level, whichever way what holds it is turned."""
+        cast = self.spec["cast"]
+        self.tops: dict[str, dict[int, float]] = {}
+        waiting = [cid for cid, p in self.props.items() if p.get("liquids")]
+        keep = self.bl.frame_current
+        frames = range(1, self.total + 1)
+        for _ in range(len(waiting) + 1):
+            for cid in list(waiting):
+                c = cast[cid]
+                if c.get("above") and c["above"] in waiting:
+                    continue
+                waiting.remove(cid)
+                obj = self._liquid_of(cid, c.get("part"))
+                self.props[cid]["liquid_paint"] = [slot.material.copy() for slot in obj.material_slots if slot.material]     # what it's made of, for a pour of it
+                self.bl.frame_set(1)
+                bpy.context.view_layer.update()
+                bottom, full = liquid.lowest(obj), liquid.highest(obj) - liquid.lowest(obj)
+                base = {f: bottom for f in frames}
+                if self._moves(cid):
+                    for f in frames:
+                        self.bl.frame_set(f)
+                        bpy.context.view_layer.update()
+                        base[f] = liquid.lowest(obj)
+                fills = sorted((e for e in self.events if e["do"] == "fill" and e["prop"] == cid), key=lambda e: e["t"])
+                if "level" not in c and not fills:      # full: cut a hair under its own top all the same, as the cut's top is the clean one
+                    self.tops[cid] = {f: base[f] + full - liquid.FULL_SHORT for f in frames}
+                    liquid.cut_at(obj, [(f, self.tops[cid][f]) for f in frames])
+                    continue
+                under = self.tops[c["above"]] if c.get("above") else base
+                height = {f: float(c.get("level", full)) for f in frames}
+                for e in fills:
+                    begin, count = self.frame(e["t"]), max(1, round(float(e["over"]) * self.fps))
+                    was, kind = height[begin], e.get("ease", "inout")
+                    for f in frames:
+                        if f < begin:
+                            continue
+                        x = min(1.0, (f - begin) / count)
+                        x = x if kind == "linear" else x * x if kind == "in" else 1 - (1 - x) ** 2 if kind == "out" else x * x * (3 - 2 * x)
+                        height[f] = was + (float(e["level"]) - was) * x
+                self.tops[cid] = {f: under[f] + height[f] for f in frames}
+                liquid.cut_at(obj, [(f, self.tops[cid][f]) for f in frames])
+        self.bl.frame_set(keep)
+        bpy.context.view_layer.update()
+
+    def _spot_at(self, aim: str, frame: int) -> Vector:
+        self.bl.frame_set(frame)
+        bpy.context.view_layer.update()
+        return self.aim(aim, frame).copy()
+
+    def _pour(self, e: dict) -> None:
+        """A stream from a spout straight down into what's being filled. If it isn't over it, or something solid's in the way, the scene's refused
+        in words."""
+        who = e["from"].partition(":")[0]
+        into = e["into"]
+        begin, end = self.frame(e["t"]), self.frame(e["to"])
+        keep = self.bl.frame_current
+        if self._moves(who):
+            spout = {f: self._spot_at(e["from"], f) for f in range(1, self.total + 1)}
+        else:
+            at = self._spot_at(e["from"], begin)
+            spout = {f: at for f in range(1, self.total + 1)}
+        foot = self.tops[into]
+        self.bl.frame_set(begin)
+        bpy.context.view_layer.update()
+        here = spout[begin]
+        if here.z <= foot[begin]:
+            raise Refused([f"the pour from {e['from']} at {e['t']} s starts below the top of what's in {into}"])
+        filled = self._liquid_of(into, e.get("part"))
+        inside = liquid.tree_of([filled])
+        under = max(foot[begin] - 0.001, liquid.lowest(filled) + 0.001)       # inside what it'll fill, even if that's still empty
+        if inside is None or not liquid.holds(inside, Vector((here.x, here.y, under))):
+            raise Refused([f"the pour from {e['from']} at {e['t']} s isn't over what's in {into}: falling straight down, it would miss it"])
+        for cid in [*self.props, *(["the set"] if self.solids else [])]:
+            if cid == who:
+                continue
+            hit = self._solid_of(cid).ray(here - UP * 0.0005, -UP)
+            if hit and hit[0].z > foot[begin] + 0.001:
+                where = "the counter" if cid == "the set" else cid
+                raise Refused([f"the pour from {e['from']} at {e['t']} s lands on {where}, {(hit[0].z - foot[begin]) * 100:.1f} cm above what's in {into}"])
+        paint = self.props[into]["liquid_paint"][0]
+        liquid.stream(f"{who}.pour{begin}", paint, spout, foot, begin, end, self.total, self.fps, float(e.get("width", 0.006)), float(e.get("speed", 0.3)))
+        self.bl.frame_set(keep)
+
+    def _air(self, e: dict) -> None:
+        """Air as balls in a box, every way at once, bouncing off everything solid and off the top of every liquid, some drawn off where it says."""
+        begin = self.frame(e["t"])
+        end = self.frame(e["to"]) if "to" in e else self.total
+        keep = self.bl.frame_current
+        bodies = [obj for p in self.props.values() for obj in bounds.meshes_of(p["root"])] + [person.body for person in self.people.values()] + list(self.solids)
+        moving = any(self._moves(cid) for cid in self.props) or any(other["do"] in ("walk", "act", "strike") for other in self.events)
+        solid_trees: dict[int, list] = {}
+        wet = [(cid, self._liquid_of(cid, self.spec["cast"][cid].get("part"))) for cid in self.tops]
+        wet_trees: dict[int, list] = {}
+
+        def solids(f):
+            key = f if moving else 0
+            if key not in solid_trees:
+                self.bl.frame_set(f)
+                bpy.context.view_layer.update()
+                solid_trees.clear()
+                made = liquid.tree_of(bodies)
+                solid_trees[key] = [made] if made else []
+            return solid_trees[key]
+
+        def liquids(f):
+            key = f if moving else 0
+            if key not in wet_trees:
+                self.bl.frame_set(f)
+                bpy.context.view_layer.update()
+                wet_trees.clear()
+                wet_trees[key] = [liquid.tree_of([obj]) for _, obj in wet]
+            return [(tree, self.tops[cid][f]) for tree, (cid, _) in zip(wet_trees[key], wet) if tree]
+
+        box = e["box"]
+        has_floor = self.spec["set"] in FLOORED and (self.spec["set"] != "place" or self.spec["place"].get("ground"))     # a place with no ground has nothing at 0
+        floor = 0.0 if has_floor and box[0][2] <= 0.05 <= box[1][2] else None
+        name = e.get("color", "ice")
+        paint = materials.custom(f"air.{begin}.{name}.{e.get('glow', 0.35)}", color=glow.color_of(name), rough=0.35, glow=float(e.get("glow", 0.35)))
+        self.bl.frame_set(begin)
+        bpy.context.view_layer.update()
+        parts = []                         # each solid part by itself, as it stands when the air starts, to ask whether a ball would start inside it
+        for obj in bodies:
+            tree = liquid.tree_of([obj])
+            if tree is not None:
+                corners = [obj.matrix_world @ Vector(c) for c in obj.bound_box]
+                parts.append((Vector([min(c[i] for c in corners) for i in range(3)]), Vector([max(c[i] for c in corners) for i in range(3)]), tree))
+        within = None
+        if e.get("inside"):                # only in the hollow of something: a tube, a bottle, a column
+            self.bl.frame_set(begin)
+            bpy.context.view_layer.update()
+            shell = self._solid_of(e["inside"])
+            within = lambda at: shell.encloses(at)
+        air = liquid.Air(f"Air{begin}", box, int(e["count"]), float(e.get("radius", 0.01)), float(e.get("speed", 0.4)), paint, self.fps, solids, liquids,
+                         floor=floor, thins=e.get("thins"), walled=bool(e.get("walled", False)), seed=begin * 7 + self.events.index(e), within=within, parts=parts)
+        air.fill(begin)
+        if len(air.balls) < int(e["count"]) * MOST_AIR_SHORT:
+            where = f"inside {e['inside']}" if e.get("inside") else "in its box"
+            raise Refused([f"the air at {e['t']} s found room for {len(air.balls)} of its {e['count']} balls {where}: a ball only starts "
+                           f"{liquid.ROOM} times its radius from anything solid, so make the balls smaller or the box bigger"])
+        for g in e.get("leave") or []:
+            out = Vector(g["through"]) if isinstance(g["through"], list) else self._spot_at(g["through"], self.frame(g["t"]))
+            air.plans.append({"frame": self.frame(g["t"]), "share": float(g.get("share", 1.0)), "out": out, "over": float(g.get("over", 1.0)), "inside": g.get("from")})
+        air.run(begin, end, self.total)
+        self.bl.frame_set(keep)
+        bpy.context.view_layer.update()
 
     # --- the shots -------------------------------------------------------------------------------------------------
 
@@ -2584,7 +2748,7 @@ class Stage:
         subject = cut["on"]
         around = self._inside_chain(subject) if subject in self.props else []       # what a shot looks through, to what's inside it, isn't in its way
         for cid in [*self.props, *self.people]:
-            if cid == subject or cid in around or not self._shown(cid, f) or (self.props.get(cid) or {}).get("worn"):
+            if cid == subject or cid in around or not self._shown(cid, f) or (self.props.get(cid) or {}).get("worn") or self._see_through(cid):
                 continue
             solid = self._solid_of(cid)
             if solid.tree is None:
@@ -2603,6 +2767,12 @@ class Stage:
             if blocked >= 5:
                 out.append(f"{cid} is right in front of the lens in the shot at {cut['t']} s, covering {subject}. Leave it out of its shows, or move the lens")
         return out
+
+    def _see_through(self, cid: str) -> bool:
+        """A thing that's all glass: a shot looks through it, so it isn't in the way."""
+        p = self.props.get(cid)
+        meshes = bounds.meshes_of(p["root"]) if p else []
+        return bool(meshes) and all(obj.get("clear") for obj in meshes)
 
     def _hands_off(self) -> list[str]:
         """A hand that can't get to what it's holding, and what's held going through whoever's holding it. Hands and handles touch, so what's further along is what's measured."""
@@ -2676,6 +2846,7 @@ class Stage:
             self._key_people()
         self._land_people()
         self._key_props()
+        self._liquids()
         self._act()
         self._blinks()
         strength = float(self.spec["place"].get("light", PLACE_LIGHT)) if self.spec["set"] == "place" else 1.0
@@ -2696,7 +2867,24 @@ class Stage:
             look.halo(self.bl, threshold=1.7, strength=0.5, size=0.6)
         self._shots()
         self.check_physics()
-        return {"frames": self.total, "anchors": {}, "events": self._sound_cues()}
+        return {"frames": self.total, "anchors": self._anchors(), "events": self._sound_cues()}
+
+    def _anchors(self) -> dict:
+        """What the short's labels name, each as an empty keyed to its aim every frame, so its place on screen can be tracked
+        (blender/tracks.py). It carries the name of what it's on: that thing's own surface doesn't hide it, as the label's on it."""
+        out = {}
+        for name in self.spec.get("anchors") or []:
+            mark = bpy.data.objects.new(f"anchor.{name}", None)
+            self.bl.collection.objects.link(mark)
+            who = name.partition(":")[0]
+            owner = self.people[who].rig if who in self.people else (self.props[who].get("root") if who in self.props else None)
+            if owner is not None:
+                mark["of"] = owner.name
+            for f in range(1, self.total + 1):
+                mark.location = self.aim(name, f)
+                mark.keyframe_insert("location", frame=f)
+            out[name] = (mark, (0.0, 0.0, 0.0))
+        return out
 
     def _footsteps(self, e: dict) -> list[dict]:
         """A step each time their hips come down in a walking move, worked out from the move, so they keep time with it however it's paced."""
