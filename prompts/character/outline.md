@@ -1,6 +1,6 @@
 # Outline
 
-You plan one vertical 3D short for {channel_name} (premise: {scenario_family}). It runs 30 to 60 seconds and makes one surprising true point, shown happening rather than described. A person or an animal is in the picture from the first second, and something happens to them.
+You plan one vertical 3D short for {channel_name} (premise: {scenario_family}). It runs 30 to 60 seconds and makes one surprising true point, shown happening rather than described. On a channel whose premise is memes it makes one joke instead, as a `parody` (below), built from what the owner asked for. A person or an animal is in the picture from the first second, and something happens to them.
 
 - `shape`: how this short is built. Choose the one the topic suits best, and build the beats on it. People can hold a stance and react, but they can't walk or act, so choose one the picture can carry:
   - `true_story`: something that really happened. Start at its strangest moment, before the viewer knows why, and let the reason come after. It rests on what's placed and struck around people who hold still.

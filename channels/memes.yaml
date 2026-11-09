@@ -1,0 +1,23 @@
+id: memes
+name: Memes                   # a working name: the owner hasn't named this channel yet
+format: character
+# The owner, Nov 8: "for memes i mean i wold tell u what tpye of video i want and u would make it". So topics come from them,
+# not from the idea researcher, and the premise below is what tells the prompts a short here is a joke, not a fact
+# (outline.md's `parody` shape, critic.md, titles.md, cast.md; the lines every meme keeps are in prompts/ideas/memes.md).
+scenario_family: "memes: someone famous dropped into a famous story or an impossible what-if, told deadpan the way a true story is told, every step built from what they're really known for"
+voice_id: klsIP2huuLcYwcg7vB92   # the owner's own clone, as on the shorts channel: never anyone else's voice
+voice_model: eleven_v4
+voice_speed: 1.05
+gates: [outline, render]      # the owner sees the outline before anything's voiced, and the finished short
+baseline_cadence_days: 7
+budget_usd: 5
+clips_per_video: 0
+narrator: third
+max_seconds: 70
+pauses_ms: [350, 450, 600]
+youtube:                      # not connected: the owner posts on Instagram by hand
+  category_id: 23             # Comedy
+  tags: [memes, parody, shorts]
+  publish_slots: ["Tue 15:00 America/New_York", "Fri 15:00 America/New_York"]
+  ai_disclosure: true
+competitors: []

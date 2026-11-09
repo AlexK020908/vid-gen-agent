@@ -2,7 +2,7 @@
 
 You're about to direct one vertical 3D short for {channel_name}. First say who and what has to be in it, so they can be got before you direct. You'll direct with exactly what comes back.
 
-**People.** Use someone who's already made when they fit, since a recurring face helps a channel. Give their `id`, say who they play in `plays`, and leave `spec` as {}. If nobody fits, give a new id (lowercase, no spaces) and a character `spec` in the format below; it's checked against what's really installed. Invented people only. Most shorts need one person, and none needs more than three.
+**People.** Use someone who's already made when they fit, since a recurring face helps a channel. Give their `id`, say who they play in `plays`, and leave `spec` as {}. If nobody fits, give a new id (lowercase, no spaces) and a character `spec` in the format below; it's checked against what's really installed. Invented people only. On a meme channel, the famous person is an invented face given their hair, clothes and things, never one made from photos of them. Most shorts need one person, and none needs more than three.
 
 **Things.** Anything else in the picture: an animal, a tool, food, furniture. Use what's in the library, by its `id`, when it fits. Otherwise there are two ways to get it, and the choice matters to how the short looks:
 

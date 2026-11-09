@@ -1,5 +1,5 @@
 ---
-for: a meme channel to come (no name or YAML yet), where someone famous is dropped into a famous story or an impossible "what if", told deadpan the way the reference tells a true one
+for: the memes channel (channels/memes.yaml, a working name), where someone famous is dropped into a famous story or an impossible "what if", told deadpan the way the reference tells a true one
 words: [fiction, what if]
 fields: [who, known_for, story, steps, punchline]
 lists: {steps: [4, 8], known_for: [2, 4]}
@@ -24,9 +24,13 @@ What the second shows about how these travel: the person in one may see it and r
 - **It ends on a twist that turns the goal around** (`punchline`): he stopped them eating it by drinking it.
 - **It's plainly made up**: impossible, never something they might really have done or said, and never anything that could pass as news.
 
-## The rules (proposed Nov 8, waiting on the owner's explicit yes)
+## Where they come from
 
-Every other kind uses invented people only. These name real ones, so these rules hold for every meme. The owner answered the question with "go", which isn't taken as a yes to putting real people in videos: they're asked again in so many words.
+Meme ideas come from the owner, not from the idea researcher: "for memes i mean i wold tell u what tpye of video i want and u would make it" (Nov 8). Don't run the researcher on this kind. What they ask for goes on the `memes` channel as its topic. The channel's premise is what tells the outline, the critic, the titles and the cast that it's a joke and not a fact (`outline.md`'s `parody` shape).
+
+## The lines every meme keeps
+
+Every other kind uses invented people only, and memes name real people. So whoever's idea it is, every meme keeps these lines. When something the owner asks for crosses one, say so and offer the nearest version that doesn't.
 
 1. **Public figures only**: people famous for what they do in public (streamers, rappers, athletes, creators), adults, never a private person.
 2. **The joke comes from what they're known for doing and saying, never from who they are**: not their race, religion, looks or body, health, family or sexuality.
@@ -34,7 +38,7 @@ Every other kind uses invented people only. These name real ones, so these rules
 4. **Their face isn't copied**: they're known by name, hair, clothes and their things, on an invented face, never one made from photos of them. Their lines are said by our narrator, since nobody's voice is ever cloned.
 5. **The caption says it's a parody.**
 
-The owner then said, on Nov 8: "for memes ill explecitly describe what i want". Until they have, don't bring cards for this kind, and expect this brief to change with what they describe. After that, a card that breaks any of its rules is dropped, however funny it is.
+The rest of this brief, what makes one and where to look, is for writing up what the owner asks for, and for the day they want ideas brought to them.
 
 ## Where to look
 
