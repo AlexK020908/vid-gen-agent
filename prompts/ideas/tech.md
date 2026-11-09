@@ -9,7 +9,8 @@ shapes: [you_invent, ladder, why_it_happens]
 # Tech infrastructure
 
 An idea here is the nail, for the machinery behind the internet: one thing everyone does on their phone, made a million times bigger, and each problem that causes fixed in turn, until "you" have built the real thing that serves it today, named at the end. The owner asked for these on Nov 3, 2026, as systems shorts after a load-balancing reel, and again on Nov 8: "initially we also had intentions to make tech infra videos... its a diff kind of video we want to add". They're made in 3D like the other shorts: the owner answered "go" to that on Nov 8. Live diagrams (phase 30) may come later. So `needs` lists what the kit makes:
-- machines as real models of server racks, routers, phones, cables and towers, which can be opened or turned to glass to show inside;
+- machines as real models of server racks, routers, phones, cables and towers, which can be opened or turned to glass to show inside. Already built from exact parts (`things/specs`): `phone`, `server_rack` (eight servers, a status light on each), `data_cable` and `packet` (a ball of data that glows). Others get built the same way;
+- a dark place, as the owner wants for tech ("dark theme is good"): `scenes/examples/tech_dry_run.json` has a warehouse sky with a concrete floor, gone dim, so the data glows;
 - requests and data as balls running along cables, queueing at doors and piling up;
 - heat as a glow on a surface;
 - labels, ticks and crosses on the picture.

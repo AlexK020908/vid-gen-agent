@@ -1,0 +1,10 @@
+{
+ "what": "a ball of data: a small pale blue ball that glows as it travels",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {"id": "ball", "kind": "sphere", "r": 0.025, "at": [0, 0, 0.025], "material": {"color": [0.45, 0.75, 1.0], "rough": 0.25}}
+  ]
+ },
+ "spots": {"middle": [0, 0, 0.025]}
+}

@@ -1,0 +1,10 @@
+{
+ "what": "a black network cable, 2.4 m long, lying straight along the ground",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {"id": "cable", "kind": "pipe", "path": [[-1.2, 0, 0.008], [1.2, 0, 0.008]], "r": 0.008, "material": {"color": [0.03, 0.03, 0.035], "rough": 0.7}}
+  ]
+ },
+ "spots": {"start": [-1.2, 0, 0.008], "middle": [0, 0, 0.008], "end": [1.2, 0, 0.008]}
+}

@@ -53,7 +53,7 @@ The spec is [../plan.md](../plan.md). This file tracks what is built, how it dev
 | 45. Straightforward | The owner's verdict on that preview, measured against the two shorts they called star references, the woodpecker and the pile hammer: rules for one goal all the way, one step a line, every step seen, and sense on mute; labels and failure marks on the picture; and the barometer's script rewritten to them. Spec: [Straightforward](#straightforward-phase-45) | **Built** (Nov 7 to 8, 2026), and closed with the straw short shelved: five versions of it (barometer, submersible pump, force pump with weights) and about 26¢ of voice taught the rules every short now has, and the owner judged the idea itself not good enough to finish (below) |
 | 46. Idea research agent | An agent that lands on ideas as good as the pile hammer's, for each channel's category (inventions now, mysteries and murder cases next), evidenced by what the reference's best videos do, checked, fact-checked, and validated by the owner before anything's built. Spec: [The idea research agent](#the-idea-research-agent-phase-46) | **Built** (Nov 8, 2026): the evidence, four briefs, the owner's taste in their words, the check, and the `idea-researcher` and `idea-checker` agents. Its first run brought 14 fact-checked ideas (6 inventions, 4 mysteries, 4 crimes), waiting on the owner to take or turn down |
 | 47. Joins, and two new kinds | A `transition-checker` agent that judges only the joins: each script's line-to-line joins before its voice, and each finished 3D short's cuts, from sheets of the frames either side of every cut with the words said as it comes. And idea briefs for tech infrastructure and memes. Spec: [The joins, and two new kinds](#the-joins-and-two-new-kinds-phase-47) | **Built** (Nov 8, 2026): tested blind on the woodpecker cut the owner flagged (v5) and the one they approved (v9). It found real bad joins others had missed, but not the owner's sponge join; it agreed with the owner both ways only after two rounds of general rules (no longer blind). Tech starts in 3D (the owner's "go"). Memes: the owner describes each one, and the `memes` channel's premise makes the prompts treat it as a joke |
-| 48. Ready for the first video | What the owner asked for before generating with the pipeline ("yea need these"). A tech dry run in 3D: a test scene with the parts the six tech ideas share (a phone, a cable, a server rack, data as moving balls, a box glowing hot), with what's missing added as general code. Then the first real run through the server since phase 38: a throwaway topic through the writing stages and reviewers, stopping before the voice, to shake out snags | Planned (Nov 8) |
+| 48. Ready for the first video | What the owner asked for before generating with the pipeline ("yea need these"). A tech dry run in 3D: a test scene with the parts the six tech ideas share (a phone, a cable, a server rack, data as moving balls, a box glowing hot), with what's missing added as general code. Then the first real run through the server since phase 38: a throwaway topic through the writing stages and reviewers, stopping before the voice, to shake out snags. Spec: [Ready for the first video](#ready-for-the-first-video-phase-48) | **Tech dry run done** (Nov 8, 2026): four tech things built from parts, and a dark place that makes data glow; no new code was needed. The first real run waits on the owner starting the server |
 
 The code for plan.md's whole build order is complete (weeks 4–6 are running videos, not building); phase 10 is the YouTube tools plan.md lists that no phase has needed yet. What needs your accounts is under "Your turn" in How YouTube works, How Claude writes, How voice, pictures and clips work, and How topics and metrics work.
 
@@ -957,6 +957,28 @@ So on the owner's own example it disagreed with them both ways: it passed the jo
 **Still to build for them:**
 - Tech, mysteries and crimes each need a channel, with a name and a YAML. The names are the owner's; memes has a working one.
 - Tech in live diagrams is phase 30, which the owner asked for again: "yea we need this".
+
+## Ready for the first video (phase 48)
+
+The owner, Nov 8, of what would otherwise come up on the day ("every new short needs some new abilities", "the first real run through the server will hit snags"): "yea need these". Of the look: "dark theme is good".
+
+**A tech dry run in 3D** (`scenes/examples/tech_dry_run.json`, rendered with `run.py scene`), with the parts the six tech ideas share:
+- **Four new things built from exact parts** (`things/specs`), so no code:
+  - `phone`: 7.2 by 15 cm, with a glossy screen;
+  - `server_rack`: a 2 m dark cabinet with eight servers, a green and a blue light on each. With white fronts it read as drawers; dark fronts and lights you can see read as servers;
+  - `data_cable`: 2.4 m;
+  - `packet`: a 5 cm ball of data.
+- **What it does, all with what the scene language already had:**
+  - radio rings leave the phone (`rings`);
+  - five balls travel the cable one after another (`go` through points) and queue at the rack's door, which is what requests piling up looks like;
+  - the camera follows the first ball (`follow`);
+  - the rack's servers glow red when it's overloaded (`lit` with `only`).
+- **The checks earned their keep.** They refused a ball landing on the cable's end, balls grazing others that had already landed, and the rack blocking the lens.
+- **The one gap was the look.** Against the plain set, the glowing balls read as pale glass beads, and `dim` only works on a place. So tech goes in a dark place: Poly Haven's `empty_warehouse_01` sky on `concrete_floor_02`, dimmed to 0.3, with the balls glowing cyan at 3. Poly Haven has no server room; its bank vault and boiler room are the other dark interiors. `tech.md` lists the things and the place.
+
+**The first real run through the server** waits on the owner starting it (`uv run python run.py serve`, then `/mcp`). It's a throwaway topic through the writing stages and both reviewers, stopping before the voice.
+
+**Next: phase 30, the 2D tech diagrams,** to the owner's template: "ive sent sample 2d tech videos before so use that as template, dark theme is good". The 2D sample is the load-balancing reel (`ScreenRecording_11-03-2026 11-52-37_1.mov`), which SHORTS.md breaks down as reference D. The other sample from that day, `copy.mp4`, is the reference's cow hoof short, not a tech one.
 
 ## How a character short runs (phases 28 and 36)
 
