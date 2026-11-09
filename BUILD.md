@@ -897,6 +897,19 @@ So on the owner's own example it disagreed with them both ways: it passed the jo
 - The brief names no short, but these rounds weren't blind, and one example is no measure. The next join the owner flags is the real test: run the checker on that short before fixing it, and see whether it was caught.
 - The film passes ran on the first brief. They share the rules above, so the next one runs on them.
 
+**Woodpecker v10, from what the check found.** The owner, Nov 8: "fix and implement everything in plana nd push". It's in `data/benchmarks/woodpecker_v3/woodpecker_v10.mp4` (60.4 s), with `woodpecker_v10_caption.txt`. v9's file, clock, direction and script are kept as they were (`*_v9.*`).
+- **On "so the same stop" (46.6 s)**, the camera rides down the rail with the sled from its first frame (`follow`), not aimed at where it will stop. It sits right of the middle, so the tree it runs into is in the picture, and all seven tiny brains ride into the stop, so none vanish at the cut.
+- **Line 11** is "But a woodpecker gets about half the pressure that risks a concussion, so hitting twice as fast would probably give it one." It reuses line 10's "risk a concussion", one word for one thing. The voice cost $0.021, and lines 1 to 10 kept their takes, both ends clean.
+- **The word limit.** Its 166 words are over phase 45's 150, as v9's 165 were when the owner approved it. `made_with/v3.py` lets that one rule pass for this short alone.
+- **What was filmed again:** only scenes 15, 17 and 18.
+- **The check of the joins on the last 16 s** judged 18 joins and found none serious. Its one blemish was v9's too: the forest goes dark a beat before the bird's head turns to glass (56.3 s).
+- **The frame review of the last 14 s** listed 8 things. Measured, none is new:
+  - **"The woodpecker never visibly hits the tree" and "rings with no blow"** don't hold up. Every frame shows the head drawing back over about 8 frames and striking the bark in about 2, with the ring on the strike. Its sheets take one frame in three, the same trap as phase 41.
+  - **No gap at the stop.** The cart's plate is against the bark once it stops, and the tree streaks past before that because the camera is following the cart.
+  - **The man's rebound off the tree in his stride, the ground's edge behind him, and the count reaching 7 a little late** are all in the scenes this fix didn't touch. They were in v9 when the owner approved it, and the rebound is on "Still short" above.
+  - **"Twice as fast" shown as a faster strike in half the time** is phase 41's choice.
+  - **Its one new idea**, a gauge that settles at about half the concussion mark, is for the owner to want or not.
+
 **Two new kinds** (`prompts/ideas/`, no code):
 
 - **`tech.md`.** The nail, for the machinery behind the internet: one thing everyone does on their phone, made a million times bigger, each problem fixed in turn, until "you" have built the real system, named at the end.
