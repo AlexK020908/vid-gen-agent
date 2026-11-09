@@ -53,8 +53,16 @@ owner to start `uv run python run.py serve` in `stickfleet/`, then run `/mcp` to
   just "Do Stick Fleet job N." It takes the job, reads the draft fresh and answers it. Don't take it first (if
   you did, add "take it with again=true"). If there's no `critic`
   agent type, launch a general-purpose agent with the instructions in `.claude/agents/critic.md` and the job id.
-- **outline or script, revise turn**: the request carries the draft and the notes (the owner's, or the
-  reviewer's as "Reviewer, beat 3: ..."). Fix each note and whatever it forces; keep the rest word for word.
+- **transitions** (a check of the joins: where each line gives way to the next, and each shot to the next): never
+  check a short you wrote or directed. Launch the `transition-checker` agent with just "Do Stick Fleet job N." It
+  comes once on every script, after the critic and before the voice, and once on every finished 3D short, with the
+  frame review. If there's no `transition-checker` agent type, launch a general-purpose agent with the instructions
+  in `.claude/agents/transition-checker.md` and the job id. For any video outside the pipeline (an old cut, a
+  reference), `uv run python run.py cuts <video> [--direction d.json] [--words clock.json]` makes its sheets and a
+  brief to hand the agent instead.
+- **outline or script, revise turn**: the request carries the draft and the notes (the owner's, the reviewer's as
+  "Reviewer, beat 3: ...", or the check of the joins' as "Joins, line 6 to 7: ..."). Fix each note and whatever it
+  forces; keep the rest word for word.
 - **script**: in parts, because the whole thing is too long for one reply. Before part 1, plan it: scenes per
   beat (hero beats 7 to 9, the rest about 4 or 5), 30 to 40 words a line, about 1,750 words in all, and the
   labels day by day so no day is skipped. Then send:
@@ -114,6 +122,7 @@ A channel with this format makes vertical 3D shorts with no code per video: you 
   `character`, or `revise` with a note to direct it again).
 - A `film` job goes to the worker agent: a sheet of one frame per shot. What it finds goes back as a `direct` revise, once.
 - A `frames` job goes to the `frame-reviewer` agent, launched with just "Do Stick Fleet job N.", once the whole short's put together: it reads sheets of the finished short, ten frames a second, for what breaks physics or how the world works. Never do it yourself: whoever staged a short doesn't grade it. If there's no `frame-reviewer` agent type, launch a general-purpose agent with the instructions in `.claude/agents/frame-reviewer.md`. What it finds goes back as a `direct` revise, at most twice, and only what changed is rendered again.
+- Then a `transitions` job goes to the `transition-checker` agent the same way: sheets of every cut, the end of one shot beside the start of the next, with the words said as it comes. What's wrong in the picture goes back with the frame reviewer's notes; what's wrong in the words goes to the owner as a notice, since a new line means paying for its voice again.
 - The render card has the MP4 and a frame sheet, and only a title to pick. A flag with a note directs it again and keeps
   the voice. There's nothing else to spend after the voice.
 
@@ -121,7 +130,7 @@ A channel with this format makes vertical 3D shorts with no code per video: you 
 
 Every idea goes to the owner before anything's built on it ("get ur ideas validated with me"). Never pick one yourself, and an "any" isn't a pick. None of this needs the server.
 
-1. Launch the `idea-researcher` agent with a category and how many to bring, about six. The categories are the briefs in `prompts/ideas/`: `inventions` and `explainers` for the shorts channel, `mysteries` and `crimes` for the channels to come. It reads the briefs, the owner's taste and the reference's shorts of that kind, researches on the web, writes `data/ideas/<category>/cards.json`, and checks it (`run.py ideas check <category>`).
+1. Launch the `idea-researcher` agent with a category and how many to bring, about six. The categories are the briefs in `prompts/ideas/`: `inventions` and `explainers` for the shorts channel, and `mysteries`, `crimes`, `tech` and `memes` for the channels to come. Don't run `memes` until the owner has said yes to its rules about real people (in its brief). It reads the briefs, the owner's taste and the reference's shorts of that kind, researches on the web, writes `data/ideas/<category>/cards.json`, and checks it (`run.py ideas check <category>`).
 2. Launch the `idea-checker` agent with the category. It tests every claim at its source, and says keep, fix or drop for each card. Send its fixes to the researcher (SendMessage) to apply and check again. Never fix a card's facts yourself from memory.
 3. Bring the owner the short list: each card's hook, what's seen first, how it ends, where it's known from, and the reference's shorts it's like, with how they did (`run.py ideas check <category>` prints them). No score and no ranking.
 4. Keep every answer in the taste file, in their words: `uv run python run.py ideas verdict <category> <card number> took|turned_down|offered "<what they said>"`. The researcher reads it next time, and the check refuses an idea they've turned down.

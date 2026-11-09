@@ -52,6 +52,7 @@ The spec is [../plan.md](../plan.md). This file tracks what is built, how it dev
 | 44. The barometer short | Its 21 things built from data, its direction on the estimated clock, and a free silent preview, with what making it found fixed for every short. Spec: [The barometer short](#the-barometer-short-phase-44) | **Built** (Nov 7, 2026): a silent preview, now `data/benchmarks/straw/straw_preview_v2_no_voice.mp4`, made after one frame review and four rounds of fixes. The owner: "animation is good", but not straightforward enough (phase 45) |
 | 45. Straightforward | The owner's verdict on that preview, measured against the two shorts they called star references, the woodpecker and the pile hammer: rules for one goal all the way, one step a line, every step seen, and sense on mute; labels and failure marks on the picture; and the barometer's script rewritten to them. Spec: [Straightforward](#straightforward-phase-45) | **Built** (Nov 7 to 8, 2026), and closed with the straw short shelved: five versions of it (barometer, submersible pump, force pump with weights) and about 26¢ of voice taught the rules every short now has, and the owner judged the idea itself not good enough to finish (below) |
 | 46. Idea research agent | An agent that lands on ideas as good as the pile hammer's, for each channel's category (inventions now, mysteries and murder cases next), evidenced by what the reference's best videos do, checked, fact-checked, and validated by the owner before anything's built. Spec: [The idea research agent](#the-idea-research-agent-phase-46) | **Built** (Nov 8, 2026): the evidence, four briefs, the owner's taste in their words, the check, and the `idea-researcher` and `idea-checker` agents. Its first run brought 14 fact-checked ideas (6 inventions, 4 mysteries, 4 crimes), waiting on the owner to take or turn down |
+| 47. Joins, and two new kinds | A `transition-checker` agent that judges only the joins: each script's line-to-line joins before its voice, and each finished 3D short's cuts, from sheets of the frames either side of every cut with the words said as it comes. And idea briefs for tech infrastructure and memes. Spec: [The joins, and two new kinds](#the-joins-and-two-new-kinds-phase-47) | **Built** (Nov 8, 2026): tested blind on the woodpecker cut the owner flagged (v5) and the one they approved (v9). It found real bad joins others had missed, but not the owner's sponge join; it agreed with the owner both ways only after two rounds of general rules (no longer blind). Tech starts in 3D (the owner's "go"). Memes wait for the owner to describe what they want |
 
 The code for plan.md's whole build order is complete (weeks 4–6 are running videos, not building); phase 10 is the YouTube tools plan.md lists that no phase has needed yet. What needs your accounts is under "Your turn" in How YouTube works, How Claude writes, How voice, pictures and clips work, and How topics and metrics work.
 
@@ -83,6 +84,7 @@ uv run python run.py ideas check inventions   # a category's cards (data/ideas/<
 uv run python run.py thing --search bird # free 3D models, with pictures to choose from -> data/things/_search/ ($0)
 uv run python run.py thing apple         # a thing from things/specs, fetched and sized, with a sheet -> data/things/apple/ ($0)
 uv run python run.py scene scenes/examples/bird_lands_on_head.json   # a scene file rendered -> data/scenes/<name>/ ($0)
+uv run python run.py cuts short.mp4 --direction direction.json --words clock.json   # every cut laid out, and a brief for the transition-checker agent ($0)
 uv run python -m machines.specs.generate # writes machines/specs/*.json (the machines' specs) and checks each
 uv run python run.py connect zombie                   # YouTube sign-in for one channel (or connect_youtube in the chat)
 uv run python run.py youtube-test zombie              # day-1 unlisted upload check
@@ -713,7 +715,7 @@ That's `prompts/ideas/inventions.md`'s heart, in nine points, and `all.md` has w
   - Each line has views, likes and comments, and how many of them reached their quarter's top tenth, with a 90% interval so a handful isn't read as a pattern.
   - Long videos and anything under 28 days old are left out.
   - What it showed: no kind of title stands out.
-    - "How X works": 218 shorts, 0.88x his median in the middle, 6% in his top tenth against 10%.
+    - "How X works": 218 shorts, 0.88x his median in the middle, 7% in his top tenth against 10%.
     - Invent, machine or engine: 1.00x and 9%.
     - Mysteries: 1.05x.
     - Crime words: 0.96x.
@@ -816,6 +818,123 @@ That's `prompts/ideas/inventions.md`'s heart, in nine points, and `all.md` has w
 - a verdict keeping the whole card;
 - the real taste file, with every reading marked as ours;
 - the agents' instructions.
+
+## The joins, and two new kinds (phase 47)
+
+The owner, Nov 8, after reading the idea tool's page: "its good but remmeeber initially we also had intentions to make tech infra videos, that's also possible here right? so its a diff kind of video we want to add. Also i want to add meme videos as well. Checlk out the meme video ive just pasted. So in total we have 7 kinds. note that its just cuffem reacting lol. We want ot be able to make memes like this. Also i have the adam apple and eve stuff, optherwise the plan is good", and "something i would add is another agent that looks at the transitions between scnenes, like the b ird example, I actually had to make sure the tranasistion into sponge on hammer was clean. We need a transition checker. this mainly comes from the script and also how cclean the scnenes are".
+
+**The seven kinds, as read:**
+- inventions and explainers, for the shorts channel;
+- old real mysteries, real murder cases and invented cases (`mysteries.md` and `crimes.md`, each taking real and invented);
+- tech infrastructure;
+- memes.
+
+The Adam and Eve video is the second meme in the owner's recording (`.sample_videos/memes.mov`), not an eighth kind.
+
+**The transition checker.** Joins were one point among many for the critic ("Does each line follow from the one before?", in a list capped at six problems) and for the frame reviewer ("Why is that there?"). The owner still caught the sponge join themselves, twice. What's built:
+
+- **The brief, `prompts/transitions.md`.** Every channel shares it. It names no short, so it could be tested blind. A clean join:
+  - **In the words:**
+    - each line picks up what the last one left;
+    - "So", "But" and "Because" mean what they say;
+    - anything new is brought in, and a comparison says what it stands in for;
+    - "it", "this" and "that" point at what the last line made plain;
+    - one step at a time.
+  - **In the picture:**
+    - the next shot comes from the last one, or from the words with it;
+    - what carries across a cut stays as it was, and so does movement;
+    - a change of size reads as the same thing;
+    - the cut comes when the words bring the new picture;
+    - the first frame is clean.
+- **The agent, `.claude/agents/transition-checker.md`.** A fresh agent that judges only joins, given a job id or a brief. A copy is in the workspace folder above.
+- **On the script** (`core/transitions.py`, `stages/script.py`). It runs after the critic and before the voice is paid for.
+  - Serious joins go back to the writer once, through the revise turn, as notes like "Joins, line 6 to 7: ...".
+  - Blemishes are only listed.
+  - A rewrite that fails its checks keeps the draft, and the owner's told.
+- **On the film** (`stages/film.py`). It runs after the frame review, on the same render, so one trip back to the director carries both sets of notes.
+  - Joins in the picture go to the director.
+  - Joins in the words go to the owner as a notice, since a new line means paying for its voice again.
+- **The sheets, `render/cut_sheets.py`.**
+  - Each cut gets four frames: half a second before, the last frame before, the first frame after, and half a second after.
+  - There are two cuts a row, with a red line on each cut and the words said around it, marked [cut].
+  - Cuts come from the direction, snapped to the frame where the picture really changes, since a shot's first frame can land a frame either side of its time.
+  - With no direction, cuts are measured from the picture, in colour: a cut from red to green is the same grey.
+- **`run.py cuts <video> [--direction d.json] [--words clock.json]`** lays out any video's cuts and writes the brief, for old cuts and references.
+- **`models.transitions: on`** in stickfleet.yaml.
+
+**The blind test.** Each run used a fresh agent, told nothing of what the owner had said, that read only the brief and its sheets. Each film pass took about 150k to 175k tokens of the plan and 13 to 16 minutes.
+
+- **v5, film pass** (the cut the owner flagged): it judged 47 joins and found 4 problems, 1 serious.
+  - The serious one is real: after "its tiny brain", the picture jumps to a big brain on a sled, with nothing said about whose brain it is. The sixth frame review had found the same thing, and v6's "your brain" fixed it.
+  - **It missed the owner's join, into the sponge** ("the transition to sponge isn't good still"). It only noted, as a blemish on the next line, that the cushion step was missing.
+- **v9, film pass** (the cut the owner approved): it judged 49 joins and found 7 problems, 1 serious. The sponge join passed.
+  - The serious one is real, checked on the sheet. On "so the same stop" (46.6 s), the shot opens on bare rails with the rig a sliver at the edge, and of the seven tiny brains just before the cut, only one is left after it.
+  - Neither the frame reviewer nor the owner had caught it.
+- **v5, script pass** (its 12 lines as voiced, each with its planned picture): it judged 25 joins and found 5 problems, 2 serious, in about 110k tokens and 9 minutes.
+  - Both serious ones are real. "Seven times the pressure" was then followed by "not by much" and "twice as fast", which don't add up; the owner's later rewrite changed those lines too. The second was whose brain it is, again.
+  - **It missed the sponge join too.** It only flagged the join out of it ("what protects it" lands on the nail) as a blemish.
+
+**What the miss changed** (`transitions.md`, for every short):
+- **One word for one thing.** A thing called by a new word across a join reads as a new thing. v5 went from "shock absorber" to "absorbs almost no shock" to "a soft head" to "a sponge", and the owner's fix kept one word: "no real cushion", then "a cushion would soak up the hit".
+- **A "Because" answers a question the viewer is already asking,** in the last line's own words.
+- **A join that only works for a viewer who stops to work it out is serious.**
+
+The brief still names no short. These runs are no longer blind, since the target was known when the rules were written.
+
+**Round 2** (with those three rules):
+- **v5's script:** it now calls the sponge passage serious, but for the join out of it ("So what protects it" doesn't follow from a sponge). It still passes the join into it, the one the owner flagged.
+- **v9's script** (approved): it calls the owner's fixed sponge join serious. "A cushion would soak up the hit" sounds like a reason to have one, since the cost to the bird (its beak wouldn't dig as far) is never said. Its other serious one is the "that" in "stays under that by about half".
+
+So on the owner's own example it disagreed with them both ways: it passed the join they turned down, and flagged the one they approved.
+
+**Round 3** added one rule: a comparison's middle link is a physical cause, never a verdict. "Ice has almost no grip, so the tyres spin" follows; "ice would be terrible to drive on" doesn't.
+- **v5's script:** the join into the sponge is now its worst problem, and serious. The "Because" leaves the viewer to work out what it explains, "a soft head" is a new word for the shock absorber, and "terrible" is a verdict, not a cause. That's the owner's own note in other words. Its other serious ones are the "seven times" ending and the "So" out of the sponge.
+- **v9's script** (approved): the owner's fixed sponge join passes, with only a blemish (it could say the hit is what digs into the tree). Its one serious problem is the ending, as in every run of both versions: "seven times the pressure, enough to risk a concussion" followed by "stays under that by about half" makes the numbers seem to disagree at the payoff. That's for the owner to judge, since they approved the cut.
+
+**Where it stands.**
+- It finds real joins that the frame reviewer, the critic and the owner let through: the empty rails at 46.6 s in v9, and whose brain it is in v5.
+- After two rounds of rules, it agrees with the owner on their one example of a bad join, both ways.
+- The brief names no short, but these rounds weren't blind, and one example is no measure. The next join the owner flags is the real test: run the checker on that short before fixing it, and see whether it was caught.
+- The film passes ran on the first brief. They share the rules above, so the next one runs on them.
+
+**Two new kinds** (`prompts/ideas/`, no code):
+
+- **`tech.md`.** The nail, for the machinery behind the internet: one thing everyone does on their phone, made a million times bigger, each problem fixed in turn, until "you" have built the real system, named at the end.
+  - Shapes: `you_invent`, `ladder` and `why_it_happens`. The card is an invention's.
+  - His roughly 20 tech shorts sit at 0.66x his median, with one hit.
+  - They're made in 3D like the rest: asked, with 3D recommended, the owner said "go". Phase 30's live diagrams (never built) may come later.
+- **`memes.md`.** Someone famous, dropped into a famous story or an impossible what-if and told deadpan. Every step is one of their known things doing a job, and it ends on a twist.
+  - The owner's two examples are described in it.
+  - It has a new outline shape, `parody` (`checks.SHORT_SHAPES`, `outline.md`), for a meme channel only.
+  - His `(fiction)` and what-if shorts, its nearest kin: 82 of them, 1.31x his median.
+  - **Its rules about real people are proposed, and wait on the owner.** They answered "go", which wasn't taken as a yes to real people: an edit writing their approval into the stickfleet skill was blocked as instruction poisoning. Then: "for memes ill explecitly describe what i want". The researcher brings no meme cards until they have. The rules:
+    - public figures only, and adults;
+    - the joke comes from what they're known for doing and saying, never from who they are: race, religion, looks or body, health, family or sexuality. That rules out the monster one, which turns on how the streamer looks;
+    - nothing sexual, no harm done to them, and nothing about a real scandal, crime, court case or death;
+    - an invented face, with the person known by name, hair, clothes and things;
+    - our narrator says their lines;
+    - "parody" goes in the caption.
+
+**Tests:**
+- `tests/test_transitions.py`:
+  - each cut is laid out with the end of one shot and the start of the next, told apart by colour;
+  - what's said is marked at the cut;
+  - cuts are measured when nothing planned them, and a planned cut moves to where the picture changes;
+  - a clock and Whisper both give what's said;
+  - both turns fill for any channel;
+  - a bad join needs its place, its kind and a fix;
+  - a script goes back once for serious joins;
+  - it's left as it was for blemishes, for no problems, for one line, or with the check off, and kept when the rewrite fails;
+  - a film's joins in the picture come back, and its joins in the words go to the owner;
+  - a one-shot film isn't checked;
+  - the stages ask for the check after the reviewers.
+- `test_session.py`: `check_joins` parks as a `transitions` job.
+- Stop drops a waiting check of the joins with the rest of the writing (`stop_writing`).
+
+**Still to build for them:**
+- Each new kind needs a channel, with a name and a YAML. The names are the owner's.
+- A meme channel needs prompts that know it's comedy before its first short: the outline prompt's "one surprising true point" and the critic's fact check don't fit a parody.
+- Tech in live diagrams needs phase 30.
 
 ## How a character short runs (phases 28 and 36)
 

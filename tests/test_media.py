@@ -429,10 +429,11 @@ def test_pipeline_with_real_voice_and_pictures(ctx, mp3):
     # Each reference file is uploaded once (the character too), however many stills use it.
     # and the main character redrawn with the red backpack the stub puts on them in scene 1. Scenes 2 and 4 carry
     # on from the scene before them, so those two stills are uploaded as references too. The stub LLM's rows: the
-    # outline, the script, the titles, and a check of each of the 6 stills, the backpack look and the cot change.
+    # outline, the script, the titles, and a check of each of the 6 stills, the backpack look and the cot change,
+    # and the check of the script's joins (core/transitions.py).
     assert len(pictures.calls) == 6 + 3 + 5 and len(pictures.uploads) == 1 + 5 + 2
     assert {(r["provider"], r["simulated"]): r["n"] for r in costs} == {
-        ("tts", 0): 6, ("images", 0): 14, ("llm", 1): 3 + 8 + 2, ("video", 1): 1}
+        ("tts", 0): 6, ("images", 0): 14, ("llm", 1): 3 + 8 + 2 + 1, ("video", 1): 1}
     pauses = assemble.pauses(scenes, ctx.config.render)  # a breath after each line, longer before a new day
     assert pauses[-1] == 1000 and 400 in pauses
     assert abs(v["duration_ms"] - sum(s["duration_ms"] for s in scenes) - sum(pauses)) < 400

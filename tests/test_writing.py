@@ -31,7 +31,7 @@ def ctx(tmp_path, monkeypatch):
                                                  "render": {"engine": "ffmpeg"},
                                                  "topics": {"competitors": "off", "cadence": False},
                                                  "youtube": {"reach": False, "signin_check": False}})
-    ctx.llm = SessionLLM(ctx.config, ctx.llm, stubbed=("check_picture",))  # the writing from the session
+    ctx.llm = SessionLLM(ctx.config, ctx.llm, stubbed=("check_picture", "check_joins"))  # the writing from the session
     return ctx
 
 
@@ -241,7 +241,7 @@ def test_prompt_edits_apply_to_the_next_job_and_bad_placeholders_stop(tmp_path, 
         shutil.copytree(ROOT / name, root / name)
     ctx = make_ctx(root=root, data_dir=tmp_path / "data", overrides={
         "mode": "stub", "engine": {"retry_backoff_s": 0}, "topics": {"competitors": "off", "cadence": False}})
-    ctx.llm = SessionLLM(ctx.config, ctx.llm, stubbed=("check_picture",))
+    ctx.llm = SessionLLM(ctx.config, ctx.llm, stubbed=("check_picture", "check_joins"))
     path = root / "prompts" / "outline.md"
     text = path.read_text(encoding="utf-8")
     path.write_text(text.replace("## What to write", "Always include a dog.\n\n## What to write"), encoding="utf-8")

@@ -106,6 +106,9 @@ class LLM(Protocol):
 
     def check_film(self, channel, shots: str, sheet, meter: Meter) -> list[dict]:
         """What a viewer would see is wrong on a sheet of frames: [{shot, what, fix}]."""
+    def check_joins(self, channel, turn: str, values: dict, meter: Meter) -> dict:
+        """The joins between lines and between shots (prompts/transitions.md, `turn` script or film):
+        {"seen", "problems": [{at, in: words | picture, what, fix, serious}]} (core/transitions.py)."""
 
 
 def _cost(meter: Meter, usd: float) -> None:
@@ -128,6 +131,7 @@ class StubLLM:
         self.n_scenes = n_scenes
         self.judge: Callable[[dict], list[str]] | None = None  # tests: what check_picture finds, from its values
         self.critic_problems: list[dict] = []  # tests: what the reviewer finds next (used once, then it passes)
+        self.join_problems: list[dict] = []    # tests: what the check of the joins finds next (used once, then it passes)
 
     def check_picture(self, channel, turn: str, values: dict, pictures: list, meter: Meter) -> list[str]:
         _cost(meter, 0.01)
@@ -229,6 +233,11 @@ class StubLLM:
     def check_frames(self, channel, said: str, planned: str, sheets: list[dict], every: int, meter: Meter) -> list[dict]:
         _cost(meter, 0.01)
         return []
+
+    def check_joins(self, channel, turn: str, values: dict, meter: Meter) -> dict:
+        _cost(meter, 0.01)
+        problems, self.join_problems = list(self.join_problems), []
+        return {"seen": f"the joins of the {turn}", "problems": problems}
 
     def outline(self, channel, topic: str, notes: list[str], previous: dict | None, meter: Meter,
                 sequel: dict | None = None) -> dict:

@@ -18,7 +18,7 @@ from server import claude_code
 from test_session import call as on_one_connection, text
 from test_tools import call, result
 
-WRITING = ("outline", "script", "critique", "revise_visual", "rewrite_line", "titles", "topics")
+WRITING = ("outline", "script", "critique", "check_joins", "revise_visual", "rewrite_line", "titles", "topics")
 PAID = ("still", "place", "person", "change_place", "change_look", "sheet", "thumbnail")
 
 

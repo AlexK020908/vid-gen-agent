@@ -271,6 +271,25 @@ def _ideas(args) -> None:
         sys.exit(1)
 
 
+def cmd_cuts(args) -> None:
+    """Any video's joins laid out for the transition checker: the sheets of its cuts, and the brief to hand it."""
+    from core import transitions
+    from providers import claude, prompts
+    from render import cut_sheets
+
+    ctx = make_ctx()
+    video = Path(args.video)
+    out = Path(args.out) if args.out else video.with_name(f"{video.stem}_cuts")
+    direction = json.loads(Path(args.direction).read_text(encoding="utf-8")) if args.direction else None
+    lines = cut_sheets.lines_from(Path(args.words)) if args.words else []
+    values = transitions.film_values(video, direction, lines, out)
+    system, user = prompts.render(ctx.config.root, "transitions.md", "film", ctx.channel(args.channel), {**claude.JOIN_VALUES, **values})
+    shape = json.dumps(claude.JOINS, indent=1)
+    brief = out / "brief.md"
+    brief.write_text(f"{system}\n\n---\n\n{user}\n\nEnd your reply with the JSON, in this shape:\n\n{shape}\n", encoding="utf-8")
+    print(f"{values['sheets'].count(chr(10)) + 1} sheets of cuts; the brief to hand the transition-checker agent: {brief}")
+
+
 def cmd_scene(args) -> None:
     from pathlib import Path
 
@@ -447,6 +466,14 @@ def main() -> None:
     p.add_argument("--frames", default=None, help="comma-separated frames for a quick look (default all)")
     p.add_argument("--width", type=int, default=1080, help="picture width in pixels")
     p.set_defaults(fn=cmd_scene)
+
+    p = sub.add_parser("cuts", help="any video's cuts laid out for the transition checker (prompts/transitions.md), with its brief")
+    p.add_argument("video", help="the video file")
+    p.add_argument("--direction", help="its direction JSON, for the planned cuts; without one they're measured from the picture")
+    p.add_argument("--words", help="what's said: a short's clock JSON, or local Whisper's segments with words")
+    p.add_argument("--channel", default="shorts", help="whose short it is (default shorts)")
+    p.add_argument("--out", help="the folder for the sheets and the brief (default <video>_cuts beside it)")
+    p.set_defaults(fn=cmd_cuts)
 
     p = sub.add_parser("bench-render", help="time a full-length render")
     p.add_argument("--channel", default="zombie")

@@ -163,7 +163,8 @@ def test_every_call_is_a_job(ctx, tmp_path):
              "direct": lambda m: llm.direct(zombie, {"outline": outline, "notes": [], "lines": "", "total": 1, "people": "", "things": "",
                                                      "stances": "", "moves": "", "language": "", "example": ""}, sheet, m),
              "check_film": lambda m: llm.check_film(zombie, "1. a shot", picture, m),
-             "check_frames": lambda m: llm.check_frames(zombie, "0 s to 1 s: a line", "Nothing jumps", [{"file": str(picture), "from": 0, "to": 1}], 3, m)}
+             "check_frames": lambda m: llm.check_frames(zombie, "0 s to 1 s: a line", "Nothing jumps", [{"file": str(picture), "from": 0, "to": 1}], 3, m),
+             "check_joins": lambda m: llm.check_joins(zombie, "script", {"outline": "Hook: h", "lines": "1. Says: a line"}, m)}
     for name, ask in calls.items():
         meter = type("M", (), {"stopped": False, "channel_id": "zombie", "what": f"the {name}"})()
         with pytest.raises(jobs.NeedsClaude):
@@ -172,11 +173,12 @@ def test_every_call_is_a_job(ctx, tmp_path):
         kinds = {r["what"]: r["kind"] for r in conn.execute("SELECT what, kind FROM claude_jobs")}
     assert kinds == {"the check_picture": "picture", "the map_stage": "map", "the name_parts": "parts",
                      "the inventory": "inventory", "the scene_sheet": "sheet", "the cast_short": "cast",
-                     "the pick_thing": "source", "the check_thing": "thing", "the direct": "direct", "the check_film": "film", "the check_frames": "frames"}
+                     "the pick_thing": "source", "the check_thing": "thing", "the direct": "direct", "the check_film": "film", "the check_frames": "frames",
+                     "the check_joins": "transitions"}
     assert {name for name in vars(LLM) if not name.startswith("_")} == {
         "outline", "script", "revise_visual", "rewrite_line", "titles", "topics", "check_picture", "map_stage",
         "name_parts", "critique", "scene_sheet", "inventory", "cast_short", "pick_thing", "check_thing", "direct",
-        "check_film", "check_frames"}  # the writing's jobs are in test_writing.py
+        "check_film", "check_frames", "check_joins"}  # the writing's jobs are in test_writing.py
 
 
 def test_endpoint_over_http(ctx):

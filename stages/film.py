@@ -14,7 +14,7 @@ from pathlib import Path
 from PIL import Image
 
 from characters.build import sheet as tile
-from core import db
+from core import db, transitions
 from core.errors import FinalError
 from core.stage import run_video_stage
 from render import ffmpeg, frame_sheets, narration, remotion_render, sfx
@@ -249,10 +249,12 @@ def _work(ctx, conn, video) -> None:
     draft = json.loads(video["direction_draft_json"] or "{}")
     if not _stub(ctx) and draft.get("reviewed", 0) < MOST_FRAME_REVIEWS:
         problems = _review(ctx, conn, video, channel, out, direction, clock)
-        if problems:
-            notes = [f"{direct.LOOK_NOTE}at {p['at']}: {p['what']} Fix: {p['fix']}" for p in problems]
+        joins = transitions.check_film(ctx, conn, video, channel, out, direction, clock["lines"])   # the words' go to the owner
+        notes = [f"{direct.LOOK_NOTE}at {p['at']}: {p['what']} Fix: {p['fix']}" for p in problems]
+        notes += [f"{direct.LOOK_NOTE}{transitions.NOTE}{p['at']}: {p['what']} Fix: {p['fix']}" for p in joins if p.get("serious", True)]
+        if notes:
             said = "\n".join(f"- {n}" for n in notes)
-            ctx.events.emit("notice", video["id"], text=f"The review of the frames found {len(notes)} thing(s), so it's being directed again:\n{said}")
+            ctx.events.emit("notice", video["id"], text=f"The review of the frames and the check of the joins found {len(notes)} thing(s), so it's being directed again:\n{said}")
             with db.tx(conn):
                 for note in notes:
                     db.add_feedback(conn, video["id"], "direct", note)

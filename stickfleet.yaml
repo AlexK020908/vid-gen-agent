@@ -10,6 +10,7 @@ data_dir: data
 
 models:
   critic: on               # the reviewer reads each outline and script as the toughest viewer and sends it back once
+  transitions: on          # the check of the joins: each script's line-to-line joins before its voice, each 3D short's cuts after filming
                            # with fixes (prompts/critic.md, core/review.py, the critic agent); off to skip
   voice: eleven_multilingual_v2            # steadiest over long narration; eleven_v4 is the newer, more expressive one
   still: google/nano-banana-2.1/edit       # fal image-edit model; takes the character reference as image_urls

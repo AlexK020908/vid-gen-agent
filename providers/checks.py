@@ -29,7 +29,7 @@ SHORT_WORDS = (60, 150)         # what the prompt asks for
 SHORT_WORDS_OK = (50, 165)      # what passes
 SHORT_HOOK_WORDS = 26           # a moment is short, but an "If you..." setup runs to about 25
 SHORT_SHAPES = ("true_story", "absurd_test", "why_it_happens", "thought_experiment", "fake_invention", "fix_in_steps", "ladder",
-                "you_invent", "mystery")
+                "you_invent", "mystery", "parody")
 QUESTION_OPENS = ("why_it_happens",)     # the only shape that may open on a bare question
 TITLES = 3
 TITLE_MAX = 100                 # YouTube's limit
@@ -618,4 +618,25 @@ def critique(data: dict) -> list[str]:
             out.append(f"the fix for {p.get('where')} is too thin to write from")
         if not (p.get("where") or "").strip():
             out.append("a problem has no where")
+    return out
+
+
+JOINS_MOST = 10   # bad joins a check of the joins lists (prompts/transitions.md)
+
+
+def joins(data: dict) -> list[str]:
+    """The check of the joins (prompts/transitions.md): each bad join placed, in the words or the picture, with a fix
+    someone could make."""
+    problems = data.get("problems")
+    if not isinstance(problems, list):
+        return ["problems isn't a list"]
+    out = [f"{len(problems)} bad joins; keep the worst {JOINS_MOST}"] if len(problems) > JOINS_MOST else []
+    for p in problems:
+        at = (p.get("at") or "").strip()
+        if not at:
+            out.append("a bad join has no `at`: say which, as \"line 6 to 7\" or \"cut 12 at 26.29 s\"")
+        if p.get("in") not in ("words", "picture"):
+            out.append(f"the join at {at or '?'} needs `in` as words or picture")
+        if len((p.get("fix") or "").split()) < 4:
+            out.append(f"the fix for the join at {at or '?'} is too thin to make from")
     return out

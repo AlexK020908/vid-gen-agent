@@ -47,7 +47,8 @@ to reply with; a long one comes as a file to read whole); `answer_job` sends you
 by the same code checks the pipeline uses: fix what they say and answer again. Once it passes, the video carries \
 on. A script goes in parts, whole beats at a time in order (`part` 1, 2, ..., and `last` on the final one), each \
 checked as it arrives. A review job (kind `critic`) goes to the `critic` agent with just its job id, so a fresh \
-reader judges the draft rather than the one who wrote it. The looking jobs (kinds picture, map, parts, inventory, \
+reader judges the draft rather than the one who wrote it, and a check of the joins (kind `transitions`) goes to the \
+`transition-checker` agent the same way. The looking jobs (kinds picture, map, parts, inventory, \
 sheet) go to the `worker` agent, so their pictures and one-per-scene briefs stay out of the main chat. `wait` \
 holds (up to 50 seconds; call it again to keep waiting) until a job arrives, a card waits on the owner, or \
 something needs them. The `stickfleet` skill has the rest."""
@@ -155,6 +156,9 @@ def make_server(ctx) -> Server:
             head.append(f"So far: {jobs.parts_so_far(row)}. Carry on with the next part.")
         if row["kind"] == "critic":
             head.append("This is a review: if you wrote the draft, hand the job to the critic agent instead.")
+        if row["kind"] == "transitions":
+            head.append("This is a check of the joins: if you wrote or directed this short, hand the job to the "
+                        "transition-checker agent instead.")
         if row["kind"] in LOOKING:
             head.append("This is a looking job: the worker agent does these, so if you're the main chat, hand the "
                         "waiting looking jobs to it instead.")

@@ -31,7 +31,8 @@ log = logging.getLogger("stickfleet.claude")
 WHAT = {"outline": "outline", "script": "script", "regen": "scene fix", "titles": "titles", "topic": "topic ideas",
         "critic": "review", "picture": "picture check", "map": "stage map", "parts": "part names",
         "inventory": "props list", "sheet": "scene sheet", "cast": "list of what the short needs",
-        "source": "choice of a model", "thing": "check of a model", "direct": "direction", "film": "look at the shots", "frames": "review of the frames"}
+        "source": "choice of a model", "thing": "check of a model", "direct": "direction", "film": "look at the shots", "frames": "review of the frames",
+        "transitions": "check of the joins"}
 PICTURE_VALUES = ("idx", "label", "shot", "before", "narration", "visual_prompt", "people", "what", "images")  # picture.md
 SHOWN = 25           # problems listed in a retry turn
 FIX = ("That reply has problems the pipeline checks for:\n{problems}\n\n"
@@ -117,6 +118,9 @@ FILM = _obj({"seen": STR, "problems": {"type": "array", "items": _obj({"shot": S
 FRAMES = _obj({"seen": STR, "problems": {"type": "array", "items": _obj({"at": STR, "what": STR, "fix": STR})}})
 CRITIQUE = _obj({"verdict": {"type": "string", "enum": ["fine", "revise"]},  # prompts/critic.md, core/review.py
                  "problems": {"type": "array", "items": _obj({"where": STR, "what": STR, "fix": STR})}})
+JOINS = _obj({"seen": STR, "problems": {"type": "array", "items": _obj(  # prompts/transitions.md, core/transitions.py
+    {"at": STR, "in": {"type": "string", "enum": ["words", "picture"]}, "what": STR, "fix": STR, "serious": {"type": "boolean"}})}})
+JOIN_VALUES = {"outline": "", "lines": "", "cuts": "", "measured": "", "sheets": ""}   # what prompts/transitions.md's turns fill
 
 
 class _SceneCounter:
@@ -372,6 +376,12 @@ class ClaudeLLM:
                          lambda d: [] if isinstance(d["problems"], list) else ["problems isn't a list"], meter)
         log.info("the review of the frames: seen %r, problems %r", data["seen"], data["problems"])
         return data["problems"]
+
+    def check_joins(self, channel, turn: str, values: dict, meter: Meter) -> dict:
+        filled = {**JOIN_VALUES, **values}       # each turn's placeholders, so the other turn's check passes too
+        data = self._ask("transitions", "transitions.md", turn, channel, filled, JOINS, checks.joins, meter)
+        log.info("the check of the joins (%s): seen %r, problems %r", turn, data["seen"], data["problems"])
+        return data
 
     @staticmethod
     def _scene_values(scene: dict, note: str) -> dict:
