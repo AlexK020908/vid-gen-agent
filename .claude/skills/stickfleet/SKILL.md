@@ -126,6 +126,22 @@ A channel with this format makes vertical 3D shorts with no code per video: you 
 - The render card has the MP4 and a frame sheet, and only a title to pick. A flag with a note directs it again and keeps
   the voice. There's nothing else to spend after the voice.
 
+## A systems short (`format: diagram`)
+
+A channel with this format (`systems`) makes live diagrams on a dark frame with no voice, to the owner's load-balancing
+template: you write a spec, and fixed code runs its traffic and draws it. It costs nothing.
+
+- A `diagram` job in the main chat: the whole short as a spec (its brief, `prompts/diagram/spec.md`, has the format and a
+  worked example). It's checked as it comes in: every field, whether it fits on the frame, and whether a number in the end
+  card's words is one the pill really shows. To try a spec before answering, write it to a file in the scratchpad and run
+  `uv run python run.py diagram <file> --check`: it prints what each phase ends with (counters, waiting requests,
+  requests lost, pills). Pick rates and capacities so the story happens in the numbers.
+- The `critic` agent reviews it as a senior engineer, with what the simulation shows phase by phase.
+- The outline card shows each phase as a beat: its caption, what's on screen, what's moving and what the numbers end on.
+- Once approved it's drawn. A `look` job goes to the worker agent: a sheet of a frame from the middle of each phase.
+  What it finds goes back to you once as notes ("Look, phase 4: ..."), and the fixed spec is drawn again without a second gate.
+- The render card has the MP4 and its title already picked from the spec's. The owner posts it on Instagram by hand.
+
 ## Finding ideas
 
 Every idea goes to the owner before anything's built on it ("get ur ideas validated with me"). Never pick one yourself, and an "any" isn't a pick. None of this needs the server.

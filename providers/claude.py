@@ -32,7 +32,7 @@ WHAT = {"outline": "outline", "script": "script", "regen": "scene fix", "titles"
         "critic": "review", "picture": "picture check", "map": "stage map", "parts": "part names",
         "inventory": "props list", "sheet": "scene sheet", "cast": "list of what the short needs",
         "source": "choice of a model", "thing": "check of a model", "direct": "direction", "film": "look at the shots", "frames": "review of the frames",
-        "transitions": "check of the joins"}
+        "transitions": "check of the joins", "diagram": "diagram spec", "look": "look at the diagram"}
 PICTURE_VALUES = ("idx", "label", "shot", "before", "narration", "visual_prompt", "people", "what", "images")  # picture.md
 SHOWN = 25           # problems listed in a retry turn
 FIX = ("That reply has problems the pipeline checks for:\n{problems}\n\n"
@@ -179,6 +179,28 @@ def _image(path: Path) -> dict:
     return {"type": "image", "path": str(path), "sha256": hashlib.sha256(Path(path).read_bytes()).hexdigest()}
 
 
+# A systems short's spec (diagram/spec.py says what each field means; diagram/make.py checks all of it). Only the
+# fields every spec has are required: a phase carries on what it doesn't say from the phase before.
+_ANY = {"type": "object"}
+DIAGRAM_SPEC = {"type": "object", "required": ["title", "layout", "nodes", "edges", "stats", "phases", "end"], "properties": {
+    "title": STR, "layout": STR, "beat": NUM,
+    "nodes": {"type": "array", "items": {"type": "object", "required": ["id", "icon", "label", "tone"], "properties": {
+        "id": STR, "icon": STR, "label": STR, "tone": STR, "capacity": NUM, "count": {"type": "boolean"}}}},
+    "edges": {"type": "array", "items": NAMES},
+    "stats": {"type": "array", "items": {"type": "object", "required": ["name", "measure"], "properties": {
+        "name": STR, "unit": STR, "measure": STR, "of": NAMES, "base": NUM, "per_queued": NUM, "good": NUM, "bad": NUM,
+        "higher_better": {"type": "boolean"}, "values": {"type": "array"}}}},
+    "phases": {"type": "array", "items": {"type": "object", "required": ["seconds", "caption"], "properties": {
+        "seconds": NUM, "caption": {"type": "object", "required": ["text", "tone"], "properties": {"text": STR, "tone": STR}},
+        "subtitle": STR, "show": NAMES, "edges": {"type": "array", "items": NAMES}, "state": _ANY,
+        "traffic": {"type": "array", "items": {"type": "object", "required": ["from", "to", "rate"], "properties": {
+            "from": STR, "via": NAMES, "to": NAMES, "rate": NUM, "route": STR, "ratio": NUM, "back": {"type": "boolean"}}}},
+        "code": {"type": ["object", "null"], "properties": {"language": STR, "lines": NAMES, "bind": _ANY}},
+        "stats": NAMES}}},
+    "end": {"type": "object", "required": ["stat", "claim", "note"], "properties": {
+        "stat": STR, "claim": STR, "note": STR, "seconds": NUM}}}}
+LOOK = _obj({"seen": STR, "problems": {"type": "array", "items": _obj({"phase": STR, "what": STR, "fix": STR})}})
+
 class ClaudeLLM:
     """The LLM protocol (providers/llm.py) as prompts, schemas and checks. `_call` sends one request and returns
     the reply's text; providers/session.py's SessionLLM sends it to the Claude Code session."""
@@ -293,8 +315,8 @@ class ClaudeLLM:
         return {p["name"].strip().lower(): {"box": int(p["box"]), "faces": p["faces"]} for p in data["parts"]}
 
     def critique(self, channel, kind: str, values: dict, meter: Meter) -> dict:
-        filled = {"outline": "", "script": "", **values}
-        file = "character/critic.md" if channel.format == formats.CHARACTER else "critic.md"
+        filled = {"outline": "", "script": "", "spec": "", **values}
+        file = {formats.CHARACTER: "character/critic.md", formats.DIAGRAM: "diagram/critic.md"}.get(channel.format, "critic.md")
         data = self._ask("critic", file, kind, channel, filled, CRITIQUE, checks.critique, meter)
         return {"verdict": data["verdict"],
                 "problems": [{k: p[k].strip() for k in ("where", "what", "fix")} for p in data["problems"]]}
@@ -375,6 +397,23 @@ class ClaudeLLM:
         data = self._ask("frames", "character/frames.md", "", channel, {"said": said, "planned": planned, "sheets": listed, "every": every}, FRAMES,
                          lambda d: [] if isinstance(d["problems"], list) else ["problems isn't a list"], meter)
         log.info("the review of the frames: seen %r, problems %r", data["seen"], data["problems"])
+        return data["problems"]
+
+    # --- a systems short (core/formats.py DIAGRAM, prompts/diagram/, diagram/) --------------------------------
+
+    def diagram(self, channel, topic: str, notes: list[str], previous: dict | None, meter: Meter) -> dict:
+        """A systems short's spec (diagram/spec.py), checked in code as it comes in, layout and numbers included."""
+        from diagram import make
+        values = {"topic": topic, "notes": prompts.notes_text(notes),
+                  "previous": json.dumps(previous, indent=1, ensure_ascii=False) if previous else ""}
+        return self._ask("diagram", "diagram/spec.md", "revise" if previous else "new", channel, values, DIAGRAM_SPEC,
+                         make.check, meter)
+
+    def look_diagram(self, channel, phases: str, sheet, meter: Meter) -> list[dict]:
+        """What a viewer on a phone would see is wrong on a sheet of a systems short's frames: [{phase, what, fix}]."""
+        data = self._ask("look", "diagram/look.md", "", channel, {"phases": phases}, LOOK, checks.look, meter,
+                         images=[Path(sheet)])
+        log.info("the look at the diagram: seen %r, problems %r", data["seen"], data["problems"])
         return data["problems"]
 
     def check_joins(self, channel, turn: str, values: dict, meter: Meter) -> dict:

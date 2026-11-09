@@ -624,6 +624,21 @@ def critique(data: dict) -> list[str]:
 JOINS_MOST = 10   # bad joins a check of the joins lists (prompts/transitions.md)
 
 
+def look(data: dict) -> list[str]:
+    """A look at a systems short's frames (prompts/diagram/look.md): each problem says where, what and a fix."""
+    out = []
+    if not isinstance(data.get("problems"), list):
+        return ["problems isn't a list"]
+    for i, p in enumerate(data["problems"], 1):
+        if not isinstance(p, dict) or not all(str(p.get(k) or "").strip() for k in ("phase", "what", "fix")):
+            out.append(f"problem {i} needs phase, what and fix")
+        elif len(str(p["fix"]).split()) < 4:
+            out.append(f"problem {i}'s fix is too short to act on: say what to change")
+    if len(data["problems"]) > 8:
+        out.append("at most 8 problems, the ones a viewer would notice first")
+    return out
+
+
 def joins(data: dict) -> list[str]:
     """The check of the joins (prompts/transitions.md): each bad join placed, in the words or the picture, with a fix
     someone could make."""

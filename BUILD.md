@@ -35,7 +35,7 @@ The spec is [../plan.md](../plan.md). This file tracks what is built, how it dev
 | 27. A's overlays and sound, side by side | `MachineShort` in Remotion: captions, labels, tags, title, real footage, SFX, music; ours beside A for all 1:58 (internal only, never published) | **Built** (Nov 3, 2026): the owner's notes on the first cut fixed in the code; narrated by their clone on `eleven_v4` (How A was rebuilt). Earlier cuts kept as `rebuild_v1.mp4` and `rebuild_ryan.mp4` |
 | 28. Formats and the vertical short | `format` per channel, stages by format, voice model per channel, Shorts competitors, several publish slots, Shorts publishing with no thumbnail and credits in the description | **Built** (Nov 3, 2026) for `story` and `character`; `machine` and `diagram` come with phases 29 and 30, so their stub channels aren't here (How a character short runs) |
 | 29. Writing machine shorts | The model and shot-sheet jobs, and the machine format's topic, outline, script and critic prompts and checks; one real short on our own topic | Planned |
-| 30. Systems shorts | The diagram spec, simulation, layouts, `DiagramShort`, ticks on the beat; one real load-balancing short | Planned; the owner asked for it again on Nov 8 for the tech kind ("2D tech diagrams ... yea we need this"), after phase 48 |
+| 30. Systems shorts | The diagram spec, simulation, layouts, `DiagramShort`, ticks on the beat; one real load-balancing short. Spec: [How a systems short is made](#how-a-systems-short-is-made-phase-30) | **Built** (Nov 9, 2026), to the owner's template ("ive sent sample 2d tech videos before so use that as template, dark theme is good"): the spec and its checks, the simulation every number comes from, seven layouts, `DiagramShort` with 18 icons, the sound made by code, the `diagram` format with its jobs, review and look check, and the `systems` channel (a working name). The template rebuilt beside it, and a cache short of our own. Waiting on the owner's look, and their first topic |
 | 31. Instagram Reels | Reels publishing through the Instagram API, after the owner's Meta setup | Planned |
 | 32. Character look test | Human Generator (a paid Blender add-on) loading with no window, one person, one 3 to 5 s close-up with a blink, eye move, jaw and prop, laid beside the owner's reference frame; seconds a frame measured. Spec: [CHARACTERS.md](CHARACTERS.md) | **Built and run on the real add-on** (Nov 3, 2026; Commercial license, $128): a 4 s clip at 1.7 s a frame on EEVEE; **the owner approved the look ("really good")** (How people are made) |
 | 33. Characters on demand | The character spec and its checks, a saved `.blend` per person, the portrait sheet, rendering with the add-on off | **Built** (Nov 3, 2026): Sam, Nia and Walt, from JSON, about 25 s each; waiting on the owner's look at their sheets (How characters are made) |
@@ -86,6 +86,7 @@ uv run python run.py thing --search bird # free 3D models, with pictures to choo
 uv run python run.py thing apple         # a thing from things/specs, fetched and sized, with a sheet -> data/things/apple/ ($0)
 uv run python run.py scene scenes/examples/bird_lands_on_head.json   # a scene file rendered -> data/scenes/<name>/ ($0)
 uv run python run.py cuts short.mp4 --direction direction.json --words clock.json   # every cut laid out, and a brief for the transition-checker agent ($0)
+uv run python run.py diagram diagram/examples/cache.json   # a systems short's spec checked and rendered -> data/diagrams/ ($0); --check says what each phase ends with
 uv run python -m machines.specs.generate # writes machines/specs/*.json (the machines' specs) and checks each
 uv run python run.py connect zombie                   # YouTube sign-in for one channel (or connect_youtube in the chat)
 uv run python run.py youtube-test zombie              # day-1 unlisted upload check
@@ -979,6 +980,120 @@ The owner, Nov 8, of what would otherwise come up on the day ("every new short n
 **The first real run through the server** waits on the owner starting it (`uv run python run.py serve`, then `/mcp`). It's a throwaway topic through the writing stages and both reviewers, stopping before the voice.
 
 **Next: phase 30, the 2D tech diagrams,** to the owner's template: "ive sent sample 2d tech videos before so use that as template, dark theme is good". The 2D sample is the load-balancing reel (`ScreenRecording_11-03-2026 11-52-37_1.mov`), which SHORTS.md breaks down as reference D. The other sample from that day, `copy.mp4`, is the reference's cow hoof short, not a tech one.
+
+## How a systems short is made (phase 30)
+
+The owner, Nov 8, of the 2D tech diagrams: "yea we need this", and "ive sent sample 2d tech videos before so use that as template, dark theme is good". The template is the load-balancing reel, reference D in SHORTS.md. A systems short is a live diagram on a dark frame with no voice, so it costs nothing to make.
+
+**What the agent writes** is a spec (`diagram/spec.py`, whose docstring is the format), never React:
+- the title, a layout and the nodes, from 18 fixed icons;
+- the lines, and up to three stat pills;
+- the phases, each with its seconds, its caption and tone, and what changes: the subtitle, the nodes and lines on screen, a node's state, the traffic, the code panel and the pills. Anything a phase doesn't change carries on from the phase before;
+- the end card.
+
+**The checks** refuse a bad spec with what to fix, before anything's drawn (`diagram/make.py check`):
+- every field, and the graph is whole;
+- every phase changes something;
+- captions are at most 6 words, and code lines at most 32 characters;
+- traffic only runs on lines that are on screen;
+- 15 to 45 s;
+- it fits on the frame with nothing overlapping and no line through a node, measured with the fonts Remotion draws with, and with the room each node's queue needs;
+- a number in the end card's words is one the pill really showed.
+
+**The simulation** (`diagram/sim.py`) is the one source of truth:
+- requests leave on the music's sixteenth notes, and each trip takes a whole number of them, so every tick lands on the beat;
+- a node with a `capacity` serves one request every 1/capacity seconds, and the ones that come while it's busy wait in its queue;
+- routes: direct, round robin, least connections, hash, random, failover, cache hit and broadcast. Answers can travel back;
+- a failing node loses what's sent to it (a red flash), and a dead one is routed round, its line dashed and its code line dimmed;
+- every counter, queue, pill and end-card number is counted from the requests, so they can't disagree with what's moving;
+- the short is a whole number of bars, and its end card crossfades back into the first frame. The last frame differs from the first by 0.14 out of 255 on average, so the loop has no seam.
+
+**The look** (`render/remotion/src/shorts/DiagramShort.tsx`) only draws the timeline:
+- near-black, with a white title in Inter Black and a grey monospace subtitle (JetBrains Mono, OFL, bundled);
+- pills that glow in their tone;
+- line icons in their tones, with a faint ring round anything that serves requests;
+- blue dots for requests and green ones for answers, and the waiting requests stacked above a node, then "+n";
+- the caption in its tone;
+- a code panel coloured by Pygments that lights one line at a time as requests land, and grows with its code as the template's does;
+- the end card in red and green.
+
+The title, pills and diagram use the full width less 4% a side, since Reels' buttons start just past halfway down. The caption and code panel keep out of the right 14% and the bottom 22%. That's the one deliberate difference from the template, whose caption and code run under the platform's own buttons and caption.
+
+**The sound** (`diagram/sound.py`) is made by code, with nothing to license:
+- a tick when a request lands, pitched by the node;
+- a thunk when one's lost, a buzz when a node fails, a whoosh as nodes appear, and a chime on the end card;
+- a bed of four chords over a plucked bass and a soft kick, as long as the short, so it loops with it.
+
+**Compared with the template.** The template's 18 s were rebuilt as a spec, in `data/benchmarks/load_balancing/`, which is gitignored and never published, since its words are the reel's. It was rendered beside the reel at the same seconds (`side_v3.png`). Three rounds fixed:
+- a line through the LOAD BALANCER label, now masked by a halo;
+- several code lines lit at once, now one;
+- a panel as tall as the longest code, now its own code's height;
+- a diagram drawn too small: icons went up to 108 px, and the diagram now uses the full width.
+
+What's left is the safe area. The template's own frames are bigger because they run to the bottom of the screen.
+
+**A short of our own,** `diagram/examples/cache.json`, proves it isn't tuned to one video:
+- every visit asks the database, which falls behind;
+- a cache slides in between the app and the database, and three of every four answers come back from it in green;
+- the queue drains, and then the traffic doubles without a queue.
+
+It's also the worked example in the writer's brief, and what the stub writes in tests.
+
+**In the pipeline** (`format: diagram`, core/formats.py), the stages are `diagram`, `draw`, `publish` and `analytics`:
+- `diagram`: the agent writes the spec in the main chat (`prompts/diagram/spec.md`, job kind `diagram`), checked as it comes in. The critic agent reads it as a senior engineer (`prompts/diagram/critic.md`), with what the simulation shows phase by phase. It stops at the outline gate, where each phase is a beat, with what's on screen, what's moving and what the numbers end on.
+- `draw`: it's rendered (about 15 s for 18 s of short). The worker agent looks at a frame from the middle of each phase as a viewer on a phone would (`prompts/diagram/look.md`, job kind `look`). What it finds goes back to the writer once, and the fixed spec is drawn again without a second gate. Then the render card, with the title already picked from the spec's.
+- `channels/systems.yaml`: a working name, as memes has. The owner posts on Instagram by hand.
+
+**The owner's first notes (Nov 9), on the cache short:**
+- "it never executes the is hit clause ... it needs ot be more clear";
+- "when it does go to DB on a cache miss, it should say that in the diagram and also how long it would take, when it hits cache, it should say 'hit', and say responded in 20 ms";
+- "Instead of get user id which is cheap we should also use a complex query".
+
+Fixed for every systems short:
+- **One request at a time is followed,** ringed in white. Its phase's `follow` (hit, miss, lost or a node) makes it the one the caption is about, and a follow ends with its phase.
+- **The code panel lights every line it runs, in order.** `bind` takes `hit`, `miss` and `<node>:back` as well as nodes, and a list of lines lights them one after another. A cache short's `{"cache": 2, "hit": 3, "db": 4, "cache:back": [5, 6]}` lights cache.get then `if hit` on a hit; on a miss, cache.get, the query, then cache.set and return as the answer comes back. A block bound only to nodes still lights a line for every request, as the template does.
+- **Badges** go under a node's label, or beside its icon where nodes are stacked in a column:
+  - HIT or MISS at the cache;
+  - how long a node with `ms` took, its wait included ("180 ms", "720 ms");
+  - the whole trip when the answer gets back ("20 ms", "200 ms");
+  - LOST where a request is lost.
+- **A request's time is worked out from the nodes' `ms`.** Each node it goes through adds its `ms` once, and once more for each request waiting ahead of it there. A timed response pill is the average of the last four. Each is counted when the request reaches where it's answered, so the pill climbs while a queue builds, not after.
+- **Rates and capacities off the beat are refused.** A rate of 5 would quietly have run as 4.
+- Requests move faster: 700 px a second.
+
+The example now runs `db.complex_query` at 180 ms. Phase 1 shows a whole round trip ("180 ms" at the database, "195 ms" back at the users). The hit phase follows a hit (HIT, `if hit` lit, "20 ms"), and the miss phase a miss (MISS, "180 ms", the query, cache.set and return lit, "200 ms").
+
+**The owner's later notes (Nov 9),** on the lit code:
+- "it needs to match the animation, and when a line is executed multiple times, just highlight it (like a blink), so it doesnt look lagged behind";
+- "still doesnt match the animation or the sound....";
+- "make it so that everything lines up, like if there is a sound, or if a request hits db or cache, the relevant lines of code executes, not make an AI judge it after, this can be deterministic";
+- "everytime a souind or a request hit a servic, it correponsd to a line of code".
+
+Only the followed request lit code, and lines were held after it. The dots and the ticks came from every request, so the screen, the sound and the code disagreed. Now one list of events makes all three, by construction:
+- **Every request's every event is one entry** (`run["lit"]`): a node it reaches, `hit` or `miss`, `<node>:back`, and where it's lost.
+- **The code's lines are those events** (`sim._code`). Every request blinks each line it runs, on the frame its dot lands (or the cache answers). The line is fully lit for two frames, then fades over 0.35 s. A line run again drops dark for the one frame before, so it visibly blinks. A request lost at a node blinks its line red. A list's lines are a sixteenth note apart, and two requests at once light a line once.
+- **The sounds are those same blinks** (`sim._drawn`, `sound.py`). With code on screen, every request sound is a line running: a tick pitched by the line (A minor pentatonic, rising down the code), or a thunk where a request is lost. Node ticks and return blips are left out there, so no sound plays without its line, and no line lights silently. Ticks at the same moment share their loudness.
+- **The checks refuse code that leaves a node out** (`spec._unbound`): with code on screen, every node a request reaches needs a line. The cache example binds `app` to `def get_report`, and `miss` to the `if hit` test as well as `hit`. The balancer binds `lb` to its upstream block.
+- **The code switches on the frame its phase starts.** The panel grows to a longer block just before, and shrinks to a shorter one just after, so a running line is never faded or cut off.
+- **Every render is measured from its MP4** (`diagram/verify.py`, run by `make.render`, which refuses a render that fails). It checks:
+  - the sound sits within 20 ms of the WAV;
+  - every code tick has an onset in the MP4's own audio at its moment;
+  - every line is lit on its event's frame;
+  - no line lights up without an event.
+
+  The cache short measured 0 ms off; 102 of 102 ticks heard; 249 of 249 lines lit on their frame; no stray lights.
+- **A follow only starts if its trip ends within its phase,** unless it's the phase's first, so a ring never vanishes before its HIT shows.
+
+**Run it:**
+- `uv run python run.py diagram diagram/examples/cache.json` renders to `data/diagrams/`;
+- `--check` prints what each phase ends with: the counters, the queues, the requests lost and the pills.
+
+**Still open:**
+- the owner's look at the two renders;
+- their first topic. Each tech idea can be made in 3D or as a diagram, their pick;
+- the channel's name;
+- `retry_backoff` isn't a route yet;
+- a spec can't yet label a request ("SYN", a token) for handshakes like TLS or OAuth. That's the next thing a protocol topic would need.
 
 ## How a character short runs (phases 28 and 36)
 

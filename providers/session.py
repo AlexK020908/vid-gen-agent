@@ -19,7 +19,7 @@ from core import cards, db, jobs
 from core.errors import Stopped
 from providers.claude import WHAT, ClaudeLLM
 
-LOOKING = ("picture", "map", "parts", "inventory", "sheet", "source", "thing", "film")  # job kinds the worker agent does
+LOOKING = ("picture", "map", "parts", "inventory", "sheet", "source", "thing", "film", "look")  # job kinds the worker agent does
 
 
 class SessionLLM(ClaudeLLM):

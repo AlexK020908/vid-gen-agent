@@ -230,6 +230,12 @@ Sizes are in meters. A part has an `id`, a `kind` with its sizes, a `material`, 
 
 A systems short is 15 to 45 s, with no voice by default, so it costs $0: there's no voice and no fal.
 
+Built in phase 30 (Nov 9, 2026); BUILD.md's "How a systems short is made" says how. It differs from this plan in four ways:
+- Topics come from the tech ideas the owner takes (prompts/ideas/tech.md), not a topic job.
+- The look check is one sheet, a frame from the middle of each phase, for the worker agent.
+- The diagram, title and pills use the full width above Reels' buttons.
+- Narration isn't built.
+
 1. **Topic** (a job): from competitors' Shorts and a starter list (load balancing, caching, CDN, rate limiting, consistent hashing, replication, sharding, queues, circuit breakers, retries with backoff, DNS, the TLS handshake, OAuth, JWT, WebSockets, idempotency keys, blue/green deploys, Bloom filters, LRU).
 2. **Spec** (a job; the critic agent reads it as a senior engineer who checks it's correct). It has:
    - the title, and a subtitle per phase;

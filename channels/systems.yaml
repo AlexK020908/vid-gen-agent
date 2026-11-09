@@ -1,0 +1,18 @@
+id: systems
+name: Systems                 # a working name: the owner hasn't named this channel yet
+format: diagram
+# The owner, Nov 8: "2D tech diagrams ... yea we need this", and "ive sent sample 2d tech videos before so use that as
+# template, dark theme is good". A systems short is a live diagram with no voice, drawn from a spec the agent writes
+# (SHORTS.md, "How a systems short is made"). Its topics are tech ideas the owner took (prompts/ideas/tech.md).
+scenario_family: "systems: how the machinery behind the apps people use really works, shown as a live diagram of requests moving, piling up, breaking and being fixed"
+gates: [outline, render]      # the owner sees the story phase by phase before it's drawn, and the finished short
+baseline_cadence_days: 7
+budget_usd: 1                 # nothing to pay for: no voice, no pictures
+clips_per_video: 0
+max_seconds: 45
+youtube:                      # not connected: the owner posts on Instagram by hand
+  category_id: 28             # Science & Technology
+  tags: [systems, engineering, shorts]
+  publish_slots: ["Wed 15:00 America/New_York", "Sat 15:00 America/New_York"]
+  ai_disclosure: false
+competitors: []

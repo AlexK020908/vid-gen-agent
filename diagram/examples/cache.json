@@ -1,0 +1,42 @@
+{
+  "title": "HOW A CACHE WORKS",
+  "layout": "pipeline",
+  "beat": 120,
+  "nodes": [
+    {"id": "users", "icon": "users", "label": "USERS", "tone": "green"},
+    {"id": "app", "icon": "server", "label": "APP", "tone": "blue", "ms": 15},
+    {"id": "cache", "icon": "cache", "label": "CACHE", "tone": "purple", "ms": 5},
+    {"id": "db", "icon": "database", "label": "DATABASE", "tone": "orange", "capacity": 2.67, "ms": 180}
+  ],
+  "edges": [["users", "app"], ["app", "db"], ["app", "cache"], ["cache", "db"]],
+  "stats": [
+    {"name": "RESPONSE", "unit": "ms", "measure": "response", "good": 80, "bad": 400},
+    {"name": "HIT RATE", "unit": "%", "measure": "hits", "good": 70, "bad": 30, "higher_better": true}
+  ],
+  "phases": [
+    {"seconds": 3.0, "subtitle": "every report runs a complex query",
+     "caption": {"text": "Every visit runs a slow query", "tone": "white"},
+     "show": ["users", "app", "db"], "stats": ["RESPONSE"],
+     "traffic": [{"from": "users", "via": ["app"], "to": ["db"], "rate": 1.33, "back": true}],
+     "code": {"language": "python", "lines": ["def get_report(id):", "    return db.complex_query(id)"],
+              "bind": {"app": 1, "db": 2}}},
+    {"seconds": 2.5, "caption": {"text": "At rush hour, it falls behind", "tone": "orange"},
+     "traffic": [{"from": "users", "via": ["app"], "to": ["db"], "rate": 4, "back": true}]},
+    {"seconds": 1.5, "subtitle": "keep the answers close by",
+     "caption": {"text": "Put a cache in front", "tone": "blue"},
+     "show": ["users", "app", "cache", "db"], "stats": ["RESPONSE", "HIT RATE"],
+     "edges": [["users", "app"], ["app", "cache"], ["cache", "db"]],
+     "traffic": [{"from": "users", "via": ["app", "cache"], "to": ["db"], "rate": 4, "route": "cache_hit",
+                  "ratio": 0.75, "back": true}],
+     "code": {"language": "python", "lines": ["def get_report(id):", "    hit = cache.get(id)", "    if hit: return hit",
+              "    row = db.complex_query(id)", "    cache.set(id, row)", "    return row"],
+              "bind": {"app": 1, "cache": 2, "hit": 3, "miss": 3, "db": 4, "cache:back": [5, 6]}}},
+    {"seconds": 2.5, "caption": {"text": "A hit answers in 20 ms", "tone": "green"}, "follow": "hit"},
+    {"seconds": 2.5, "caption": {"text": "A miss runs the query once", "tone": "blue"}, "follow": "miss"},
+    {"seconds": 2.0, "caption": {"text": "Then the traffic doubles", "tone": "orange"},
+     "traffic": [{"from": "users", "via": ["app", "cache"], "to": ["db"], "rate": 8, "route": "cache_hit",
+                  "ratio": 0.75, "back": true}]},
+    {"seconds": 2.5, "caption": {"text": "The cache soaks it up", "tone": "green"}, "follow": "hit"}
+  ],
+  "end": {"stat": "RESPONSE", "claim": "twice the traffic · no queue", "note": "three of every four reports skip the query", "seconds": 2.5}
+}

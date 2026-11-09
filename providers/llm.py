@@ -109,6 +109,10 @@ class LLM(Protocol):
     def check_joins(self, channel, turn: str, values: dict, meter: Meter) -> dict:
         """The joins between lines and between shots (prompts/transitions.md, `turn` script or film):
         {"seen", "problems": [{at, in: words | picture, what, fix, serious}]} (core/transitions.py)."""
+    def diagram(self, channel, topic: str, notes: list[str], previous: dict | None, meter: Meter) -> dict:
+        """A systems short's spec (diagram/spec.py, prompts/diagram/spec.md), passing diagram/make.py's checks."""
+    def look_diagram(self, channel, phases: str, sheet, meter: Meter) -> list[dict]:
+        """What a viewer would see is wrong on a sheet of a systems short's frames: [{phase, what, fix}]."""
 
 
 def _cost(meter: Meter, usd: float) -> None:
@@ -132,6 +136,7 @@ class StubLLM:
         self.judge: Callable[[dict], list[str]] | None = None  # tests: what check_picture finds, from its values
         self.critic_problems: list[dict] = []  # tests: what the reviewer finds next (used once, then it passes)
         self.join_problems: list[dict] = []    # tests: what the check of the joins finds next (used once, then it passes)
+        self.look_problems: list[dict] = []    # tests: what the look at a systems short finds next (used once)
 
     def check_picture(self, channel, turn: str, values: dict, pictures: list, meter: Meter) -> list[str]:
         _cost(meter, 0.01)
@@ -238,6 +243,19 @@ class StubLLM:
         _cost(meter, 0.01)
         problems, self.join_problems = list(self.join_problems), []
         return {"seen": f"the joins of the {turn}", "problems": problems}
+
+    def diagram(self, channel, topic: str, notes: list[str], previous: dict | None, meter: Meter) -> dict:
+        """The worked example (diagram/examples/cache.json), so a systems short runs end to end for $0."""
+        import json
+        from pathlib import Path
+        _cost(meter, 0.05)
+        return json.loads((Path(__file__).resolve().parent.parent / "diagram" / "examples" / "cache.json")
+                          .read_text(encoding="utf-8"))
+
+    def look_diagram(self, channel, phases: str, sheet, meter: Meter) -> list[dict]:
+        _cost(meter, 0.01)
+        problems, self.look_problems = list(self.look_problems), []
+        return problems
 
     def outline(self, channel, topic: str, notes: list[str], previous: dict | None, meter: Meter,
                 sequel: dict | None = None) -> dict:

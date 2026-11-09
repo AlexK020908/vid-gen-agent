@@ -290,6 +290,30 @@ def cmd_cuts(args) -> None:
     print(f"{values['sheets'].count(chr(10)) + 1} sheets of cuts; the brief to hand the transition-checker agent: {brief}")
 
 
+def cmd_diagram(args) -> None:
+    """A systems short's spec checked and, if it passes, rendered (SHORTS.md, "How a systems short is made")."""
+    from diagram import make, sim
+
+    src = Path(args.spec)
+    spec = json.loads(src.read_text(encoding="utf-8"))
+    found = make.check(spec)
+    if found:
+        print("Not drawn. What to fix:")
+        for m in found:
+            print(f"  - {m}")
+        sys.exit(1)
+    if args.check:
+        tl = sim.timeline(spec)
+        print(f"Passes its checks: {tl['duration']:.1f} s, {len(tl['dots'])} trips. Phase by phase:")
+        for f in tl["facts"]:
+            print(f"  {f['phase']}. {f['from']:.2f}-{f['to']:.2f} s  {f['caption']!r}  counters {f['counters_at_end']}"
+                  f"  waiting {f['waiting_at_end'] or 0}  lost {f['lost']}  pills {f['stats_at_end']}")
+        return
+    out = Path(args.out) if args.out else Path(make_ctx().config.data_dir) / "diagrams" / f"{src.stem}.mp4"
+    tl = make.render(spec, out, music=not args.no_music)
+    print(f"{out} ({tl['duration']:.1f} s)")
+
+
 def cmd_scene(args) -> None:
     from pathlib import Path
 
@@ -466,6 +490,13 @@ def main() -> None:
     p.add_argument("--frames", default=None, help="comma-separated frames for a quick look (default all)")
     p.add_argument("--width", type=int, default=1080, help="picture width in pixels")
     p.set_defaults(fn=cmd_scene)
+
+    p = sub.add_parser("diagram", help="check a systems short's spec (diagram/spec.py) and render it to data/diagrams/")
+    p.add_argument("spec", help="the spec JSON, e.g. diagram/examples/cache.json")
+    p.add_argument("--check", action="store_true", help="only check it, and say what happens in each phase")
+    p.add_argument("--out", help="the MP4 to write (default data/diagrams/<spec name>.mp4)")
+    p.add_argument("--no-music", action="store_true", help="the ticks and effects without the music bed")
+    p.set_defaults(fn=cmd_diagram)
 
     p = sub.add_parser("cuts", help="any video's cuts laid out for the transition checker (prompts/transitions.md), with its brief")
     p.add_argument("video", help="the video file")

@@ -303,7 +303,7 @@ def stop_writing(ctx, video_id: int) -> None:
         raise ActionError("Claude isn't writing anything for this video right now")
     ctx.stop_writing(video_id)
     with ctx.connect() as conn:
-        if jobs.supersede(conn, video_id, ("outline", "script", "critic", "transitions")):
+        if jobs.supersede(conn, video_id, ("outline", "script", "critic", "transitions", "diagram")):
             db.update_video(conn, video_id, lease_until=None)
     ctx.events.emit("notice", video_id, text="Stopping…")
 

@@ -48,8 +48,8 @@ by the same code checks the pipeline uses: fix what they say and answer again. O
 on. A script goes in parts, whole beats at a time in order (`part` 1, 2, ..., and `last` on the final one), each \
 checked as it arrives. A review job (kind `critic`) goes to the `critic` agent with just its job id, so a fresh \
 reader judges the draft rather than the one who wrote it, and a check of the joins (kind `transitions`) goes to the \
-`transition-checker` agent the same way. The looking jobs (kinds picture, map, parts, inventory, \
-sheet) go to the `worker` agent, so their pictures and one-per-scene briefs stay out of the main chat. `wait` \
+`transition-checker` agent the same way. A systems short's spec (kind `diagram`) is written in the main chat. \
+The looking jobs (kinds picture, map, parts, inventory, sheet, source, thing, film, look) go to the `worker` agent, so their pictures and one-per-scene briefs stay out of the main chat. `wait` \
 holds (up to 50 seconds; call it again to keep waiting) until a job arrives, a card waits on the owner, or \
 something needs them. The `stickfleet` skill has the rest."""
 

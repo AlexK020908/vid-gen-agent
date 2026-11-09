@@ -109,6 +109,20 @@ def render_machine(props: dict, files: dict[str, str], out: Path,
     return _limit(out)
 
 
+def render_diagram(props: dict, files: dict[str, str], out: Path,
+                   progress: Callable[[int, int], None] | None = None) -> Path:
+    """A whole systems short (`DiagramShort`, drawn from diagram/sim.py's timeline, with its one soundtrack) to `out`."""
+    reason = missing()
+    if reason:
+        raise RuntimeError(reason)
+    public = out.parent / f"{out.stem}_public"
+    shutil.rmtree(public, ignore_errors=True)
+    public.mkdir(parents=True)
+    for name, src in files.items():
+        _stage(src, public / name)
+    return _run("DiagramShort", props, public, out, progress, ["--crf=16"])
+
+
 PEAK = 0.89   # -1 dBFS: an impact landing on a word sums past full scale and clips in Remotion's mix
 
 

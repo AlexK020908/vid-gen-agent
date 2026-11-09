@@ -72,7 +72,7 @@ def back_to_review(ctx, conn: sqlite3.Connection, video_id: int, stage: str) -> 
     from."""
     video = db.get_video(conn, video_id)
     to, gate = None, None
-    if stage == "outline" and video["outline_json"]:
+    if stage in ("outline", "diagram") and video["outline_json"]:
         to, gate = "outlined", "outline"
     elif stage == "script":
         to, gate = ("scripted", "script") if video["script_json"] else ("outlined", "outline")
