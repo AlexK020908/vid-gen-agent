@@ -80,7 +80,9 @@ def _due_sql() -> str:
 def _measure_once(ctx) -> bool:
     now = time.time()
     with ctx.connect() as conn:
-        video = db.claim_video(conn, "live", ctx.lease_s, f"AND ({_due_sql()})", (now,) * len(WINDOWS_H))
+        # Instagram posts have no YouTube numbers to read (their own readings aren't built yet: BUILD.md, phase 31)
+        video = db.claim_video(conn, "live", ctx.lease_s, f"AND instagram_id IS NULL AND ({_due_sql()})",
+                               (now,) * len(WINDOWS_H))
         if video is None:
             return False
         have = {r[0] for r in conn.execute("SELECT after_h FROM metrics WHERE video_id = ?", (video["id"],))}

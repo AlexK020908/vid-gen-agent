@@ -97,6 +97,8 @@ def suggest_swap(ctx, video_id: int, reason: str | None = None) -> None:
         video = db.get_video(conn, video_id)
     if video["state"] != "live":
         raise ActionError(f"a swap is for a video that's live; this one is {video['state']}")
+    if video["instagram_id"]:
+        raise ActionError("a swap changes a YouTube video's title and thumbnail; an Instagram post has neither")
     if not video["thumbs_json"]:
         raise ActionError("this video has no other thumbnails or titles to swap to")
     ctx.events.emit("swap_suggested", video_id, reason=reason)
@@ -132,6 +134,8 @@ def apply_swap(ctx, video_id: int, title_idx: int | None = None, thumb_idx: int 
         video = db.get_video(conn, video_id)
         if video["state"] != "live":
             raise ActionError(f"a swap is for a video that's live; this one is {video['state']}")
+        if video["instagram_id"]:
+            raise ActionError("a swap changes a YouTube video's title and thumbnail; an Instagram post has neither")
         options = json.loads(video["thumbs_json"] or '{"titles": [], "thumbs": []}')
         title = thumb = None
         if title_idx is not None:
@@ -532,6 +536,11 @@ def update_publish(ctx, video_id: int, **fields) -> None:
         video = db.get_video(conn, video_id)
         if video["state"] not in ("assembled", "render_approved"):
             raise ActionError(f"publish details are edited before publishing (video is {video['state']})")
+        on_instagram = ctx.channel(video["channel_id"]).on_instagram
+        wrong = set(fields) - (metadata.INSTAGRAM_EDITABLE if on_instagram else metadata.EDITABLE - {"caption"})
+        if wrong:
+            raise ActionError(f"an Instagram post has a title, a caption and the AI label to edit, not {sorted(wrong)}"
+                              if on_instagram else f"a YouTube video has no {sorted(wrong)} to edit")
         saved = json.loads(video["publish_json"] or "{}")
         saved.update({k: v for k, v in fields.items() if v is not None})
         updates = {"publish_json": json.dumps(saved)}
@@ -553,6 +562,9 @@ def request_publish(ctx, video_id: int, **fields) -> None:
         video = db.get_video(conn, video_id)
         if video["state"] != "render_approved":
             raise ActionError(f"publishing needs an approved render (video is {video['state']})")
+        if ctx.channel(video["channel_id"]).on_instagram:
+            _post_to_instagram(ctx, conn, video)
+            return
         live = ctx.config.youtube.get("mode", "stub") == "live"
         if live:
             from youtube import auth
@@ -565,6 +577,22 @@ def request_publish(ctx, video_id: int, **fields) -> None:
                       publish_at=float(meta["publish_at"]), publish_json=json.dumps(meta))
     ctx.events.emit("gate_resolved", video_id, gate="publish", outcome="approved")
     ctx.events.emit("notice", video_id, text="Publishing…")
+
+
+def _post_to_instagram(ctx, conn: sqlite3.Connection, video: sqlite3.Row) -> None:
+    """A Reel goes up as soon as the publish stage takes it: Instagram's API has no go-public time. The time it was asked
+    for stands as its publish time."""
+    if ctx.config.instagram.get("mode", "stub") == "live":
+        from instagram import auth
+        auth.require()
+    meta = metadata.publish_meta(ctx, conn, video)
+    metadata.validate(meta)
+    now = time.time()
+    meta["publish_at"] = now
+    db.transition(conn, video["id"], "render_approved", "publishing", title=meta["title"], publish_at=now,
+                  publish_json=json.dumps(meta))
+    ctx.events.emit("gate_resolved", video["id"], gate="publish", outcome="approved")
+    ctx.events.emit("notice", video["id"], text=f"Posting to Instagram @{meta['username'] or meta['account_id']}…")
 
 
 def retry(ctx, video_id: int) -> None:

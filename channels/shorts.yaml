@@ -1,5 +1,5 @@
 id: shorts
-name: Small True Things       # a working name: the owner hasn't named this channel yet
+name: Caveman Films           # the owner named it Nov 9
 format: character
 scenario_family: "one surprising true thing about bodies, animals or everyday physics, shown happening in front of you"
 voice_id: klsIP2huuLcYwcg7vB92   # zach D, the owner's own clone
@@ -19,3 +19,8 @@ youtube:                      # not connected: nothing here can publish until it
   publish_slots: ["Tue 15:00 America/New_York", "Fri 15:00 America/New_York"]
   ai_disclosure: true
 competitors: []
+instagram:                    # phase 31: this channel's shorts are posted here as Reels (instagram/)
+  account_id: "17841470487910257"   # @cavemanfilms.tv, from the Meta app (Nov 9); not a secret
+  username: cavemanfilms.tv
+  ai_disclosure: false        # Meta's AI info label: off, the owner's word Nov 10 ("we dont want this"), after the first post
+  hashtags: []                # added to every caption; none until the owner picks some

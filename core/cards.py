@@ -164,6 +164,11 @@ def render_card(ctx, conn: sqlite3.Connection, video: sqlite3.Row) -> dict:
 
 def publish_card(ctx, conn: sqlite3.Connection, video: sqlite3.Row) -> dict:
     meta = metadata.publish_meta(ctx, conn, video)
+    if meta.get("to") == "instagram":
+        from instagram import auth
+        mode = ctx.config.instagram.get("mode", "stub")
+        connected = bool(auth.token()) if mode == "live" else None
+        return {"kind": "publish", "video_id": video["id"], "instagram_mode": mode, "instagram_connected": connected, **meta}
     meta["thumbnail"] = url(meta["thumbnail"])
     mode = ctx.config.youtube.get("mode", "stub")
     connected = None
@@ -397,7 +402,13 @@ class CardPoster:
     def on_published(self, conn, ev: Event) -> None:
         set_status(self.ctx, conn, ev.video_id, "progress", "done")
         when = time.strftime("%a %d %b %Y %H:%M", time.localtime(ev.data["publish_at"]))
-        if ev.data.get("live"):
+        if "instagram_id" in ev.data:
+            where = f"Instagram @{ev.data['username']}" if ev.data.get("username") else "Instagram"
+            if not ev.data.get("live"):
+                text = f"Posted to {where} as {ev.data['instagram_id']} (stub: nothing was sent)."
+            else:
+                text = f"Posted to {where}: {ev.data.get('permalink') or 'open the account to see it'}"
+        elif ev.data.get("live"):
             text = (f"Uploaded as private, scheduled to go public {when}. "
                     f"Studio: https://studio.youtube.com/video/{ev.data['youtube_id']}/edit")
         else:

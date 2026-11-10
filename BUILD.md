@@ -36,7 +36,7 @@ The spec is [../plan.md](../plan.md). This file tracks what is built, how it dev
 | 28. Formats and the vertical short | `format` per channel, stages by format, voice model per channel, Shorts competitors, several publish slots, Shorts publishing with no thumbnail and credits in the description | **Built** (Nov 3, 2026) for `story` and `character`; `machine` and `diagram` come with phases 29 and 30, so their stub channels aren't here (How a character short runs) |
 | 29. Writing machine shorts | The model and shot-sheet jobs, and the machine format's topic, outline, script and critic prompts and checks; one real short on our own topic | Planned |
 | 30. Systems shorts | The diagram spec, simulation, layouts, `DiagramShort`, ticks on the beat; one real load-balancing short. Spec: [How a systems short is made](#how-a-systems-short-is-made-phase-30) | **Built** (Nov 9, 2026), to the owner's template ("ive sent sample 2d tech videos before so use that as template, dark theme is good"): the spec and its checks, the simulation every number comes from, seven layouts, `DiagramShort` with 18 icons, the sound made by code, the `diagram` format with its jobs, review and look check, and the `systems` channel (a working name). The template rebuilt beside it, and a cache short of our own. Waiting on the owner's look, and their first topic |
-| 31. Instagram Reels | Reels publishing through the Instagram API, after the owner's Meta setup | Planned |
+| 31. Instagram Reels | Reels publishing through the Instagram API, after the owner's Meta setup. Spec: [How Instagram posting works](#how-instagram-posting-works-phase-31) | **Built** (Nov 9, 2026) on the owner's Meta app "Reel Publisher" (Unified login), for Caveman Films (@cavemanfilms.tv): `publish` posts a short at once, and `run.py instagram` saves the token, checks the accounts and posts one finished short. Picture and sound timing measured exact after Meta's file rules. Nothing posted yet: the first post waits on the owner's word |
 | 32. Character look test | Human Generator (a paid Blender add-on) loading with no window, one person, one 3 to 5 s close-up with a blink, eye move, jaw and prop, laid beside the owner's reference frame; seconds a frame measured. Spec: [CHARACTERS.md](CHARACTERS.md) | **Built and run on the real add-on** (Nov 3, 2026; Commercial license, $128): a 4 s clip at 1.7 s a frame on EEVEE; **the owner approved the look ("really good")** (How people are made) |
 | 33. Characters on demand | The character spec and its checks, a saved `.blend` per person, the portrait sheet, rendering with the add-on off | **Built** (Nov 3, 2026): Sam, Nia and Walt, from JSON, about 25 s each; waiting on the owner's look at their sheets (How characters are made) |
 | 34. The scene language | One JSON format the agent directs in (cast, grips, strikes, thrown things, glows, shots, captions); fixed code stages it and works out the contacts; the sword test remade from it, and a new scene with no new code | **Built** (Nov 3, 2026): waiting on the owner's look at `data/scenes/ball_to_the_head/scene.mp4` (How scenes work) |
@@ -57,7 +57,7 @@ The spec is [../plan.md](../plan.md). This file tracks what is built, how it dev
 
 The code for plan.md's whole build order is complete (weeks 4–6 are running videos, not building); phase 10 is the YouTube tools plan.md lists that no phase has needed yet. What needs your accounts is under "Your turn" in How YouTube works, How Claude writes, How voice, pictures and clips work, and How topics and metrics work.
 
-**On Nov 6, 2026 the owner decided to post on Instagram rather than YouTube.** Nothing's built for that yet: everything that publishes or reads numbers (`stages/publish.py`, `stages/analytics.py`, `core/performance.py`, `youtube/`) is YouTube-only, and a video's verdict is judged on AVD % and CTR. Making a video isn't affected. The owner posts by hand ("i can post it myself, i just need the vbideos and good ideas"), so no posting or metrics code is planned: a finished video gets a caption with the credits its models need.
+**On Nov 6, 2026 the owner decided to post on Instagram rather than YouTube**, and on Nov 9 that they're no longer interested in Lone Stick Survivor ("just the ig reels stuff since that is what we are focusing on"). Posting is built (phase 31, How Instagram posting works): a channel with `instagram.account_id` posts its shorts there. Reading numbers isn't: `stages/analytics.py` and `core/performance.py` are YouTube-only (AVD % and CTR), and an Instagram post is left out of them until its own readings are built.
 
 ## Run it
 
@@ -135,6 +135,7 @@ So a full-length render holds the render card back about 13 minutes. The Remotio
 - `youtube/competitors.py`: `fetch()` (competitors' recent long uploads and views), `stub()`, `seconds()` (ISO 8601 durations), `age_days()`.
 - `youtube/reporting.py`: the reach job (`ensure_job`), `import_new()` (new daily files, backfills replace), `parse()`, `window()` (impressions and CTR over a run of days, once all have arrived), `pacific_days()`.
 - `youtube/quota.py`: per-day, per-bucket ledger in the `quota` table (Pacific-time days). `check()` before a sequence, `spend()` per call.
+- `instagram/` (phase 31): `auth.py` (the token in the keychain), `client.py` (`Client` for Meta's Graph API and its upload host: a Reel container, the upload, its status, publish, the permalink, the account and its posts left today) and `reels.py` (`prepare` to Meta's Reels rules with picture and sound kept in step, `caption` and its limits, and `post`, run step by step so it resumes and never posts twice).
 - `core/jobs.py`: Claude's work waiting for the Claude Code session. `NeedsClaude` (a stage parks on it), `plain()` and `key()` (a request as JSON and its hash), `answer_for()`, `park()` (store or find the job, supersede an older one for the same video, scene and kind, register its checks), `pending()`, `take()`, `answer()` (check, store, wake the parked stage; or one part of a long answer), `merge()` and `parts_so_far()` (the parts as one reply), `resume_with()` / `to_resume()` / `resumed()` (a topic round waiting on its job), `supersede()` (Stop). The `claude_jobs` table is in `core/db.py`.
 - `providers/session.py`: `SessionLLM`, the `ClaudeLLM` whose `_call` finds a job's answer or parks a new job; `providers.llm: session` is the only real LLM. `LOOKING` names the job kinds the `worker` agent does. Tests pass `stub` and `stubbed` method names to answer some calls with the stub.
 - `server/claude_code.py`: the MCP endpoint at `/mcp` (low-level `mcp.server.lowlevel.Server`, streamable HTTP with JSON responses, mounted in `server/app.py` and run in its lifespan), its instructions to the session, the fleet tools from `server/tools.py`, and `jobs`, `take_job` (a brief over `BRIEF_MAX` goes to `data/jobs/job-N.md`; a request's pictures go as JPEGs `PICTURE_WIDTH` across), `answer_job` (whole, or in parts), `wait` (at most `WAIT_MAX`, 50 s), `contact_sheet`. `.mcp.json` points Claude Code at it (one copy here, one in the workspace folder above).
@@ -1479,6 +1480,87 @@ Video 5 was the first whole puppet video. Its render review found the pictures t
 - The highlight reel is cut from the final MP4 (first 20 s, then clip scenes, 60 s max), re-encoded so cuts land on any frame.
 - Tuning, on 24 stub scenes (5.6 min of video, with clips): Remotion's default of 8 tabs took 174 s; 12 tabs 179 s, 16 tabs 188 s, 20 tabs 208 s, 4 tabs 206 s; `x264_preset: veryfast` 179 s, veryfast with 6 tabs 185 s. On a 30-scene sample, `--gl=angle` (GPU) and rendering muted changed nothing (102, 99, 100 s). The limit is Chrome capturing 1080p frames (about 55 a second here), so `concurrency` and `x264_preset` stay at Remotion's defaults.
 - `render/remotion/node_modules` is ~790 MB, of which Chrome Headless Shell is ~280 MB (downloaded on the first render). `npm audit` reports a high-severity zod advisory (memory exhaustion when validating oversized collections) through Remotion's own dependencies; it matters for untrusted input, and our only input is our own `props.json`. npm's offered fix downgrades `@remotion/media`, so it's left alone. npm also skipped esbuild's postinstall script (allow-scripts); bundling works without it.
+
+## How Instagram posting works (phase 31)
+
+The owner asked on Nov 9, 2026: "u can publish on ig for me too?", then "gimme step ny step guide to set this up with u, note i wanna manage theses accounts too i wanna see the posts and stuff on my hpone". The accounts stay theirs and are managed in the Instagram app and Meta Business Suite as usual. A post made here shows up there like any other.
+
+**The setup the owner did** (Nov 9, with the session, on developers.facebook.com):
+- Caveman Films' Instagram, **@cavemanfilms.tv**, is a professional account. It's linked to a Facebook Page under the owner's own Facebook, in the business portfolio "Caveman films", and was accepted as an Instagram Tester of the app.
+- The Meta app **Reel Publisher** is in Development mode, with the Instagram use case set up with **Unified login**. Meta now recommends it, calls the Facebook-login setup legacy, and doesn't offer Instagram-login to new apps.
+  - Unified login is Facebook Login for Business with a configuration. Its token is a **system-user token that never expires**, for every Instagram account given to the app.
+  - Resumable upload of a file from this computer is "only for apps that have implemented Facebook Login for Business", which this is. With Instagram-login, the video would have to be on a public URL.
+- The token is in the OS keychain (service `stickfleet-instagram`, user `token`), put there with `run.py instagram connect`. It's never in YAML, .env, the database or git.
+- The token reaches no Pages (`/me/accounts` is empty), and `debug_token` needs the app's own token. So an account's number comes from the Meta app's "Generate access tokens" list and goes in the channel's YAML. It isn't a secret.
+
+**Settings:**
+- `stickfleet.yaml` has `instagram: {mode, version}`. `stub` writes `instagram_request.json` and sends nothing. `live` posts, and only when the owner says to: the `publish` tool asks first. The version is v27.0, as Meta's docs were on Nov 9.
+- A channel's YAML has `instagram: {account_id, username, ai_disclosure, hashtags}`. With an `account_id`, `publish` posts there instead of YouTube (`Channel.on_instagram`).
+
+**What `publish` does** (`core/actions.py`, `stages/publish.py`, `instagram/`):
+- Instagram's API can't schedule, so the short goes up when the publish stage takes it. Its publish time is the moment it was asked for.
+- The caption is `instagram/reels.caption`: the title and the channel's hashtags, nothing else. The owner set this on Nov 10, 2026. First: "caption should be short and concise, gimme the caption before posting", after the first post's caption ran to eleven lines of credits and links. Then "remove this" of a one-line credit. The owner sees the caption in the chat before anything is posted.
+  - The CC-BY models' credits are kept apart: `reels.credit_line` gives "3D models adapted from A, B and C (CC BY 4.0).", with any `@` dropped. It's no longer posted anywhere. Where the credit goes instead (a comment, the bio, the video's end) waits on the owner.
+
+  `update_publish` edits the title, caption or AI label (only those for an Instagram post). Meta's caption limits are checked first: 2,200 characters, 30 hashtags, 20 @ tags.
+- **Meta's AI info label** (`is_ai_generated`, in Meta's changelog on June 22, 2026) is off. The owner turned it down on Nov 10, 2026 ("we dont want this") on the first post. A channel's `ai_disclosure: true`, the card, or `post --ai` turns it on. Meta only takes it when the container is made.
+- `reels.prepare` makes `render/instagram.mp4` to Meta's Reels rules:
+  - the rules: MP4, moov atom first, no edit lists; H.264 or HEVC, 4:2:0, 23 to 60 fps, at most 1920 pixels across; AAC at most 48 kHz in one or two channels; 3 s to 15 min; at most 300 MB;
+  - the picture is copied as it is when it fits, and re-encoded only when it doesn't;
+  - anything still outside the rules is refused in words before anything is sent.
+- **Picture and sound stay in step:** the edit list Meta forbids is what normally keeps them in step. Without it, measured on a flash and a click at exactly 1 s:
+  - the sound came out 21.3 ms late, from the AAC encoder's 1,024 priming samples, now cut from the front;
+  - the picture came out 66.7 ms late, two reordered frames, now negative composition offsets instead.
+
+  Both now land exactly on their moment, copied or re-encoded (`test_with_no_edit_list_picture_and_sound_still_land_on_their_moment`). This keeps the owner's rule for the systems shorts, every sound on its frame, true on Instagram.
+- `reels.post` runs these steps:
+  1. a container (media_type REELS, upload_type resumable);
+  2. the bytes to rupload.facebook.com, with `Authorization: OAuth`, `offset` and `file_size`;
+  3. its status_code checked at 10, 20 and 30 s, then once a minute as Meta asks, up to 10 minutes;
+  4. media_publish;
+  5. the permalink.
+
+  Each step is saved in publish_json, so a post cut off part-way resumes and is never posted twice:
+  - a refused upload is sent again into the same container at once, after 15 s, then after 60 s (`UPLOAD_WAITS_S`). On the first real post the upload host said "Request processing failed", and the same bytes went through when sent again. After the third try it's left for Retry, which sends them into the same container once more. A refused token isn't sent again;
+  - a publish whose reply never came is looked for among the account's newest posts first, and if Meta says posted but it can't be found, it stops and says to look;
+  - a container Meta couldn't process, or one near its 24 hours, is made fresh on Retry.
+- **Errors:** dropped connections, 5xx and Meta's temporary codes count as attempts. Anything that needs the owner fails at once with Meta's words on the error card: a refused token says to make a new one and run `instagram connect`.
+- The video goes straight to `live` with `instagram_id`, and the news posts the link.
+- YouTube's analytics, swaps and go-public-now leave Instagram posts alone. Instagram's own readings (insights) aren't built. The app's token was granted no insights permission, and verdicts would need new measures.
+- There is no delete call anywhere in `instagram/`. The owner deletes on their phone.
+
+**`run.py instagram`:**
+- `connect`: the token in a hidden prompt, checked against Meta, saved, then every channel's account and posts left today.
+- `check`: the same, read-only.
+- `post <channel> <file> --caption-file F`: one finished short posted now, outside the pipeline (a test post, or a short made before the pipeline could post).
+  - It asks for the handle to be typed. `--yes` skips that, only once the owner has said to post it.
+  - Its record is kept in `data/instagram/<file>/steps.json`, so it resumes the same way and won't post a finished one again.
+
+**Measured on the real account, read-only** (Nov 9): the token is "Reel Publisher System User" with instagram_basic, instagram_content_publish, instagram_manage_comments and instagram_manage_messages granted. @cavemanfilms.tv is reachable, with 0 posts and 0 of 100 posts used in 24 h.
+
+**The first post** (Nov 10, `run.py instagram post`, woodpecker v10):
+- Every call first came back "API access blocked" (code 200), even `/me`. It cleared by itself within the hour, with nothing flagged on the app or the business.
+- The upload host then refused the bytes once and took them on the next try (the retry above came from this).
+- It went up as https://www.instagram.com/reel/DfknMXDJUdn/ with the long caption and the AI label. The owner deleted it over both, which gave the short caption and the label off.
+- Reposted with the caption "Why doesn't a woodpecker get a concussion?" and no label: https://www.instagram.com/reel/Dfko4CAJcpG/ (19:18 UTC). The first try's record is kept as `data/instagram/woodpecker_v10/steps_deleted_DfknMXDJUdn.json`.
+
+**Tests** (`tests/test_instagram.py`, a fake Meta, $0):
+- every way a post can be cut off, resumed without a second post;
+- Meta's file rules and the timing measured on real ffmpeg output;
+- caption limits;
+- the token only in the keychain, and never in a URL;
+- the pipeline posting at once and going live;
+- practice mode sending nothing;
+- a failed post resuming on Retry;
+- a YouTube channel unchanged.
+
+`tests/conftest.py` keeps every test in `instagram.mode: stub`, with no channel's real account and an empty keychain.
+
+**Not built yet:**
+- the other accounts (@infrageek, @lowcortmemes, @strangearchive): each is a Page, a tick in the Meta app's configuration, and an `instagram:` block;
+- hashtags for Caveman Films (the owner hasn't picked any);
+- a cover frame (`thumb_offset`; Meta takes the first frame);
+- Instagram's own readings.
 
 ## How YouTube works
 

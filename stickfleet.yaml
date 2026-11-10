@@ -90,3 +90,7 @@ youtube:
   mode: live          # stub: writes what it would send. live: uploads (needs secrets/client_secret.json + Connect)
   reach: true         # live: fetch impressions and CTR daily from the YouTube Reporting API (enable it in Google Cloud)
   signin_check: true  # live: check each connected channel's sign-in once a day (1 quota unit) and say if it's refused
+
+instagram:            # phase 31: Reels for a channel with instagram.account_id in its YAML (instagram/, BUILD.md)
+  mode: live          # stub: writes what it would send. live: posts, once the owner says to (the publish tool asks first)
+  version: v27.0      # the Graph API version Meta's docs used when this was built (Nov 9, 2026)

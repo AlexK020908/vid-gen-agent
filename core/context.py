@@ -26,6 +26,7 @@ class Ctx:
     video: Any
     youtube: Any = None  # tests set a fake: channel_id -> YouTube service object (see youtube/client.py)
     google: dict = field(default_factory=dict)  # tests set fakes: API name -> (channel_id -> service); youtube/client.py
+    instagram: Any = None  # tests set a fake in place of instagram.client.Client
     _held: dict[int, float] = field(default_factory=dict, repr=False)  # video id → money promised to running calls
     _held_lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
     _stops: set[int] = field(default_factory=set, repr=False)  # videos whose writing was stopped

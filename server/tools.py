@@ -38,7 +38,7 @@ STATE_TEXT = {
     "render_approved": "waiting to be published",
     "publishing": "uploading",
     "scheduled": "scheduled on YouTube",
-    "live": "live on YouTube",
+    "live": "live (on YouTube, or posted to Instagram)",
     "failed": "failed",
     "blocked": "blocked",
 }
@@ -112,6 +112,11 @@ def card_summary(card: dict) -> dict:
                 "scenes": [{"idx": s["idx"], "beat": s["beat"], "label": s["label"],
                             "narration": _clip(s["narration"], 120), "visual_prompt": _clip(s["visual_prompt"], 120),
                             "regenerated": s["regen_count"]} for s in card["scenes"]]}
+    if kind == "publish" and card.get("to") == "instagram":
+        return {"card": "publish", "to": f"Instagram @{card['username'] or card['account_id']}", "title": card["title"],
+                "caption": _clip(card["caption"], 400), "ai_label": card["ai_disclosure"],
+                "instagram_mode": card["instagram_mode"], "connected": card["instagram_connected"],
+                "goes_public": "as soon as it's posted"}
     if kind == "publish":
         return {"card": "publish", "title": card["title"], "description": _clip(card["description"], 400),
                 "tags": card["tags"], "goes_public": _local(card["publish_at"]), "privacy": card["privacy"],
@@ -313,6 +318,9 @@ def make_tools(ctx) -> dict[str, tuple[types.Tool, Callable[[dict], Any]]]:
             return types.CallToolResult(content=[
                 types.TextContent(type="text", text=head + json.dumps(card, indent=1) + note),
                 *[_picture(p) for p in sheets]])
+        if kind == "publish" and card.get("to") == "instagram":
+            out = {**card, "goes_public": "as soon as it's posted (Instagram has no scheduling through its API)"}
+            return types.CallToolResult(content=[types.TextContent(type="text", text=head + json.dumps(out, indent=1))])
         if kind == "publish":
             out = {**card, "thumbnail": media(card["thumbnail"]), "goes_public": _local(card["publish_at"])}
             content: list = [types.TextContent(type="text", text=head + json.dumps(out, indent=1))]
@@ -477,9 +485,9 @@ def make_tools(ctx) -> dict[str, tuple[types.Tool, Callable[[dict], Any]]]:
         return f"It will go public at {_local(ts)}."
 
     def update_publish(args: dict) -> str:
-        fields = {k: args[k] for k in ("title", "description", "tags", "ai_disclosure") if k in args}
+        fields = {k: args[k] for k in ("title", "description", "tags", "ai_disclosure", "caption") if k in args}
         if not fields:
-            raise ActionError("give a title, description, tags or ai_disclosure")
+            raise ActionError("give a title, description, tags, caption or ai_disclosure")
         actions.update_publish(ctx, video_of(args), **fields)
         return f"Saved the {', '.join(fields)} for publishing."
 
@@ -488,6 +496,12 @@ def make_tools(ctx) -> dict[str, tuple[types.Tool, Callable[[dict], Any]]]:
         actions.request_publish(ctx, vid)
         with ctx.connect() as conn:
             row = db.get_video(conn, vid)
+        if ctx.channel(row["channel_id"]).on_instagram:
+            meta = json.loads(row["publish_json"])
+            if ctx.config.instagram.get("mode", "stub") != "live":
+                return "Posting in practice mode (nothing is sent to Instagram). news says when it's done."
+            return (f"Posting it to Instagram @{meta['username'] or meta['account_id']} now: it's public as soon as it's "
+                    "up, in a minute or two. news gives the link.")
         live = ctx.config.youtube.get("mode", "stub") == "live"
         where = "Uploading it to YouTube as private" if live else "Publishing in practice mode (nothing is uploaded)"
         return f"{where}; it goes public {_local(row['publish_at'])}. news says when it's scheduled."
@@ -606,12 +620,15 @@ def make_tools(ctx) -> dict[str, tuple[types.Tool, Callable[[dict], Any]]]:
                 "title": {"type": "string"}}), pick),
         ("set_schedule", "Set when the video goes public. ISO 8601; without an offset it's the owner's local time.",
          video({"when": {"type": "string", "description": "e.g. 2026-11-03T15:00"}}, ("when",)), set_schedule),
-        ("update_publish", "Change the title, description, tags or AI-content label before publishing.",
+        ("update_publish", "Change the title, description, tags or AI-content label before publishing; for a channel on "
+         "Instagram, the title, caption or AI label.",
          video({"title": {"type": "string"}, "description": {"type": "string"},
-                "tags": {"type": "array", "items": {"type": "string"}}, "ai_disclosure": {"type": "boolean"}}),
+                "tags": {"type": "array", "items": {"type": "string"}}, "ai_disclosure": {"type": "boolean"},
+                "caption": {"type": "string"}}),
          update_publish),
         ("publish", "Publish an approved video, when the owner says to: it's uploaded as private and scheduled to "
-         "go public at its time (live YouTube mode), or written out in practice mode.", video(), publish),
+         "go public at its time (live YouTube mode); for a channel on Instagram it's posted as a Reel at once, public "
+         "straight away; or written out in practice mode.", video(), publish),
         ("go_public_now", "Make a video that's scheduled on YouTube public now instead of at its go-public time, "
          "when the owner says to. Changes YouTube.", video(), go_public_now),
         ("retry", "Retry a failed or blocked video from where it stopped.", video(), retry),

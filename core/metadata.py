@@ -1,4 +1,4 @@
-"""Publish metadata: description with chapters, default schedule, validation."""
+"""Publish metadata: description with chapters, default schedule, validation; for a channel on Instagram, the caption."""
 from __future__ import annotations
 
 import json
@@ -8,9 +8,11 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from core.errors import ActionError
+from instagram import reels
 
 DAYS = {"mon": 0, "tue": 1, "wed": 2, "thu": 3, "fri": 4, "sat": 5, "sun": 6}
-EDITABLE = {"title", "description", "tags", "publish_at", "ai_disclosure"}
+EDITABLE = {"title", "description", "tags", "publish_at", "ai_disclosure", "caption"}
+INSTAGRAM_EDITABLE = {"title", "caption", "ai_disclosure"}
 DISCLOSURE = "Narration, images and animation in this video were made with AI tools and edited by a person."
 LIVE_LEAD_S = 15 * 60  # a real upload takes a while; a publishAt that passes first makes YouTube publish at once
 
@@ -61,6 +63,8 @@ def description(outline: dict, chapters: list[dict], ai_disclosure: bool, previo
 def publish_meta(ctx, conn: sqlite3.Connection, video: sqlite3.Row) -> dict:
     """What the publish card shows and what publish() sends; saved edits override defaults."""
     channel = ctx.channel(video["channel_id"])
+    if channel.on_instagram:
+        return _instagram_meta(channel, video)
     yt = channel.youtube
     outline = json.loads(video["outline_json"] or "{}")
     chapters = json.loads(video["chapters_json"] or "[]")
@@ -87,6 +91,26 @@ def publish_meta(ctx, conn: sqlite3.Connection, video: sqlite3.Row) -> dict:
     return meta
 
 
+def _instagram_meta(channel, video: sqlite3.Row) -> dict:
+    """A Reel has a caption, not a title and description: short, the title and the channel's hashtags (instagram/reels.py).
+    It goes up when the owner says to, so there's no time to pick. Meta's AI info label is off unless the channel or the
+    card turns it on: the owner turned it down on Nov 10, 2026."""
+    ig = channel.instagram
+    outline = json.loads(video["outline_json"] or "{}")
+    saved = json.loads(video["publish_json"] or "{}")
+    title = str(saved.get("title") or video["title"] or outline.get("topic", ""))
+    return {
+        "to": "instagram",
+        "account_id": ig["account_id"],
+        "username": ig.get("username", ""),
+        "title": title,
+        "caption": saved.get("caption") or reels.caption(title, ig.get("hashtags")),
+        "ai_disclosure": bool(saved.get("ai_disclosure", ig.get("ai_disclosure", False))),
+        "publish_at": video["publish_at"],
+        "thumbnail": None,
+    }
+
+
 def _slot(conn: sqlite3.Connection, video: sqlite3.Row, yt: dict) -> float:
     if not yt.get("publish_slots"):
         return next_slot(yt.get("publish_slot") or "Sat 15:00 UTC")
@@ -106,6 +130,11 @@ def _previous_part(conn: sqlite3.Connection, video: sqlite3.Row) -> str | None:
 
 
 def validate(meta: dict) -> None:
+    if meta.get("to") == "instagram":
+        wrong = reels.caption_problems(meta.get("caption") or "")
+        if wrong:
+            raise ActionError("; ".join(wrong))
+        return
     title = (meta.get("title") or "").strip()
     if not title:
         raise ActionError("the title is empty")

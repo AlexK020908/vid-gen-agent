@@ -13,13 +13,16 @@
   python run.py ideas <what>         finding ideas (prompts/ideas/): the reference's shorts of a kind, the owner's taste, checking cards ($0)
   python run.py connect <channel>    sign in to YouTube for one channel (opens Google's consent screen)
   python run.py youtube-test <ch>    day-1 check: upload a 20-second unlisted clip, see if it stays unlisted
+  python run.py instagram connect    save the Instagram token (hidden prompt) and check every channel's account
+  python run.py instagram check      the token and every channel's account and posts left today, read-only
+  python run.py instagram post <ch> <file> --caption-file F   post one finished short as a Reel now (asks first)
 
 Claude's work is done by the Claude Code chat on the owner's plan (providers.llm: session); there's no Claude key.
 Secrets come from .env (gitignored): ELEVENLABS_API_KEY and FAL_KEY are for providers.tts: elevenlabs and
 providers.images / providers.video: fal.
 YOUTUBE_API_KEY reads competitors' videos for topic ideas (topics.competitors: youtube).
 SKETCHFAB_TOKEN downloads free 3D models for character shorts (things/get.py).
-YouTube needs secrets/client_secret.json (gitignored); tokens go to the OS keychain.
+YouTube needs secrets/client_secret.json (gitignored); tokens go to the OS keychain, as does Instagram's.
 """
 from __future__ import annotations
 
@@ -391,6 +394,79 @@ def cmd_connect(args) -> None:
           f"Token saved in the OS keychain; youtube.channel_id written to the channel YAML.")
 
 
+def _instagram_accounts(ctx, cl) -> None:
+    on = [c for c in ctx.config.channels.values() if c.on_instagram]
+    if not on:
+        print("No channel posts to Instagram yet: add instagram.account_id to a channel's YAML.")
+    for c in on:
+        ig = c.instagram["account_id"]
+        try:
+            found, left = cl.account(ig), cl.limit(ig)
+        except ActionError as e:
+            print(f"  {c.id}: account {ig} can't be reached with this token: {e}")
+            continue
+        named = c.instagram.get("username")
+        warn = f"  (the YAML says @{named})" if named and named != found.get("username") else ""
+        print(f"  {c.id}: @{found.get('username')} ({found.get('media_count', 0)} posts), "
+              f"{left.get('quota_usage', 0)} of {left.get('quota_total', '?')} posts used in the last 24 h{warn}")
+
+
+def cmd_instagram(args) -> None:
+    import getpass
+
+    from instagram import auth, reels
+    from instagram.client import Client
+    ctx = make_ctx()
+    version = ctx.config.instagram.get("version", "v27.0")
+    if args.do == "connect":
+        token = getpass.getpass("Instagram token (hidden as you paste): ").strip()
+        me = Client(token, version).whoami()
+        auth.store(token)
+        print(f"Saved the token for {me.get('name')} in the OS keychain.")
+        _instagram_accounts(ctx, Client(token, version))
+        return
+    cl = Client(auth.require(), version)
+    if args.do == "check":
+        me = cl.whoami()
+        print(f"The token works ({me.get('name')}). Mode: {ctx.config.instagram.get('mode', 'stub')}.")
+        _instagram_accounts(ctx, cl)
+        return
+    # post: one finished short, outside the pipeline (a test post, or a short made before the pipeline could post)
+    channel = ctx.channel(args.channel)
+    if not channel.on_instagram:
+        raise ActionError(f"{args.channel} has no instagram.account_id in its YAML")
+    if ctx.config.instagram.get("mode", "stub") != "live":
+        raise ActionError("instagram.mode is stub in stickfleet.yaml, so nothing would be posted")
+    src = Path(args.file).resolve()
+    text = Path(args.caption_file).read_text(encoding="utf-8").strip() if args.caption_file else (args.caption or "")
+    wrong = reels.caption_problems(text)
+    if wrong:
+        raise ActionError("; ".join(wrong))
+    work = ctx.config.data_dir / "instagram" / src.stem
+    record = work / "steps.json"
+    steps = json.loads(record.read_text(encoding="utf-8")) if record.exists() else {}
+    if steps.get("media_id"):
+        print(f"Already posted: {steps.get('permalink') or steps['media_id']}. Delete {record} to post it again.")
+        return
+    handle = channel.instagram.get("username") or channel.instagram["account_id"]
+    ai = args.ai or bool(channel.instagram.get("ai_disclosure", False))
+    print(f"Posting {src.name} to Instagram @{handle}, public at once, AI label {'on' if ai else 'off'}.")
+    print(f"Caption:\n{text}\n")
+    if not args.yes and input(f"Type {handle} to post it: ").strip() != handle:
+        print("Not posted.")
+        return
+    reel = work / "reel.mp4"
+    if not steps.get("uploaded"):
+        reels.prepare(src, reel)
+
+    def save(done: dict) -> None:
+        work.mkdir(parents=True, exist_ok=True)
+        record.write_text(json.dumps(done, indent=2), encoding="utf-8")
+
+    posted = reels.post(cl, channel.instagram["account_id"], reel, text, ai, steps, save)
+    print(f"Posted: {posted['permalink'] or posted['media_id']}")
+
+
 def cmd_youtube_test(args) -> None:
     """Uploads from unaudited API projects used to be locked to private; this checks ours on day 1."""
     from render import ffmpeg
@@ -567,6 +643,19 @@ def main() -> None:
     p = sub.add_parser("connect", help="sign in to YouTube for one channel")
     p.add_argument("channel")
     p.set_defaults(fn=cmd_connect)
+
+    p = sub.add_parser("instagram", help="Instagram posting (instagram/): save the token, check the accounts, post a short")
+    ig = p.add_subparsers(dest="do", required=True)
+    ig.add_parser("connect", help="save the token from the Meta app (hidden prompt), then check every channel's account")
+    ig.add_parser("check", help="the token, and each channel's account and posts left today (read-only)")
+    q = ig.add_parser("post", help="post one finished short as a Reel now, outside the pipeline; asks first")
+    q.add_argument("channel")
+    q.add_argument("file")
+    q.add_argument("--caption-file", help="a text file with the caption")
+    q.add_argument("--caption", help="the caption itself")
+    q.add_argument("--ai", action="store_true", help="add Meta's AI info label (off unless the channel's ai_disclosure is on)")
+    q.add_argument("--yes", action="store_true", help="don't ask (only once the owner has said to post it)")
+    p.set_defaults(fn=cmd_instagram)
 
     p = sub.add_parser("youtube-test", help="day-1 unlisted test upload")
     p.add_argument("channel")

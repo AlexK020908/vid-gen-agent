@@ -6,7 +6,8 @@ description: Run the Stick Fleet YouTube channels from this chat and do Claude's
 # Stick Fleet
 
 The app (`stickfleet/`, `uv run python run.py serve`) makes narrated stick-figure survival videos: ElevenLabs
-voices them, fal paints the pictures, code animates and renders, and it uploads to YouTube. This chat is the only
+voices them, fal paints the pictures, code animates and renders, and it uploads to YouTube (or, for a channel with
+`instagram.account_id`, posts the short to Instagram as a Reel at once). This chat is the only
 way in: the owner runs the channels here, and you do Claude's part (the writing, and the looking at pictures)
 through the `stickfleet` MCP tools, on the owner's Claude plan. Nothing here ever calls the Claude API.
 
@@ -20,7 +21,7 @@ owner to start `uv run python run.py serve` in `stickfleet/`, then run `/mcp` to
   to open (VS Code), the video file to watch, the title and thumbnail options. `news` gives what happened since
   the last look.
 - Then do what the owner says. `approve`, `flag_scenes`, `restage`, `edit_scene`, `retry`, `publish` and `apply_swap` spend
-  money or change YouTube, and Claude Code asks the owner before each one. Use them only when the owner asks in
+  money or change YouTube or Instagram, and Claude Code asks the owner before each one. Use them only when the owner asks in
   this chat, never to move a video along yourself.
 - What costs money: everything after the script is approved (voice, pictures, clips; about $15 to $28 a video),
   flagged scenes being redrawn or re-voiced, and `restage` (a puppet video staged again after a staging fix:

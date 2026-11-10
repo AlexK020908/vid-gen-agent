@@ -36,6 +36,12 @@ class Channel:
     voice_speed: float = 0.0  # this channel's pace, in place of elevenlabs.speed
     max_seconds: int = 0      # competitors' videos longer than this don't count: 60 or so for a Shorts channel
     pauses_ms: list[int] = field(default_factory=list)  # a character short's silence after a line, after a question or new beat, and at the end
+    instagram: dict = field(default_factory=dict)  # {account_id, username, hashtags, ai_disclosure}: a channel with an
+                                                   # account_id posts its shorts there instead of YouTube (instagram/)
+
+    @property
+    def on_instagram(self) -> bool:
+        return bool(self.instagram.get("account_id"))
 
     @property
     def script_gate(self) -> bool:
@@ -58,6 +64,7 @@ class Config:
     youtube: dict
     channels: dict[str, Channel]
     blender: dict = field(default_factory=dict)  # where Blender is and how it renders machine shorts (SHORTS.md)
+    instagram: dict = field(default_factory=dict)  # {mode: stub|live, version}: how Reels are posted (instagram/)
 
     def provider(self, kind: str) -> str:
         """Which provider runs `kind` (llm, tts, images, video). `mode: stub` makes every one a stub."""
@@ -114,7 +121,17 @@ def _channel(root: Path, raw: dict, path: Path | None = None) -> Channel:
         voice_speed=float(raw.get("voice_speed") or 0),
         max_seconds=int(raw.get("max_seconds") or 0),
         pauses_ms=_pauses(raw.get("pauses_ms")),
+        instagram=_instagram(raw.get("instagram")),
     )
+
+
+def _instagram(value) -> dict:
+    out = dict(value or {})
+    if out.get("account_id") is not None:
+        out["account_id"] = str(out["account_id"]).strip()
+        if not out["account_id"].isdigit():
+            raise ValueError(f"instagram.account_id is the account's number from Meta, not {value['account_id']!r}")
+    return out
 
 
 def _pauses(value) -> list[int]:
@@ -161,4 +178,5 @@ def load(root: Path = ROOT, data_dir: Path | None = None, overrides: dict | None
         youtube=raw.get("youtube") or {},
         channels=channels,
         blender=raw.get("blender") or {},
+        instagram=raw.get("instagram") or {},
     )

@@ -255,13 +255,15 @@ MIGRATIONS = (
      "UPDATE messages SET seen_at = created_at"),  # posted before the chat took over counts as seen
     ("claude_jobs", "parts_json", "TEXT"),     # a long answer sent in parts: the parts accepted so far (core/jobs.py)
     ("claude_jobs", "resume_json", "TEXT"),    # a job no parked stage waits on (topic ideas): what to run once it's
-)                                              # answered, cleared when that has run (stages/topics.py)
+                                               # answered, cleared when that has run (stages/topics.py)
+    ("videos", "instagram_id", "TEXT"),        # the post's media id on Instagram (instagram/), for a channel posting there
+)
 
 VIDEO_COLUMNS = {
     "outline_json", "script_json", "thumbs_json", "title", "thumb_idx", "publish_at", "publish_json",
     "video_path", "highlight_path", "srt_path", "chapters_json", "duration_ms", "youtube_id",
     "attempts", "lease_until", "error", "resume_state", "draft_note", "places_json", "prev_video_id", "part",
-    "assets_json", "direction_json", "direction_draft_json", "frames_path",
+    "assets_json", "direction_json", "direction_draft_json", "frames_path", "instagram_id",
 }
 SCENE_COLUMNS = {
     "narration", "visual_prompt", "motion", "state", "audio_path", "still_path", "clip_path",

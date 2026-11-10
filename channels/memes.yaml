@@ -1,5 +1,5 @@
 id: memes
-name: Memes                   # a working name: the owner hasn't named this channel yet
+name: lowcortmemes            # the owner named it Nov 9
 format: character
 # The owner, Nov 8: "for memes i mean i wold tell u what tpye of video i want and u would make it". So topics come from them,
 # not from the idea researcher, and the premise below is what tells the prompts a short here is a joke, not a fact
