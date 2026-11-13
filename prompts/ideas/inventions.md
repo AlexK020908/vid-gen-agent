@@ -1,7 +1,7 @@
 ---
 for: the shorts channel (channels/shorts.yaml), where a short lands on a real machine the viewer has just built in their head
 words: [invent*, machine*, engine*, works]
-fields: [everyday, goal, steps, invention, seen_it, cycle, inside]
+fields: [silent, mistake, stake, seen, everyday, goal, steps, invention, seen_it, cycle, inside]
 lists: {steps: [4, 7]}
 shapes: [you_invent, ladder, fix_in_steps]
 ---
@@ -23,6 +23,8 @@ The owner turned down five inventions that followed every rule in the outline pr
 7. **It ends moving, in a cycle you can say in five words**: "fall, press, inject, ignite, rise". Never a still arrangement: of the force pump's weights stacked on a lid, "there is no motion?".
 8. **It solves the problem the first second opens with** (the owner, in capitals, for all videos): the barometer didn't help anyone drink, and "how is the straw related to barometer tho".
 9. **The force behind it can be seen**: a weight falling, a blow, a spring, a flame, a gear turning. The straw rested on air pressing, which nobody can see, so every step needed explaining: "how does the pump pump water? ... im confused".
+
+10. **It isn't boring, and following the nine above doesn't make it so.** The washing machine followed all nine (scrub a shirt, a mountain of them, a drum, a spin, springs, a block of concrete) and was built to a finished preview. The owner: "ion really like the washing machine idea ... just feels boring". Set beside the nail and the woodpecker, it had no stake: nobody wonders how a washing machine works, nothing in it is big, fast or dangerous, each fix is a sensible one (a drain, springs, a counterweight), and its one surprise comes in the last two seconds. So ask of every idea before it's a card: would someone stop scrolling for the first picture, and is there something at risk in every step: a thing that could crush, burn, fall, flood or fly off? A household appliance, or a chain of tidy fixes, is a warning sign. Say in the card's `goal` what goes badly wrong if it isn't solved. And a yes to a batch isn't a yes to each idea: the owner took this one unread, among six.
 
 ## Where to look
 

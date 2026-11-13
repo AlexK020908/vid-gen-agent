@@ -12,7 +12,7 @@ from collections import deque
 from pathlib import Path
 from typing import Callable
 
-from render import assets, ffmpeg
+from render import assets, ffmpeg, limits
 
 ROOT = Path(__file__).resolve().parent.parent
 RUNNER = ROOT / "blender" / "run.py"
@@ -48,11 +48,11 @@ def run_job(config, job: dict, out_dir: Path, progress: Callable[[int, int], Non
            "hdris": {**{h: assets.hdri(config.data_dir, h) for h in HDRIS}, **({place["sky"]: assets.hdri(config.data_dir, place["sky"], PLACE_SKY)} if place.get("sky") else {})}}
     job_path = out_dir / "job.json"
     job_path.write_text(json.dumps(job, indent=1), encoding="utf-8")
-    cmd = [str(exe(config)), "-b", "--factory-startup", "--python-exit-code", "1", "-P", str(RUNNER), "--",
-           str(job_path)]
+    cmd = [str(exe(config)), "-b", "-t", str(limits.threads(config)), "--factory-startup", "--python-exit-code", "1",
+           "-P", str(RUNNER), "--", str(job_path)]
     tail: deque[str] = deque(maxlen=40)
-    proc = subprocess.Popen(cmd, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
-                            encoding="utf-8", errors="replace")
+    proc = limits.start(config, cmd, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                        encoding="utf-8", errors="replace")    # under render.limits: its cores and priority
     assert proc.stdout is not None
     for raw in proc.stdout:
         line = raw.strip()

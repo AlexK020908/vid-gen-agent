@@ -1,0 +1,64 @@
+{
+ "what": "a wooden scrubbing brush with stiff yellow bristles, 15 cm long",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "block",
+    "kind": "box",
+    "size": [
+     0.15,
+     0.06,
+     0.035
+    ],
+    "at": [
+     0,
+     0,
+     0.0375
+    ],
+    "material": "wood",
+    "bevel": 0.008
+   },
+   {
+    "id": "bristles",
+    "kind": "box",
+    "size": [
+     0.14,
+     0.052,
+     0.022
+    ],
+    "at": [
+     0,
+     0,
+     0.011
+    ],
+    "material": {
+     "color": [
+      0.85,
+      0.7,
+      0.3
+     ],
+     "rough": 0.7
+    },
+    "bevel": 0.002
+   }
+  ]
+ },
+ "spots": {
+  "middle": [
+   0,
+   0,
+   0.03
+  ],
+  "bottom": [
+   0,
+   0,
+   0
+  ],
+  "top": [
+   0,
+   0,
+   0.055
+  ]
+ }
+}

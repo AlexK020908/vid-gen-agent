@@ -1,0 +1,47 @@
+{
+ "what": "the soapy water in the tub, as full as the tub could hold",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "water",
+    "kind": "cylinder",
+    "r": 0.2715,
+    "h": 0.418,
+    "at": [
+     0,
+     0.209,
+     0
+    ],
+    "rot": [
+     90,
+     0,
+     0
+    ],
+    "segments": 72,
+    "material": {
+     "color": [
+      0.42,
+      0.62,
+      0.86
+     ],
+     "rough": 0.04,
+     "clear": 0.55
+    },
+    "liquid": true
+   }
+  ]
+ },
+ "spots": {
+  "middle": [
+   0,
+   0,
+   0
+  ],
+  "axle": [
+   0,
+   0,
+   0
+  ]
+ }
+}

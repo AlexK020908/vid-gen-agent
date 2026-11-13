@@ -119,24 +119,49 @@ BAD = {"at": "line 1 to 2", "in": "words", "what": "The sponge comes from nowher
 def test_a_bad_join_in_a_script_sends_it_back_to_the_writer_once():
     fleet, asked = _Fleet(), []
     fleet.llm.join_problems = [BAD, {**BAD, "at": "line 2 to 3", "serious": False}]
-    revised = transitions.checked_script(fleet, None, {"id": 1}, SHORTS, OUTLINE, SCRIPT, lambda notes: asked.append(notes) or {"scenes": []})
+    revised = transitions.checked_script(fleet, None, {"id": 1}, SHORTS, OUTLINE, SCRIPT, lambda notes, draft: asked.append(notes) or {"scenes": []})
     assert revised == {"scenes": []}
     assert asked == [["Joins, line 1 to 2: The sponge comes from nowhere. Fix: Say first that a soft head would soak up the hit."]]
     assert "rewritten to fix them" in fleet.said[0] and "blemishes it left alone" in fleet.said[0]
 
 
+def test_a_rewritten_script_is_read_again_and_a_join_the_fix_broke_goes_back_too():
+    fleet, asked = _Fleet(), []
+    second = {**BAD, "at": "line 2 to 3", "what": "The fix left the hammer unexplained."}
+    rounds = [[BAD], [second], []]
+    fleet.llm.check_joins = lambda channel, turn, values, meter: {"seen": "1 join", "problems": rounds.pop(0)}
+    better = {"places": [], "scenes": SCRIPT["scenes"] + [{"narration": "So it stays hard.", "visual_prompt": "a hard beak"}]}
+
+    def rewrite(notes, draft):
+        asked.append((notes, draft))
+        return better
+
+    assert transitions.checked_script(fleet, None, {"id": 1}, SHORTS, OUTLINE, SCRIPT, rewrite) is better
+    assert [draft for _, draft in asked] == [SCRIPT, better]                 # the second rewrite starts from the first one's draft
+    assert "The fix left the hammer unexplained." in asked[1][0][0]
+    assert "2 joins" in fleet.said[0] and rounds == []
+
+
+def test_joins_still_bad_after_the_last_rewrite_go_to_the_owner():
+    fleet = _Fleet()
+    fleet.llm.check_joins = lambda channel, turn, values, meter: {"seen": "1 join", "problems": [BAD]}
+    better = {"places": [], "scenes": SCRIPT["scenes"]}
+    assert transitions.checked_script(fleet, None, {"id": 1}, SHORTS, OUTLINE, SCRIPT, lambda notes, draft: better) is better
+    assert f"after {transitions.ROUNDS} rewrites" in fleet.said[0]
+
+
 def test_good_joins_or_only_blemishes_leave_the_script_as_it_was():
     fleet = _Fleet()
-    assert transitions.checked_script(fleet, None, {"id": 1}, SHORTS, OUTLINE, SCRIPT, lambda notes: 1 / 0) is SCRIPT
+    assert transitions.checked_script(fleet, None, {"id": 1}, SHORTS, OUTLINE, SCRIPT, lambda notes, draft: 1 / 0) is SCRIPT
     fleet.llm.join_problems = [{**BAD, "serious": False}]
-    assert transitions.checked_script(fleet, None, {"id": 1}, SHORTS, OUTLINE, SCRIPT, lambda notes: 1 / 0) is SCRIPT
+    assert transitions.checked_script(fleet, None, {"id": 1}, SHORTS, OUTLINE, SCRIPT, lambda notes, draft: 1 / 0) is SCRIPT
     assert "passed the script" in fleet.said[0]
     off = _Fleet(on=False)
     off.llm.join_problems = [BAD]
-    assert transitions.checked_script(off, None, {"id": 1}, SHORTS, OUTLINE, SCRIPT, lambda notes: 1 / 0) is SCRIPT
+    assert transitions.checked_script(off, None, {"id": 1}, SHORTS, OUTLINE, SCRIPT, lambda notes, draft: 1 / 0) is SCRIPT
     one = {"places": [], "scenes": SCRIPT["scenes"][:1]}                                  # one line has no joins to judge
     fleet.llm.join_problems = [BAD]
-    assert transitions.checked_script(fleet, None, {"id": 1}, SHORTS, OUTLINE, one, lambda notes: 1 / 0) is one
+    assert transitions.checked_script(fleet, None, {"id": 1}, SHORTS, OUTLINE, one, lambda notes, draft: 1 / 0) is one
     assert fleet.llm.join_problems == [BAD]                                                # and nobody was asked
 
 
@@ -144,7 +169,7 @@ def test_a_rewrite_that_fails_its_checks_keeps_the_draft_and_tells_the_owner():
     fleet = _Fleet()
     fleet.llm.join_problems = [BAD]
 
-    def fails(notes):
+    def fails(notes, draft):
         raise FinalError("a line is too long")
 
     assert transitions.checked_script(fleet, None, {"id": 1}, SHORTS, OUTLINE, SCRIPT, fails) is SCRIPT

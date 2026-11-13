@@ -17,7 +17,7 @@ from collections import deque
 from pathlib import Path
 from typing import Callable
 
-from render import ffmpeg
+from render import ffmpeg, limits
 
 PROJECT = Path(__file__).resolve().parent / "remotion"
 CLI = PROJECT / "node_modules" / "@remotion" / "cli" / "remotion-cli.js"
@@ -147,8 +147,8 @@ def _run(composition: str, props_data: dict, public: Path, out: Path,
     errors: list[str] = []   # the error's own lines, which a long stack trace would push out of the tail
     shown = -1
     try:
-        proc = subprocess.Popen(cmd, cwd=PROJECT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                text=True, encoding="utf-8", errors="replace", env={**os.environ, "NO_COLOR": "1"})
+        proc = limits.start(None, cmd, cwd=PROJECT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,    # under render.limits,
+                            text=True, encoding="utf-8", errors="replace", env={**os.environ, "NO_COLOR": "1"})   # and so are its browser tabs
         assert proc.stdout is not None
         for raw in proc.stdout:
             line = ANSI.sub("", raw).strip()

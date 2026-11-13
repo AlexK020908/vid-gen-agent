@@ -25,7 +25,8 @@ A scene:
            `at` is just [x, y], or left out to center it: its "by" spot (or its middle) over the other's "onto" spot (or its middle). "sinks": meters it goes down into what's under it, if
            that's soft: say they're touching. Without it, a thing with something sticking out of its underside balances on that,
      "to": "id:spot": it's fixed to another thing at a point, from any side, its "by" spot (or its middle) meeting that spot exactly:
-           a shaft into a motor, blades on a hub, a lid on a hinge. It stays where it's put, and the two may overlap,
+           a shaft into a motor, blades on a hub, a lid on a hinge. It stays where it's put, and the two may overlap. If what it's fixed to moves (slides, rocks, spins), it goes with it,
+           and its own spin or rock is then counted from there: a drum turning in a tub that hops,
      "against": another cast id: it comes up to it from the side until they touch, however crooked that is: a bird to a tree, a nail to a wall. "at" [x, y] is where
            it starts from, far enough off to be outside it, "height" how high, "way" [x, y] the way it goes, its facing by default. "by": [a spot], the one that touches, or [two spots],
            and it tips until both do, a bird's feet and beak. "into": meters it goes further in, as a nail. "tip": degrees its top leans away from what it's against. "bends": [{"spot": a spot, "about": the spot it bends at, "near": the spot in the middle
@@ -81,7 +82,8 @@ A scene:
                                                                   how many beads run along it, thicker and softer. reverse: seconds
                                                                   between turning back. width in meters, 0.0012 by default. lift:
                                                                   meters above its part's line, to draw a coil's line on the glass over it
-    tint       prop, color (a name or [r, g, b]), to, amount      its own color moving toward this from t until `to`: a steak browning
+    tint       prop, color (a name or [r, g, b]), to, amount, mix its own color darkening toward this from t until `to`: a steak browning. mix: true: it
+                                                                  becomes that color instead, lighter or darker: mud scrubbed out of a shirt
     ghost      prop or who, to, color, edge, strength, fade, near, radius
                                                                   it goes to glass from t until `to`: you see through where it faces you and
                                                                   its edges stay as a thin bright line, so what's inside shows, as in an
@@ -162,9 +164,11 @@ A scene:
     rings      on ("id:along"), color, reach, over, count, width  thin clean circles spreading from a point to `reach` meters and
                                                                   fading over `over` seconds, facing the shot's lens: a force going
                                                                   out, a hit, a field
-    sparks     on ("id:along"), kind, count, slow, away           `count` of them, 26 by default: a bird's peck wants about 6, or a close
+    sparks     on ("id:along"), kind, count, slow, away, life     `count` of them, 26 by default: a bird's peck wants about 6, or a close
                                                                   shot fills with them. Bright sparks for metal on metal, or kind "chips": what
-                                                                  flies off wood or stone. A strike's own come with its
+                                                                  flies off wood or stone, or kind "drops": water flung off something wet or
+                                                                  spinning, flying on close to `away`. life: seconds each lasts, so they stop
+                                                                  where a wall would take them. size: times a drop's usual few millimeters, for a wide shot. A strike's own come with its
                                                                   "sparks": false, true or "chips". slow: the share of real speed they fly at, 0.3 by default: 1 unless the shot's in slow motion, or they drift as if they weighed nothing. away: [x, y, z], the way the surface they come off faces, -y by default
     knock      who, size (degrees), axis [x, y, z]                a blow: head, neck and chest ring down together
     fill       prop, level, over, ease, part                      its liquid's top goes to `level` (as the cast's level counts it) from t, over `over`
@@ -220,7 +224,7 @@ PROPS = ("katana", "long_sword", "stick", "ball")
 EXPRESSIONS = ("happy", "smile", "surprised", "shocked", "scared", "angry", "yelling", "sad", "disgusted", "thinking",
                "curious", "out_cold")
 ROCK_AXES = ("pitch", "roll", "yaw")
-SPARKS = ("sparks", "chips")
+SPARKS = ("sparks", "chips", "drops")
 GRIPS = ("low_cross", "ready", "raised", "overhead", "at_side", "forward")
 GLOW_PLACES = ("jaw", "forehead", "chest", "stomach", "neck")
 COLORS = ("green", "red", "blue", "yellow", "white", "orange", "cream", "cyan", "salmon", "gold", "ice")
@@ -601,6 +605,8 @@ def _event_problems(e: dict, i: int, scene: dict, things: dict) -> list[str]:
         out += _aim(f"{label}: on", e["on"], cast, things)
     if kind == "sparks" and "kind" in e:
         out += _named(f"{label}: kind", e["kind"], SPARKS)
+    if kind == "sparks" and "life" in e and not (_num(e["life"]) and 0.05 <= e["life"] <= 3):
+        out.append(f"{label}: life is seconds each lasts, 0.05 to 3")
     if kind == "strike" and isinstance(e.get("sparks"), str):
         out += _named(f"{label}: sparks", e["sparks"], SPARKS)
     if kind in ("aura", "lit", "flow"):

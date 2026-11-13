@@ -1,0 +1,131 @@
+{
+ "what": "a chrome towel rail on two feet, its bar 90 cm up",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "foot_l",
+    "kind": "box",
+    "size": [
+     0.05,
+     0.3,
+     0.02
+    ],
+    "at": [
+     -0.26,
+     0,
+     0.01
+    ],
+    "material": {
+     "color": [
+      0.75,
+      0.75,
+      0.76
+     ],
+     "metal": 1.0,
+     "rough": 0.2
+    }
+   },
+   {
+    "id": "foot_r",
+    "kind": "box",
+    "size": [
+     0.05,
+     0.3,
+     0.02
+    ],
+    "at": [
+     0.26,
+     0,
+     0.01
+    ],
+    "material": {
+     "color": [
+      0.75,
+      0.75,
+      0.76
+     ],
+     "metal": 1.0,
+     "rough": 0.2
+    }
+   },
+   {
+    "id": "post_l",
+    "kind": "cylinder",
+    "r": 0.012,
+    "h": 0.9,
+    "at": [
+     -0.26,
+     0,
+     0.02
+    ],
+    "material": {
+     "color": [
+      0.75,
+      0.75,
+      0.76
+     ],
+     "metal": 1.0,
+     "rough": 0.2
+    }
+   },
+   {
+    "id": "post_r",
+    "kind": "cylinder",
+    "r": 0.012,
+    "h": 0.9,
+    "at": [
+     0.26,
+     0,
+     0.02
+    ],
+    "material": {
+     "color": [
+      0.75,
+      0.75,
+      0.76
+     ],
+     "metal": 1.0,
+     "rough": 0.2
+    }
+   },
+   {
+    "id": "bar",
+    "kind": "cylinder",
+    "r": 0.013,
+    "h": 0.54,
+    "at": [
+     0.27,
+     0,
+     0.9
+    ],
+    "material": {
+     "color": [
+      0.75,
+      0.75,
+      0.76
+     ],
+     "metal": 1.0,
+     "rough": 0.2
+    },
+    "rot": [
+     0,
+     -90,
+     0
+    ]
+   }
+  ]
+ },
+ "spots": {
+  "bar": [
+   0,
+   0,
+   0.913
+  ],
+  "middle": [
+   0,
+   0,
+   0.45
+  ]
+ }
+}

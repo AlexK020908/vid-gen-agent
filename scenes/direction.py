@@ -62,7 +62,7 @@ def _shift(value, by: float):
 def local(scene: dict) -> dict:
     """A directed scene in its own time, with its length, as the scene language has it."""
     begin = float(scene["from"])
-    out = {k: v for k, v in scene.items() if k not in ("from", "to", "captions")}
+    out = {k: v for k, v in scene.items() if k not in ("from", "to", "captions", "anew")}
     out["length"] = round(float(scene["to"]) - begin, 3)
     out["happens"] = [{**e, **({"t": _shift(e["t"], begin)} if "t" in e else {}),
                        **({"to": _shift(e["to"], begin)} if isinstance(e.get("to"), (int, float)) else {}),
@@ -246,13 +246,114 @@ def _same_pictures(scenes: list) -> list[str]:
             for key, times in seen.items() if len(times) > MOST_REPEATS]
 
 
+PLACED_BY = ("at", "on", "onto", "to", "by", "against", "inside", "near", "height", "facing", "points", "up", "size")     # what puts a thing where it is
+LEVEL_NEAR = 0.005       # meters two levels can differ and read as the same
+PLACE_NEAR = 0.01        # meters, or degrees, two placings can differ and read as the same
+GOES_ELSEWHERE = ("go", "fly", "walk")      # what leaves a thing or a person somewhere else than the scene put them
+
+
+def _same(a, b) -> bool:
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        return abs(a - b) <= PLACE_NEAR
+    if isinstance(a, (list, tuple)) and isinstance(b, (list, tuple)):
+        return len(a) == len(b) and all(_same(x, y) for x, y in zip(a, b))
+    return a == b
+
+
+def _where(scene: dict) -> tuple:
+    place = scene.get("place") or {}
+    return (scene.get("set"), place.get("sky"), place.get("ground"), place.get("turn"))
+
+
+def _moved_off(scene: dict, cid: str) -> bool:
+    """Whether something in the scene leaves it somewhere else than its cast entry puts it."""
+    net, known = [0.0, 0.0, 0.0], True
+    moved = False
+    for e in scene.get("happens") or []:
+        if e.get("prop") != cid and e.get("who") != cid:
+            continue
+        if e.get("do") in GOES_ELSEWHERE or (e.get("do") == "slide" and "until" in e):
+            moved, known = True, False                       # how far it went isn't written down
+        elif e.get("do") == "slide" and "from" not in e:
+            by = e.get("by")
+            moved = True
+            if isinstance(by, (list, tuple)) and len(by) == 3 and all(_is_number(v) for v in by):
+                net = [a + b for a, b in zip(net, by)]
+            else:
+                known = False
+    if moved and known and all(abs(v) <= PLACE_NEAR for v in net):
+        return False                                         # it slid away and slid back, in the picture: a garment lifted and dropped back where it lay
+    return moved
+
+
+def _set_down(scene: dict, cid: str) -> bool:
+    """Whether the scene brings it to where it rests, in the picture: a slide from somewhere else."""
+    return any(e.get("do") == "slide" and e.get("prop") == cid and "from" in e for e in scene.get("happens") or [])
+
+
+def _levels(scene: dict, cid: str, entry: dict) -> tuple[dict, dict]:
+    """A thing's liquid levels as the scene starts and as it ends, by part: (above, level), None for full."""
+    start = {entry.get("part"): (entry.get("above"), entry.get("level"))}
+    end = dict(start)
+    fills = [e for e in scene.get("happens") or [] if e.get("do") == "fill" and e.get("prop") == cid and _is_number(e.get("t"))]
+    for e in sorted(fills, key=lambda e: e["t"]):
+        above = end.get(e.get("part"), start[entry.get("part")])[0]
+        end[e.get("part")] = (above, e.get("level"))
+    return start, end
+
+
+def _carry_problems(scenes: list) -> list[str]:
+    """What doesn't carry from one scene to the next time the same thing's seen. A scene is staged afresh, so nothing in the stage keeps a
+    liquid's level or a thing's place from the scene before: this does. A level that ends at one height and starts the next scene at another, or a
+    thing that's somewhere else with nothing having moved it, is a jump the viewer sees. `anew`: [cast ids] on a scene says which start afresh
+    on purpose: the picture has said time has passed, or it's the same moment shown again, as a slow-motion replay is."""
+    again = "If the picture says time has passed, or it's the same moment shown again, list {} in this scene's `anew`"
+    out, last = [], {}        # id -> (scene number, scene, its cast entry, the levels it ended at)
+    for i, scene in enumerate(scenes):
+        if not isinstance(scene, dict) or not _times(scene) or not isinstance(scene.get("cast"), dict):
+            continue
+        label = f"scene {i + 1}"
+        anew = set(scene.get("anew") or [])
+        for cid, entry in scene["cast"].items():
+            if not isinstance(entry, dict):
+                continue
+            start, end = _levels(scene, cid, entry)
+            seen = last.get(cid)
+            last[cid] = (i + 1, scene, entry, end)
+            if not seen or cid in anew:
+                continue
+            n, before, was, ended = seen
+            if (was.get("prop"), was.get("character")) != (entry.get("prop"), entry.get("character")):
+                continue                                         # the same name on another thing
+            for part, (above, level) in start.items():
+                if part not in ended or ended[part][0] != above or "level" not in entry and ended[part][1] is None:
+                    continue
+                old = ended[part][1]
+                if (old is None) != (level is None) or (_is_number(old) and _is_number(level) and abs(old - level) > LEVEL_NEAR):
+                    said = lambda v: "full" if v is None else f"at {v}"
+                    out.append(f"{label}: {cid}'s liquid starts {said(level)}, but scene {n} left it {said(old)}. A scene is staged afresh, so carry "
+                               f"the level over: start it {said(old)}, or show it getting there with a `fill` in scene {n}. "
+                               + again.format(cid))
+            if _where(before) != _where(scene):
+                continue                                         # another place: where it stands there says nothing about here
+            moved = [k for k in PLACED_BY if not _same(was.get(k), entry.get(k))]
+            if moved and not _moved_off(before, cid) and not _set_down(scene, cid):
+                out.append(f"{label}: {cid} is somewhere else than scene {n} left it ({', '.join(moved)} changed), and nothing moved it. Keep it "
+                           f"where it was, move it there in scene {n}, or set it down in the picture with a `slide` from where it was. "
+                           + again.format(cid))
+            elif not moved and _moved_off(before, cid):
+                out.append(f"{label}: {cid} is back where scene {n} started it, but it moved away in that scene. Start it where it ended up, "
+                           f"or show it coming back. " + again.format(cid))
+    return out
+
+
 def check(direction: dict, total: float, people: list[str], stances: list[str], things: dict, moves: list[str] | None = None) -> list[str]:
     """Everything wrong with a direction, in words: the scenes have to cover the short exactly, and each has to pass the
     scene language's own check. `people` are the ids it may cast, `stances` what they can hold, `moves` what they can do."""
     scenes = direction.get("scenes")
     if not isinstance(scenes, list) or not scenes:
         return ["scenes: there has to be at least one"]
-    out, at = mark_problems(direction.get("marks"), total, scenes) + _same_pictures(scenes), 0.0
+    out, at = mark_problems(direction.get("marks"), total, scenes) + _same_pictures(scenes) + _carry_problems(scenes), 0.0
     for i, scene in enumerate(scenes):
         label = f"scene {i + 1}"
         if not isinstance(scene, dict) or not _times(scene):

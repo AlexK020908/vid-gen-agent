@@ -1,0 +1,259 @@
+{
+ "what": "a grey washing machine with a dial, 60 cm wide, hollow inside",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "door_cut",
+    "kind": "cylinder",
+    "r": 0.15,
+    "h": 0.1,
+    "at": [
+     0,
+     -0.23000000000000004,
+     0.44
+    ],
+    "rot": [
+     90,
+     0,
+     0
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "front",
+    "kind": "box",
+    "size": [
+     0.6,
+     0.01,
+     0.84
+    ],
+    "at": [
+     0,
+     -0.28,
+     0.42
+    ],
+    "material": {
+     "color": [
+      0.16,
+      0.17,
+      0.19
+     ],
+     "metal": 0.3,
+     "rough": 0.32,
+     "coat": 0.4
+    }
+   },
+   {
+    "id": "right",
+    "kind": "box",
+    "size": [
+     0.01,
+     0.56,
+     0.84
+    ],
+    "at": [
+     0.3,
+     0,
+     0.42
+    ],
+    "material": {
+     "color": [
+      0.16,
+      0.17,
+      0.19
+     ],
+     "metal": 0.3,
+     "rough": 0.32,
+     "coat": 0.4
+    }
+   },
+   {
+    "id": "rear",
+    "kind": "box",
+    "size": [
+     0.6,
+     0.01,
+     0.84
+    ],
+    "at": [
+     0,
+     0.28,
+     0.42
+    ],
+    "material": {
+     "color": [
+      0.16,
+      0.17,
+      0.19
+     ],
+     "metal": 0.3,
+     "rough": 0.32,
+     "coat": 0.4
+    }
+   },
+   {
+    "id": "lid",
+    "kind": "box",
+    "size": [
+     0.6,
+     0.56,
+     0.01
+    ],
+    "at": [
+     0,
+     0,
+     0.835
+    ],
+    "material": {
+     "color": [
+      0.16,
+      0.17,
+      0.19
+     ],
+     "metal": 0.3,
+     "rough": 0.32,
+     "coat": 0.4
+    }
+   },
+   {
+    "id": "floor",
+    "kind": "box",
+    "size": [
+     0.6,
+     0.56,
+     0.01
+    ],
+    "at": [
+     0,
+     0,
+     0.005
+    ],
+    "material": {
+     "color": [
+      0.16,
+      0.17,
+      0.19
+     ],
+     "metal": 0.3,
+     "rough": 0.32,
+     "coat": 0.4
+    }
+   },
+   {
+    "id": "ring",
+    "kind": "torus",
+    "major": 0.16,
+    "minor": 0.018,
+    "axis": "y",
+    "at": [
+     0,
+     -0.29000000000000004,
+     0.44
+    ],
+    "material": {
+     "color": [
+      0.12,
+      0.12,
+      0.13
+     ],
+     "rough": 0.4
+    }
+   },
+   {
+    "id": "door",
+    "kind": "cylinder",
+    "r": 0.155,
+    "h": 0.006,
+    "at": [
+     0,
+     -0.281,
+     0.44
+    ],
+    "material": {
+     "color": [
+      0.55,
+      0.6,
+      0.66
+     ],
+     "rough": 0.05,
+     "clear": 0.85
+    },
+    "segments": 64,
+    "rot": [
+     90,
+     0,
+     0
+    ]
+   },
+   {
+    "id": "dial",
+    "kind": "cylinder",
+    "r": 0.04,
+    "h": 0.03,
+    "at": [
+     0.18,
+     -0.295,
+     0.76
+    ],
+    "material": "chrome",
+    "rot": [
+     90,
+     0,
+     0
+    ]
+   },
+   {
+    "id": "display",
+    "kind": "box",
+    "size": [
+     0.12,
+     0.008,
+     0.04
+    ],
+    "at": [
+     -0.02,
+     -0.286,
+     0.76
+    ],
+    "material": {
+     "color": [
+      0.03,
+      0.05,
+      0.04
+     ],
+     "rough": 0.2,
+     "coat": 0.8
+    }
+   }
+  ]
+ },
+ "spots": {
+  "inside": [
+   0,
+   0.01,
+   0.43
+  ],
+  "side": [
+   0.3,
+   0,
+   0.5
+  ],
+  "door": [
+   0,
+   -0.3,
+   0.44
+  ],
+  "middle": [
+   0,
+   0,
+   0.42
+  ],
+  "top": [
+   0,
+   0,
+   0.84
+  ]
+ }
+}

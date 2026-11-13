@@ -27,6 +27,9 @@ SHORT_LINES = (4, 16)
 SHORT_LINE_WORDS = (3, 22)      # one step a line: the owner's two star shorts run 10 to 15 words, none over 22 (BUILD.md, phase 45)
 SHORT_WORDS = (60, 150)         # what the prompt asks for
 SHORT_WORDS_OK = (50, 165)      # what passes
+SHORT_CHARS_A_SECOND = 16       # the pace of the read the owner approved (Nov 3, 2026): words differ in length, so seconds are counted in letters
+SHORT_PAUSE_S = 0.4             # about the silence after a line (channels' pauses_ms)
+SHORT_SECONDS_MOST = 66         # the approved woodpecker cut runs 60 s. Seven scripts of 160 to 165 words came to 59 to 69 s by this count
 SHORT_HOOK_WORDS = 26           # a moment is short, but an "If you..." setup runs to about 25
 SHORT_SHAPES = ("true_story", "absurd_test", "why_it_happens", "thought_experiment", "fake_invention", "fix_in_steps", "ladder",
                 "you_invent", "mystery", "parody")
@@ -418,7 +421,15 @@ def short_script(scenes: list[dict], outline: dict) -> list[str]:
     total = sum(words(s.get("narration") or "") for s in scenes)
     if not SHORT_WORDS_OK[0] <= total <= SHORT_WORDS_OK[1]:
         out.append(f"it's {total} words in all; keep it to {SHORT_WORDS[0]} to {SHORT_WORDS[1]}")
+    elif short_seconds(scenes) > SHORT_SECONDS_MOST:
+        out.append(f"it would run about {short_seconds(scenes):.0f} s read at the channel's pace; keep it under {SHORT_SECONDS_MOST} "
+                   "by cutting a step or shortening the longest lines")
     return out
+
+
+def short_seconds(scenes: list[dict]) -> float:
+    """About how long a short's lines take to say, at the pace of the read the owner approved, with the pause after each."""
+    return sum(len(s.get("narration") or "") for s in scenes) / SHORT_CHARS_A_SECOND + SHORT_PAUSE_S * len(scenes)
 
 
 def thing_look(data: dict, clips: dict) -> list[str]:

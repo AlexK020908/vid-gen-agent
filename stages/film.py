@@ -31,7 +31,7 @@ READY = """AND direction_json IS NOT NULL AND json_extract(direction_json, '$.ap
            AND NOT EXISTS (SELECT 1 FROM scenes s WHERE s.video_id = videos.id AND s.state != 'ok')"""
 FPS = 30
 LOOK_SIZE, LOOK_SAMPLES = (432, 768), 12
-MOST_FRAME_REVIEWS = 2          # how many times a finished short goes back for what the frame reviewer found, before the owner sees it as it stands
+MOST_FRAME_REVIEWS = 3          # how many times a finished short goes back for what the frame reviewer found, before the owner sees it as it stands. The owner, Nov 10, 2026: fix what's found without asking, and show only the finished short
 FRAME_SHEET_EVERY = 1.5     # seconds between frames on the render card's sheet
 SOUNDS = {"hit": ("impact_heavy", 0.55), "fly": ("whoosh_soft", 0.3), "go": ("whoosh_soft", 0.25), "rock": ("tap_heavy", 0.4), "step": ("tap", 0.16), "land": ("thud", 0.6)}
 

@@ -54,6 +54,12 @@ The spec is [../plan.md](../plan.md). This file tracks what is built, how it dev
 | 46. Idea research agent | An agent that lands on ideas as good as the pile hammer's, for each channel's category (inventions now, mysteries and murder cases next), evidenced by what the reference's best videos do, checked, fact-checked, and validated by the owner before anything's built. Spec: [The idea research agent](#the-idea-research-agent-phase-46) | **Built** (Nov 8, 2026): the evidence, four briefs, the owner's taste in their words, the check, and the `idea-researcher` and `idea-checker` agents. Its first run brought 14 fact-checked ideas (6 inventions, 4 mysteries, 4 crimes), waiting on the owner to take or turn down |
 | 47. Joins, and two new kinds | A `transition-checker` agent that judges only the joins: each script's line-to-line joins before its voice, and each finished 3D short's cuts, from sheets of the frames either side of every cut with the words said as it comes. And idea briefs for tech infrastructure and memes. Spec: [The joins, and two new kinds](#the-joins-and-two-new-kinds-phase-47) | **Built** (Nov 8, 2026): tested blind on the woodpecker cut the owner flagged (v5) and the one they approved (v9). It found real bad joins others had missed, but not the owner's sponge join; it agreed with the owner both ways only after two rounds of general rules (no longer blind). Tech starts in 3D (the owner's "go"). Memes: the owner describes each one, and the `memes` channel's premise makes the prompts treat it as a joke |
 | 48. Ready for the first video | What the owner asked for before generating with the pipeline ("yea need these"). A tech dry run in 3D: a test scene with the parts the six tech ideas share (a phone, a cable, a server rack, data as moving balls, a box glowing hot), with what's missing added as general code. Then the first real run through the server since phase 38: a throwaway topic through the writing stages and reviewers, stopping before the voice, to shake out snags. Spec: [Ready for the first video](#ready-for-the-first-video-phase-48) | **Tech dry run done** (Nov 8, 2026): four tech things built from parts, and a dark place that makes data glow; no new code was needed. The first real run waits on the owner starting the server |
+| 49. A film written straight in Blender | The touch screen short as one Blender script: one continuous scene keyed to the clock's word times, the character model's real hand, glass, glow and shallow focus, with the captions and marks through Remotion and both reviewers on every cut. Spec: [A film written straight in Blender](#a-film-written-straight-in-blender-phase-49) | **Built** (Nov 11, 2026): the silent preview `data/benchmarks/touch_screen/touch_screen_preview_no_voice.mp4`. The owner: "this is good", then, of adding the gap between rows and columns, "fix and then yea its good". The cut with the gap shot and two more rounds of both reviewers was handed over Nov 12 (63 seconds, frames in `frames8`); the owner: "the videos is great, but just make sure the transitions is good in the script, then we are good to go". The script's joins were read three times and fixed, the voice recorded (16 cents, 71.5 seconds), and the film rendered again to the voice's times under the new ceiling (`frames9`). Its review found a one-frame flash that only the voice's timing could cause and five small things; 293 frames were made again (`frames10`). A last round of both reviewers passed every join and found nothing gross; the sausage's see-through tip and the red verdicts over the hand were fixed after it (`frames11`), and nothing jumps but at the cuts. `touch_screen.mp4` (71.5 seconds, voiced) was handed to the owner Nov 12: "the video is good", with five notes on the script's joins and the phone's icons. Six lines rewritten and re-recorded on their yes, the screen redrawn with real app icons, and the film is rendering again (`frames12`, 84.6 seconds) |
+| 50. Hooks, more kinds of idea, and a backlog to read | Four tests every idea's hook has to pass, things that still exist today, a news category, unsolved cases, and each checked idea as its own file. Spec: [Hooks, more kinds of idea, and a backlog to read](#hooks-more-kinds-of-idea-and-a-backlog-to-read-phase-50) | **Built** (Nov 11, 2026): 37 ideas in `ideas/backlog/`, waiting on the owner's read |
+| 51. What ifs | A category for hypotheticals that put the viewer in it, with the hook of the Reel the owner showed taken apart second by second. Spec: [What ifs](#what-ifs-phase-51) | **Built** (Nov 12, 2026): the brief `prompts/ideas/what_ifs.md` and a third way to pass the `mistake` test. A first batch of six is checked and in `ideas/backlog/what_ifs/`, waiting on the owner's yes or no to each |
+| 52. A ceiling on what a render takes | Renders are held to some of the processor's cores, a set number of Blender processes and a low priority, so the computer stays usable while one runs. Spec: [A ceiling on what a render takes](#a-ceiling-on-what-a-render-takes-phase-52) | **Built** (Nov 12, 2026): `render.limits` in `stickfleet.yaml`, `render/limits.py`, `render/film_parts.py` |
+| 53. Wartime | A category for the strange things soldiers really did in wars, the one place an idea needn't still exist today, with the hook of the Reel the owner showed taken apart. Spec: [Wartime](#wartime-phase-53) | **Built** (Nov 12, 2026): the brief `prompts/ideas/wartime.md` and the exception in `all.md`. Eleven checked ideas are in `ideas/backlog/wartime/` |
+| 54. Two more recordings: a faker caught, and a survival story | The reference's "She Faked Being Mute For 16 Years" taken apart in the crimes brief, and another creator's cave tragedy, told as a cut through the rock over 2 minutes 41 seconds, as a proposed category. Spec: [Two more recordings](#two-more-recordings-phase-54) | **Built** (Nov 12, 2026): `prompts/ideas/crimes.md`, `prompts/ideas/survival.md`. The owner said yes to survival stories the same day (long, in one video, real deaths shown in animated form); a first batch of six is checked and in `ideas/backlog/survival/`, waiting on the owner's yes or no to each. No renderer for the look yet |
 
 The code for plan.md's whole build order is complete (weeks 4–6 are running videos, not building); phase 10 is the YouTube tools plan.md lists that no phase has needed yet. What needs your accounts is under "Your turn" in How YouTube works, How Claude writes, How voice, pictures and clips work, and How topics and metrics work.
 
@@ -960,6 +966,21 @@ So on the owner's own example it disagreed with them both ways: it passed the jo
 - Tech, mysteries and crimes each need a channel, with a name and a YAML. The names are the owner's; memes has a working one.
 - Tech in live diagrams is phase 30, which the owner asked for again: "yea we need this".
 
+**What seven scripts taught (Nov 10, 2026).** Seven scripts (six inventions and the touch screen) each went through the writer, the reviewer, the joins checker and one rewrite. A second joins check on the rewrites still found 12 serious joins in five of them, one made by a fix. The owner asked for the code to be reviewed against all their feedback. What changed, for every short:
+- **A rewrite is read again** (`core/transitions.py`, `ROUNDS` = 2). The script went back to the writer once and was never re-read. Now each rewrite is checked again, the second rewrite starts from the first one's draft (`rewrite(notes, draft)`), and joins still bad after the last rewrite go to the owner in a notice.
+- **The writer has the rules the checker kept catching** (`prompts/character/script.md`): a thing is named before it's leaned on and keeps one name ("the tub", "the hook", "a swivel" came from nowhere); a "But" says why it goes wrong now and a "So" what the fix changes ("it still sinks" with no reason the wheels didn't help); a goal that moves on is said; and each `shows` starts where the last ended (an app closing by itself, a snapped chain whole again, a crane falling away from its load). The reviewer asks the same of every "But" and "So" (`critic.md`), and the director carries state from scene to scene (`direct.md`).
+- **Length is checked in seconds** (`checks.short_seconds`, `SHORT_SECONDS_MOST` = 66): letters at 16 a second plus 0.4 s a line. All seven were 160 to 165 words, but ran from 59 to 69 s on that count.
+- **Water flung off something** is a `drops` kind of `sparks`, with a `life` (`blender/stage.py`), made for the washing machine's spin.
+- **Not done, and worth doing:** the tools for working with the server down (`brief.py`, each short's `short.py` with `estimate`, `look` and `preview`) are copied per short under `data/`, which git doesn't keep; they belong in `run.py`.
+- **What a scene leaves is what the next one starts with** (`scenes/direction.py`, `_carry_problems`, part of a direction's check). The owner, of there being no such check: "this gotta be fixed". Each scene is staged afresh, so nothing kept a level or a place from the scene before. Now a direction is refused when a liquid starts at another level than the last scene with that thing left it (its cast `level`, then its last `fill`), when a thing or person is placed differently in the same place with nothing having moved it (`go`, `fly`, `walk`, a `slide` by or until) or set it down (`slide` with `from`), or when something that moved off is back where it started. A scene lists in `anew` the cast ids it starts afresh on purpose: time has passed in the picture, or it's the same moment again, as a slow-motion replay. Tried on the old directions: on the straw short it finds the water dropping between two scenes and the tube turned over unseen, both of which the frame reviewer had caught by eye; on the approved woodpecker it finds five, all replays or a new angle on a run-in, which `anew` is for. It doesn't yet follow colour (`tint`), what's been pressed or turned to other stuff, or a thing that's simply gone from the cast.
+
+**The washing machine short (Nov 10 to 11, 2026).** The first of the seven taken to a silent preview: `data/benchmarks/washing_machine/washing_machine_preview_no_voice.mp4`, 61.7 s, no voice yet (nothing spent). Its things are in `made_with/make_things.py`, its direction in `made_with/direction_wm.py`, and `short.py`, `review_now.py` and `joins_now.py` there stage, render and brief the two reviewers with the server down. It went through four rounds of frame review and joins check, each round's findings fixed before the next. The owner's rule from this short: what the reviewers find is fixed without asking, and the owner sees only the finished short (`MOST_FRAME_REVIEWS` is 3). What making it added, for every short:
+- **What's fixed to something that moves goes with it** (`blender/stage.py`, `settle`): a drum, its water and its motor ride with a tub that hops, and their own spin is counted from there. No earlier scene fixed anything to a mover.
+- **`tint` with `mix`** really changes a colour; plain `tint` multiplies, so it can only darken (mud going the blue of the shirt under it came out black).
+- **`sparks` of kind `drops`**, with `life` and `size`. A spark, chip or drop is now gone when its time is up: with a short life its last key left it hanging in the air at full size.
+- **The continuity check knows a slide there and back** (`_moved_off`): `by` slides that sum to nothing leave a thing where it was.
+- **Learned, not yet in code:** a thing's look sheet and a scene's cached look are not made again when only the thing's spec changes, so stale renders have to be cleared by hand; a liquid can't be tinted; a person's body clips can stand in for a hand at work (`Action_pick_up_from_a_table` at a sink), but not carry anything.
+
 ## Ready for the first video (phase 48)
 
 The owner, Nov 8, of what would otherwise come up on the day ("every new short needs some new abilities", "the first real run through the server will hit snags"): "yea need these". Of the look: "dark theme is good".
@@ -981,6 +1002,223 @@ The owner, Nov 8, of what would otherwise come up on the day ("every new short n
 **The first real run through the server** waits on the owner starting it (`uv run python run.py serve`, then `/mcp`). It's a throwaway topic through the writing stages and both reviewers, stopping before the voice.
 
 **Next: phase 30, the 2D tech diagrams,** to the owner's template: "ive sent sample 2d tech videos before so use that as template, dark theme is good". The 2D sample is the load-balancing reel (`ScreenRecording_11-03-2026 11-52-37_1.mov`), which SHORTS.md breaks down as reference D. The other sample from that day, `copy.mp4`, is the reference's cow hoof short, not a tech one.
+
+## A film written straight in Blender (phase 49)
+
+The owner, Nov 11, of a look test written directly as a Blender script, with the character model's real hand, a dark phone, glowing wires under real glass and shallow focus: "much better". The scene-language shorts had read as plain shapes in even light. So the touch screen short was made this way, as one script: `data/benchmarks/touch_screen/film.py`.
+
+**How it's made.**
+- **One continuous scene.** The same desk, pane and hand run from the first frame to the last, so nothing can jump between shots. Every key is a word's time from `clock.json` (`at(line, word)`, `START[n]`), so the picture follows the voice and re-times itself when the clock changes.
+- **The hand** is Walt's rig from `data/characters/walt/person.blend`. A fingertip is placed by measuring its lowest skin vertex, so it lands exactly on the glass, a sheet or a wire crossing.
+- **What changes every frame and can't be keyed** (which row is lit, the charge balls, the level bars, what a finger steals, what lights, what's see-through) is worked out by one function, `electric(t)`, called for each frame before it renders.
+- **Seeing inside** a fingertip, a glove and a sausage is one shader mask round a point that rides the hand (`see_through`).
+- **The camera** is a list of moves and cuts (`shots`), and anything is in the picture only between two times (`shown`).
+- **Captions, the red crosses and the title** go on in Remotion (`assemble.py`), exactly as for the other shorts.
+- **Both reviewers see every cut** (`review_now.py` writes their briefs): the frame reviewer for what's physically wrong, the joins checker for the cuts and the line-to-line joins.
+
+**What it cost.** Nothing. A full render is about an hour and a half for 1,843 frames (720 px wide, 48 samples, two Blender processes taking odd and even frames). Only changed stretches need rendering again: a frame whose file exists is skipped. The cut with the gap shot is 1,889 frames (63 seconds); its first 587 frames were kept and the rest took two and a quarter hours.
+
+**What three cuts and two reviewers taught** (each is in the script, and holds for the next one):
+- When the words name rows and columns, film them so rows run across and columns up and down.
+- A thing that moves has to be moved by something in the picture: the finger pushes the sheet on and off by its edge.
+- A soft thing has to be seen giving: the sheet stands off the glass and dents under the finger until it closes the gap.
+- A glove made from the hand's own skin has to lose the nail and the creases (displace, smooth, displace again: smoothing alone shrinks it until skin shows through).
+- What's inside a second thing should look like what was inside the first: the sausage's inside is the same blue water as the fingertip's.
+- Keep the readout clear of the caption: the level bars sit above the caption band wherever the words are about them.
+- A spot or picture at zero strength renders black. Hide it; don't fade it to nothing.
+- A low camera mirrors the rim light in the glass. Keep it high, or look away from that light.
+- Blender's camera sees nothing nearer than 10 cm unless told to. The close shot of one wire crossing sets its near distance and a small lens opening for that shot only.
+- A part that arrives comes by a path that clears the hand and the lens: the beams' frame slides in from its four sides. Dropped from above it passed through the waiting finger, and lifting away it blurred across the lens.
+- Where a cut would land on nearly the same view, make it one move. A small change of view on a cut reads as the picture hopping.
+- A light put there to fall on things isn't seen itself: the flash at the press was showing as a white dot beside the finger.
+- Once the rows take turns too fast to follow, every row glows alike. A row still seen stepping, with the bars holding steady beside it, breaks the rule the short has just taught (a column comes up short only on its own row's turn).
+- A finger that has swiped lifts away. Left resting on the glass while the page ran on, it looked as if the page had slipped out from under it.
+- A hand that's waiting keeps moving a little.
+- A measure comes in beside the thing it measures and leaves with it: the ruler slides in by the glove, out as the glove lifts, and in again by the sausage, so the gap and no gap are read off the same ruler.
+- Hide a fading glow on the very frame it reaches zero: a frame later it's black lines, a frame earlier it snaps off.
+- A readout stays empty until what feeds it has been shown: the level bars don't fill until the close shot has shown charge crossing to the columns.
+- Whatever arrives is seen arriving, after the cut: the second finger comes out and lands in the view from above, on "fingers", where before it was already down on the cut's first frame.
+- A fingertip is wider than the gap between two rows, so one resting beside a lit neighbour looks as if charge runs under it untouched. It now lands as its own row's turn begins.
+- A caption never covers what the shot is about. The camera's lens shift (`shift_y`) moves a shot's framing up or down without moving the camera or its focus: the pinch is framed higher so the caption's band clears the nearer fingertip.
+
+**The script's joins, before the voice.** The owner, Nov 12, of the final silent cut: "the videos is great, but just make sure the transitions is good in the script, then we are good to go". A fresh joins checker read the script alone three times (`joins_script_now.py` writes its brief):
+- First read, one serious join: line 6 dropped "only a press should count" with nothing in its place, so a viewer who'd watched the fly asks whether it sets the glass off again. Line 6 now takes the goal's own words from line 1: "So the glass must feel your finger itself, with no press".
+- Second read, nothing serious, four small: "a finger blocks two" had no noun ("two of them"); "squeezed" had nobody doing it ("a soft sheet your press pushes onto the glass"); and line 10 said "Two fingers" over one finger while the rows sped up.
+- Third read: all twelve joins follow.
+- What moved in the picture: the rows' turns are now seen speeding up, each bar pulsing with them, in a breath of silence after "your touch" (the pause after line 9 is 850 ms where the usual is 350), and the second finger lands on "Two fingers".
+
+**The voice.** Thirteen lines in the owner's cloned voice through `voice_now.py`, 16 cents, 71.5 seconds. The film re-times itself from the voice's word times. A low-quality pass of every fifteenth frame, read against the words, showed one thing the estimate had hidden: under the longer line 6 the picture sat on a bare dark pane for three seconds. A fingertip now rests lightly on the bare glass through "feel your finger itself, with no press" and lifts as the wires appear. `assemble.py` lays the voice in once `voice/` holds every line and writes `touch_screen.mp4`.
+
+**Reviewers' notes checked at full size and left as they are** (each fresh reviewer brings a new list, and many are marked unsure at the size it sees): the two beams do stop at the finger; both fingertips rest on the soft sheet in its dip; a row's charge balls go out in two frames when its turn ends, which is the row switching off; the soft sheet slides in under a fingertip at the glass's height; the frame of emitters and the level bars move on their own, as added parts do; "NO TOUCH" is red over the red glove but reads.
+
+**The voiced cut's review, and a fault only the voice could cause** (Nov 12, 2026). Every time in the film comes from the voice's words, and the voice said "But the sheet scratches" faster than the estimate had. That put the cut to the scratch (0.75 s before "scratches") before the row written ahead of it (the start of line 5), so the camera flashed to the view from above for one frame at 19.47 s, and the hand darted towards the scratch and back. Neither reviewer's sheets could show a one-frame flash, and a look at every fifteenth frame missed it. What caught it was looking at each frame round a note the joins checker had marked "worth one look". So:
+- **Keys out of time order stop the render.** `film.py`'s keying helpers (`shots`, `hand`, `hand_to`, `key`, `key_socket`, `pose`, `dipped`) note any key timed before the one written ahead of it, and the script exits before rendering a frame if there is one. `FILM_CHECK=1` runs just that check, in seconds.
+- **A time that depends on two words is clamped to both.** The scratch's cut is now `max(scratches - 0.75, START[5] + 0.07)`, and the hand is off the press (`lift4`) before it sets out, however fast the line is said.
+- **The reviewers' cut list comes from the film.** `review_now.py` kept its own copy of the cuts, worded differently, and it had drifted: the cut to the fly was reported as a jump with no cut. `FILM_CUTS=<file>` now writes the film's own list, to the frame, and the briefs read it.
+
+The rest of that round, all small: the fly's red spot now goes out with the fly, two frames before the cut away from it; the level bars hold what they read while the rows' turns speed up (they had blinked empty and full twice in 0.7 s); the sausage's first shot is framed higher, like the pinch, so the caption clears the place it lands; and on the finished phone only the pages of tiles slide, while the wallpaper, dock, page dots and status bar stay put, as on a real phone (it had been one sliding picture, dock and all). 275 of 2,145 frames were made again.
+
+**And one the fix round caused itself.** The unchanged frames were carried into a new folder (`carry_frames.py`, hard links) and a few already rendered as tests were taken from the test folder. That folder's name had been used in an earlier round, on the old clock, and still held two frames with the same numbers: both went into the film, each a flash of the press half a second early. The jump check found them at once, now that it has the film's true cuts. `carry_frames.py` no longer takes anything from a test folder, and a test folder gets a name that hasn't been used.
+
+**The last round.** On the fixed cut the joins checker passed all 30 joins (12 between lines, 18 cuts). The frame reviewer found nothing gross and eleven small things, and two were fixed:
+- **The sausage had a face inside it.** It was a stick with its two end faces and a whole ball at each end, and through its see-through tip the stick's end face showed as a flat bright line, like water standing in a tube. It's now one skin with nothing inside (`end_fill_type="NOTHING"`, and only the outer half of each ball). A thing that will be seen through is built as one skin.
+- **A red verdict over a hand.** Three reviewers running called NO TOUCH (red on the red glove), ONE TOUCH and NOTHING (red over skin) hard to read. Verdict marks now carry a dark halo, in the shared label code (`render/remotion/src/shorts/Overlays.tsx`), which doesn't show over a dark picture.
+
+Checked and left: the one lit spot between two pressing fingers is what the sheet reads, which is the point of "two fingers read as one"; white captions over the bright fingertip and the phone's tiles; the ruler standing by itself; the bare hand coming back two seconds after the gloved one left the picture; the bars holding once the turns are fast; the soft sheet's stiffness; and the hand's and the lamp's reflections on the glass.
+
+Measured and left: the reviewer called nine stretches "dead still". The camera drifts through every one of them (6 to 17 mm, 3 to 10% of its distance to the subject, measured with a script), too slowly to show on a sheet. The hand does rest still on the glass in five, while the charge moves round it, and a small shake added to it would read as wobble.
+
+**The owner's notes on the voiced cut, and the second voice** (Nov 12, 2026). "the video is good but a few things I dont like ... Overall animation is good, its just that the tranition still needs work". Five notes, each now a rule in `prompts/character/script.md` and `prompts/transitions.md`, since the transition checker had passed the old lines three times:
+- *"take the button away, then it should say 'because you want to make it work on a phone', and then say 'you want glass feel your finger'"*: a change the viewer didn't expect comes with its reason.
+- *"'so only a press should count, a soft sheet is placed...', this is awkward transition, it should say, so, you put a soft sheet over, like you're solving the immediate problem you stated"*: a fix is something you do, said as "So you...".
+- *"'crosses a thin gap to the columns', how does it do that"*: a step says how, or what's measured.
+- *"it also says your finger is salty water, which isn't entirely true, it only contains it"*: no firmer than true.
+- *"replace the phone's placeholder app icons with real app logos ... instagram twitter etc and some other placeholders you can make"*: `make_screen.py` draws the screen's pictures (YouTube, X, Instagram, WhatsApp, Spotify, Netflix by hand from simple shapes, and 26 plain ones), since Blender's own Python has nothing to draw with, and `film.py` loads them. The finger taps Instagram.
+
+Lines 1, 4, 6, 7, 8 and 11 were rewritten (6 for having line 4's shape; 11 as firmer than true, found by the checker), read by a fresh checker (nothing serious, five small, three taken), shown to the owner with the price ("yea looks way better") and recorded: 12 cents, 84.6 seconds, 228 words. The lines now:
+1. Press a button. Now take the button away, because you want to make it work on a phone. You want the glass to feel your finger.
+4. So you put a soft sheet over the glass. A fly is too light to dent it, but your press pushes the sheet onto the glass: your touch.
+6. So you take the sheet off. To feel a finger with no press, you put a grid of see-through wires under the glass.
+7. You send charge along each row in turn. Each column wire lies a hair's width below, close enough to pick up some of it, and a meter on each column shows how much.
+8. Your fingertip is full of salty water, which carries charge. Touch the glass, and it steals some.
+11. A thick glove, though, holds your finger too far away to steal enough charge.
+
+The picture followed the words: the hand and the view reach the phone-sized glass on "work on a phone"; a longer pause after line 3 (750 ms) in which the fly lifts and the beams and their frame clear, so line 4 opens on the bare pane; the view goes in on the fly, back on the sheet and not denting it; in the close shot of one crossing the charged row runs over the column first and the charge only drops across on "close enough"; the meters slide out when they're named; the finger lands on "Touch the glass". Staging was checked free against an estimated clock, then against the voice's, before the full render (`frames12`).
+
+**Rendering only what changed.** `frame_state.py` runs a film script without rendering and records what every frame holds (where each thing is, what's hidden, every light and glow). `frame_state_diff.py` compares the film as rendered with the film as it now stands and lists the frames that differ; `FILM_FRAMES` renders just those. The fourth reviewers' round changed 592 of 1,889 frames, and the rest stayed exactly as the owner had approved them.
+
+**It had to be true as well as good-looking.** The owner's first question on the finished cut was whether that is how a touch screen is really built, and whether anything it needs was left out. Everything shown was real, but one part it needs wasn't in it: the rows and columns never touch, and the charge crosses a thin gap. Line 7 now says so, and a close shot of one crossing shows it. The reviewers judge the picture and the joins, not whether the mechanism is whole, so this is now checked at the script, before any render.
+
+**What isn't general yet.** This is code for one short, where the character pipeline (phases 34 to 36) needs none. The parts that would serve any short (placing the hand, the camera plan, see-through, timing from the clock) live inside `film.py`. Lifting them into shared code is the next step before a second short is made this way. The script is also 169 words where the script check allows 150, so its clock was estimated without that check.
+
+**Next:** the voice on the owner's yes (about 10 to 15 cents). The real word times replace the estimated clock, the film is rendered once more against them, and both reviewers see it again. Posting stays on the owner's word, with the caption shown first.
+
+## Hooks, more kinds of idea, and a backlog to read (phase 50)
+
+The owner, Nov 11, of a Reel on why tuna farms shoot their food: "we gotta figure out how they find these ideas", "it has to be something 'bizzare' or spark curiosity", "we need to figuyre out good hooks".
+
+**Four tests for a hook,** agreed by the owner and now in `prompts/ideas/all.md` and the hook rules of `prompts/character/outline.md`, `script.md` and `critic.md`:
+- `silent`: the first picture works with the sound off;
+- `mistake`: it looks like a mistake, or it is a simple problem built up to an industrial fix (the nail example did well without looking wrong);
+- `stake`: something alive is at stake;
+- `seen`: the answer is watched, not told.
+
+**And three rules for where to look:** start from a real sight that's bizarre; it has to still exist today (the owner turned down an idea that didn't); and many areas, not one niche.
+
+**More kinds of idea,** each its own brief in `prompts/ideas/`:
+- `explainers.md`: odd things people really do, on film;
+- `inventions.md`: the four tests added to its fields;
+- `mysteries.md`: unsolved cases and conspiracy theories, with limits on what may be claimed about real people (those limits are the agent's, not yet the owner's);
+- `news.md` (new): a recent event walked through for someone with no background, the owner's example being a crypto exchange hacked from North Korea.
+
+**A backlog to read.** `python -m ideas.backlog_files [category]` writes each checked idea as its own Markdown file in `ideas/backlog/<category>/`, with the owner's words where they've answered and what the fact-checker says to settle before it's written. Turned-down ideas are left out. Now: 17 explainers, 5 inventions, 10 mysteries, 5 news. Several carry a "for you to judge" note.
+
+**The loop stays as phase 46 built it:** the researcher writes cards, a fresh fact-checker tests every claim at its source, and the owner takes or turns down each one. Nothing is scripted or rendered before that yes.
+
+## What ifs (phase 51)
+
+The owner, Nov 12, 2026, of a screen recording of the reference's Reel "What If You Grew Four Times Bigger" (111K likes): "hypothetical situations like that is good too, please study that video and note down the hook".
+
+**The hook, as studied** (transcribed with local Whisper, free, and read off frames every third of a second; the full breakdown is in `prompts/ideas/what_ifs.md`):
+- **Said:** "If you grew four times bigger, you might think you could leap over houses or shove cars out of your way, but it would actually take much longer for your nerve signals to travel through your body..."
+- **Seen:** from the first frame a man is already outgrowing an ordinary street; for four seconds he gets what the viewer would wish for (over a house, a car shoved aside); the turn comes at 7 seconds.
+- **Built as:** "If you" plus one exact number, then "you might think" (the wish, shown), then "but actually" (two costs to the viewer's own body, each a real law, each seen, worst last). The number comes back as the answer: 4 becomes 64. It ends on the worst thing with no summing up, and loops.
+
+**What changed:**
+- `prompts/ideas/what_ifs.md`: a new category with its own card fields (`wish`, `number`, `costs`, `real_thing`), on the `absurd_test` and `thought_experiment` shapes. A new category needs no code.
+- `prompts/ideas/all.md`: the `mistake` test now passes three ways: it looks like a mistake, a simple problem built up to an industrial fix, or a wish that backfires.
+- How his own what-ifs did is in the brief: a little above his median, seldom in his top tenth, best when the viewer's own body is in it.
+
+**Not the owner's yet:** the brief reads "must still exist today" as met by the real animal or machine the law explains. And his short shows a crowd and a body breaking, which our rules don't: a what-if here is told on one body as an x-ray, with glows for what gives way.
+
+**The first batch (Nov 12, 2026): six, checked, in `ideas/backlog/what_ifs/`.** Each rests on a different law: a neck two metres long (pressure with height, and used air left in the windpipe; the giraffe), gills instead of lungs (how little oxygen water holds, and heat lost with it), complete invisibility (an eye has to bend light and absorb it; see-through sea animals), muscles a hundred times stronger (grip, not strength, limits a shove; a locomotive's sand), running at the speed of sound (air's push by the square of speed; the two stratosphere jumps), and a shrew's metabolism (surface against volume).
+
+The fact-checker found every sum arithmetically right and passed none as written. What it changed, now rules in the brief:
+- **A limit has to hold against the obvious way round it.** "You still couldn't shove a parked car" is true only of a level push: push upward, or lift one end, and the car's own weight comes onto your shoes. The card now says "a flat shove", from the side, and gives lifting as the way out.
+- **The input has to be the quantity the sum needs.** The windpipe figure was its outside width, not the airway; the giraffes were young; the shrew's 67 times was measured at 22 °C, where two-thirds of it is the shrew keeping warm.
+- **A range in is a range out,** and one paper's coefficient isn't paired with another's area: "a three-tonne wall" became "roughly 3 tonnes, probably more".
+- **No firmer than the source:** "every see-through animal still has eyes you can find", "every warm animal in the sea comes up for air" (the card's own warm fish said otherwise) and "you'd cook" were brought back.
+- **No real person, and no animal eaten on screen:** the 2012 jumper is a plain suited figure with no name or sponsor's marks, and the shrew chews with nothing live in its mouth.
+
+Still unsettled, on the cards as "To settle before it's written": YouTube refused caption downloads all day, so overlap with the reference was judged from titles alone. His "Tug Of War With A Gorilla" may be the muscles card's exact argument and must be read before that card is kept. The speed-of-sound card needs a runner, and the kit's people hold a stance.
+
+**Next:** the owner takes or turns down each. The one reading in the brief that's still the agent's (that a what-if meets "exists today" through the real animal or machine its law explains) is how all six were built.
+
+## A ceiling on what a render takes (phase 52)
+
+The owner, Nov 12, 2026, while the touch screen film rendered in three Blender processes: "its taking a lot of my compute and memory. set a max to how much ur render can take, can we do that? would that break anything?"
+
+**What it was taking:** all 24 cores at 100%, and about 9.5 GB of memory in use across the three processes (19 GB reserved), with 4 GB of the machine's 31 left free.
+
+**The ceiling** is `render.limits` in `stickfleet.yaml`, read by `render/limits.py`. The numbers are the agent's choice: the owner asked for a max and gave no figure.
+- `cores: 12`: the processor cores a render may run on, the last 12 of this machine's 24, so the first 12 are always free. Blender is also started with that many threads (`-t`).
+- `processes: 2`: Blender processes side by side when a film is rendered in parts. Each holds about 3 GB with a film's scene loaded, so this is what caps memory.
+- `priority: below_normal`: anything else open is served first.
+
+**Where it holds:**
+- `blender_render.run_job`, so every Blender job the pipeline runs.
+- Remotion's runner, and the browser tabs it starts inherit both the cores and the priority.
+- `render/film_parts.py`, the way a film script written straight in Blender (phase 49) is rendered from now on, in place of Blender processes started by hand:
+  `.venv/Scripts/python -m render.film_parts <film.py> <frames folder> <last frame> [--samples 48] [--width 720] [--frames 12,40,41] -- <the script's own arguments>`.
+  It splits the frames still to make between the allowed processes, leaves a frame already made alone, re-makes one that won't open (a render killed while writing it), and exits 1 unless every frame is there and opens, so a film is never assembled from a folder with gaps.
+
+**What it breaks:** nothing. The same frames come out: the number of threads doesn't change what Cycles draws. A stopped render picks up where it left off. The first thing done was live, on the three running processes (priority and cores set from PowerShell), with no frame lost; going from three processes to two meant stopping them and starting again through `film_parts`, which cost the three frames in flight.
+
+**What it costs:** on this film, close to nothing. It renders mostly on the graphics card, so two processes on 12 cores made frames at the pace three had on all 24 (about 14 a minute). The render can now take half the processor at most, where it had all of it, and holds about 4 GB of memory where it held 9.5, which left 8 to 10 GB free in place of 4.
+
+**Not capped:** the graphics card, which Blender still uses fully, and ffmpeg's encodes, which take seconds. `tests/test_limits.py` checks the sums, that a started process really is below normal and held to its cores, and that a half-written frame is made again.
+
+## Wartime (phase 53)
+
+The owner, Nov 12, 2026, of a screen recording of the reference's Reel "Why Soldiers Put Grenades In Glass Cups": "this is interesting too because it describes what happened or happens during war time, which might not exist anymore but is very interesting. Or something like traps used in Vietnam wars is pretty cool".
+
+**The hook, as studied** (transcribed with local Whisper, free, and read off frames twice a second; the full breakdown is in `prompts/ideas/wartime.md`):
+- **Said:** "It's put into a glass cup before the pin is pulled, and the walls would hold the lever in place, preventing it from blowing up. Now some say this was invented by Soviet soldiers, who would place the glass on top of a slightly open door..." 27 seconds, about 70 words, and it loops.
+- **Seen:** from the first frame a soldier is lowering a grenade into a drinking glass. Then the inside of the glass, its wall lit green where it holds the lever. Then the glass stood on a door left ajar, the door pushed, the glass tipping, breaking, the lever flying off.
+- **Built as:** two things that don't belong together, already together, so the picture and the title ask "why would anyone?" and the voice starts on the answer. How it works comes first, then who did it ("some say", hedged in two words), then the use as a chain of seen steps. It ends by naming what the thing became.
+
+**What changed:**
+- `prompts/ideas/wartime.md`: a new category with its own card fields (`war`, `problem`, `steps`, `how_known`, `left_today`, `shown_as`), on the `why_it_happens`, `true_story`, `fix_in_steps` and `ladder` shapes. No code.
+- `prompts/ideas/all.md`: "it has to still exist today" now names its one exception, wartime, in the owner's words. The rule holds everywhere else.
+- How his own war shorts did is in the brief: 76 of them, at his median, in his top tenth a little more often than his shorts in general. Something that doesn't belong in a war did best (sweets, a dog's tooth, ice cream). A trap set for soldiers did four times his median, and his plain "how this trap works" shorts are among his worst.
+
+**Agreed by the owner** (Nov 12, 2026, "yea i agree"): three lines in the brief that began as the agent's. Nothing graphic: a trap is seen working on a thing, never a person (his short ends on men thrown by a blast, and ours stops before that). History, not a how-to: never what an explosive is made of, nor sizes or steps for building anything that hurts. And wars still being fought are left alone.
+
+**Strategies first** (the owner, the same day, on hearing the first six: a smokeless kitchen, markers on traps, a fake head for a sniper, fire along a runway, a bridge by parachute, a dammed river): "I think people would be more interested in strategies used in war times like in WW2, there was chemical warfare right? ... or in the Japan China war, how Mao was hiding while the other party fought Japan ... or the booby traps used in Vietnam war, or how Japan used to fly planes into ships etc". The brief now leads with strategies in wars people know, shown on a map table with blocks and models, told level and no firmer than the historians, and lists the owner's four examples as leads to test. Both notes are in `ideas/taste.json`, word for word.
+
+**The two batches** (Nov 12, 2026), each through a researcher and then a fresh fact-checker, whose fixes were applied before anything was filed:
+- *Field cleverness, six:* a smokeless kitchen, markers on hidden traps, a fake head raised for a sniper, fire along a foggy runway, a bridge dropped by parachute, a river dammed to free gunboats. None dropped, all six reworded where a card went past its source.
+- *Strategies, five kept of six:* poison gas held back in the Second World War, the war in China (told with what Taipei and Beijing each say, and what both sets of records agree on), what the Vietnam War's traps were for (by the US division that counted them), planes flown into ships and the ring of destroyers that met them, and sailing past Rabaul. All four of the owner's leads became cards. The Ghost Army was dropped: the reference had made it under a title that didn't name it ("The Army That Fought With Balloons"), found by reading his captions, and `all.md` now says how to do that when a near title leaves it open.
+- The eleven are in `ideas/backlog/wartime/`, each with what's still to settle before it's written. Three of the strategies (gas, China, Rabaul) are told on a map table and pass the sound-off test only softened; each file says so.
+
+**Next:** the owner reads them and takes or turns down each one.
+
+## Two more recordings (phase 54)
+
+The owner, Nov 12, 2026: "just added more screen recordings". Two, in the folder above the repo, with no word on what they liked in them. Both were transcribed with local Whisper (free) and read off frame sheets.
+
+**"She Faked Being Mute For 16 Years"** (the reference; 47 seconds; 198K likes; 1.7 times his median on YouTube). A cashier is attacked, says the shock left her unable to speak, and is paid by her employer's insurer for 16 years. Other doctors' notes never record it, a detective watches her, asks her the way with a hidden camera, and she answers. The title gives the ending away, and the short is all the catching: the lie set up as true, "but there was a problem", a paper anyone can read, a test a child could run, nobody named, and a last line that says only what the court ruled. It's in `prompts/ideas/crimes.md` as a hook the owner showed. That frauds belong beside the murder cases the owner chose is the agent's reading.
+
+**A cave tragedy, by another creator** (theforgottenarchives; 2 minutes 41 seconds, part one; 95.7K likes, 37.8K shares, 21.9K saves). Four young people drowned in a flooded cave near Provo, Utah, in 2005. The end is told first, in fifteen seconds; then "This is a true story that happened in Utah in 2005"; then "It started on an ordinary night", and every small choice in order, slowly; one of five turns back ("That decision saved his life"); every danger is planted and drawn before it bites; and it ends on a line that opens part two. The whole look is one side-on cut through the rock, with simple figures told apart by a shirt's colour, a rope as a line, a height as a measure, and an AIR bar that drains. It's a kind nothing here covers, so it has its own brief, `prompts/ideas/survival.md`, marked as proposed.
+
+**The owner's answer** to three questions (do you want this kind and on which channel; long and in parts or one short; how real deaths are handled, where the agent had proposed no body on screen): "i want them made yea, long but not in parts, the video should cover everything, yea for real deaths, we wanna document it, and still show dead bodies in animated form like those videos". So `survival.md` is no longer a proposal: a video is long and tells the whole story in one; it documents real deaths from official accounts; and the dead are shown as the Reel shows them, the same simple figure lying still, with no blood or wounds. It's the one category where `all.md`'s "no bodies" doesn't hold, and `all.md` says so.
+
+**Still open:** which channel; and length. Reports on Instagram (blogs and one analysis, not Instagram itself) say a Reel over three minutes is mostly shown to followers and not recommended to strangers, which may be why that creator posts in parts of 2:41. "Long, and in one" may have to mean just under three minutes there.
+
+**Not built:** there is no renderer for this look. It's a flat cut through a place with simple figures, lines, measures and bars, nearer the diagram shorts (phase 30) than the 3D people. That's a phase of its own, to start once the owner has taken an idea.
+
+**The first batch (Nov 12, 2026): six, checked, in `ideas/backlog/survival/`.** Each is in a different kind of place, and three end with everyone out: the Quecreek mine (nine miners drilled out, 2002), the Riesending cave (a caver carried up a kilometre over 11 days, 2014), a Denali crevasse (cut out of the ice, 2017), the Johnson Sea Link submersible (two of four died, 1973), the Viking Islay chain locker (three sailors, 2007) and Soyuz 11 (three cosmonauts, 1971).
+
+The fact-checker passed none as written and dropped none. What it changed, and what's worth keeping as a lesson for this category:
+- **Blame went wrong twice, both times against people who can't answer.** The chain locker card called testing the air "the one thing nobody did first"; the report says the ship had no working oxygen meter, and the company was fined for it while the master was acquitted. The submersible card named the pilot and gave only the harsher of the report's two findings. Both now say what each inquiry found, and no more.
+- **One source's figure isn't the figure.** Soyuz 11's landing place, height and the time the air took were each NASA's feature against Soviet records; the cards now give the better-sourced figure and list the others in `how_known`. Quecreek's times differ by minutes between the federal and state reports, and the card says so.
+- **Wording firmer than the source** ("the nearest doctor was three and a half days away", "he comes round", "all nine tied themselves together") was brought back to what the accounts say.
+
+Still unsettled, on the cards as "To settle before it's written": the full Coast Guard and safety board report on the submersible and the paper on the Denali rescue couldn't be opened; no source shows the submersible boards' recommendations adopted; and of Soyuz 11's seven steps only two were the crew's own choices, which the owner should weigh against "every small choice that led there".
+
+How long each would run at the Reel's pace, by the researcher's estimate from the outline: the chain locker and Soyuz 11 fit under three minutes whole; the others run 3:15 to a little over 4 minutes, each with a note on what to cut.
+
+**Next:** the owner takes or turns down each. Still open with them: which channel, and length (one video; possibly under three minutes on Instagram). No renderer exists for the cutaway look, and none is started until an idea is taken.
 
 ## How a systems short is made (phase 30)
 

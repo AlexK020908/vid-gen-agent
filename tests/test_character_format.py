@@ -158,6 +158,32 @@ def test_scenes_have_to_cover_the_short_exactly():
     assert "character" in " ".join(check({"scenes": [wrong]}))       # only who it cast
 
 
+def test_what_a_scene_leaves_is_what_the_next_one_starts_with():
+    tank = {"type": "prop", "prop": "water_tank", "on": "set", "at": [0, 0], "level": 0.1}
+    scene = lambda a, b, entry, happens=(), **more: {"from": a, "to": b, "set": "sky_counter", "cast": {"tank": entry}, "happens": list(happens), **more}
+    carry = lambda *scenes: " ".join(short._carry_problems(list(scenes)))
+    fills = [{"do": "fill", "prop": "tank", "t": 0.5, "over": 1.0, "level": 0.3}]
+    assert carry(scene(0, 2, tank, fills), scene(2, 4, {**tank, "level": 0.3})) == ""                    # it starts as full as it was left
+    assert "left it at 0.3" in carry(scene(0, 2, tank, fills), scene(2, 4, tank))                          # it's emptied itself across the cut
+    assert "left it at 0.3" in carry(scene(0, 2, tank, fills), {"from": 2, "to": 3, "set": "gym", "cast": {}}, scene(3, 4, tank))    # and a scene without it between doesn't excuse that
+    assert carry(scene(0, 2, tank, fills), scene(2, 4, tank, anew=["tank"])) == ""                         # unless the scene says it starts afresh
+    assert "starts full" in carry(scene(0, 2, tank), scene(2, 4, {k: v for k, v in tank.items() if k != "level"}))
+    assert "somewhere else" in carry(scene(0, 2, tank), scene(2, 4, {**tank, "at": [0.4, 0]}))            # it's jumped along the counter
+    slid = [{"do": "slide", "prop": "tank", "t": 0.5, "over": 1.0, "by": [0.4, 0, 0]}]
+    assert carry(scene(0, 2, tank, slid), scene(2, 4, {**tank, "at": [0.4, 0]})) == ""                    # something moved it
+    assert "back where scene 1 started it" in carry(scene(0, 2, tank, slid), scene(2, 4, tank))            # it's snapped back
+    there_and_back = slid + [{"do": "slide", "prop": "tank", "t": 1.5, "over": 0.4, "by": [-0.4, 0, 0]}]
+    assert carry(scene(0, 2, tank, there_and_back), scene(2, 4, tank)) == ""                                # unless it was seen sliding back
+    set_down = [{"do": "slide", "prop": "tank", "t": 2.1, "over": 0.5, "from": [-0.4, 0, 0]}]
+    assert carry(scene(0, 2, tank), scene(2, 4, {**tank, "at": [0.4, 0]}, set_down)) == ""                # it's set down there in the picture
+    assert carry(scene(0, 2, tank), scene(2, 4, {**tank, "at": [0.4, 0]}, set="sky_set")) == ""           # another place says nothing about this one
+    assert carry(scene(0, 2, tank), scene(2, 4, {**tank, "prop": "mercury_dish", "at": [0.4, 0]})) == ""  # nor does the same name on another thing
+    assert "anew" not in short.local(scene(0, 2, tank, anew=["tank"]))                                     # and the stage never sees `anew`
+    whole = short.check({"scenes": [scene(0, 2, tank, fills, shots=[{"t": 0, "on": "tank:surface", "frame": 0.5}]),
+                                    scene(2, 4, tank, shots=[{"t": 2, "on": "tank:surface", "frame": 0.5}])]}, 4.0, [], [], {})
+    assert "left it at 0.3" in " ".join(whole)                                                             # a direction's check refuses it
+
+
 def test_every_line_gets_room_and_a_question_gets_more():
     scenes = [{"narration": "Why?", "beat_idx": 0}, {"narration": "One.", "beat_idx": 0}, {"narration": "Two.", "beat_idx": 0},
               {"narration": "But three.", "beat_idx": 1}]
@@ -397,6 +423,17 @@ def test_a_line_is_one_step_as_long_as_the_owners_star_shorts_run():
     assert "line 1 is 24 words" in " ".join(checks.short_script([line(1, 24), line(2, 20), line(3, 10), line(3, 10)], built))
     sixteen = [line(1, 8)] * 6 + [line(2, 8)] * 5 + [line(3, 8)] * 5
     assert checks.short_script(sixteen, built) == []
+
+
+def test_a_short_inside_its_word_limit_is_still_refused_when_long_words_would_run_it_over_time():
+    from providers import checks
+    built = Answers([OUTLINE]).outline(SHORTS, "Woodpeckers", [], None, NoMeter())
+    line = lambda beat, word: {"beat": beat, "narration": " ".join([word] * 11) + ".", "shows": "a beak"}
+    short_words = [line(1, "word")] * 5 + [line(2, "word")] * 5 + [line(3, "word")] * 4         # 154 words of four letters
+    long_words = [line(1, "counterweight")] * 5 + [line(2, "counterweight")] * 5 + [line(3, "counterweight")] * 4
+    assert checks.short_script(short_words, built) == []
+    assert checks.short_seconds(long_words) > checks.SHORT_SECONDS_MOST
+    assert "read at the channel's pace" in " ".join(checks.short_script(long_words, built))
 
 
 def test_a_short_gets_its_own_prompts_and_the_cards_shape():
@@ -779,6 +816,6 @@ def test_a_jump_between_frames_is_found_unless_a_cut_was_planned_there(tmp_path)
 
 def test_what_the_frame_reviewer_finds_goes_back_to_the_director_and_then_the_owner_sees_it(tmp_path, monkeypatch):
     from stages import film
-    assert film.MOST_FRAME_REVIEWS == 2
+    assert film.MOST_FRAME_REVIEWS == 3
     source = Path(film.__file__).read_text(encoding="utf-8")
     assert "_review(ctx, conn, video, channel, out, direction, clock)" in source and '"reviewed": draft.get("reviewed", 0) + 1' in source

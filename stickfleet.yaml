@@ -76,6 +76,10 @@ render:
   x264_preset: null   # Remotion's encoder speed (veryfast ... medium); null = medium
   pause_ms: 400       # silence after each scene's line while its picture holds, so it lands before the next one
   new_day_pause_ms: 1000   # the longer one when the next scene starts a new day or beat, and at the end
+  limits:             # the most a render may take of this computer (render/limits.py); the owner's ask, Nov 12, 2026
+    cores: 12         # processor cores Blender may run on, of this machine's 24 (the last ones); null = all of them
+    processes: 2      # Blender processes side by side on a film rendered in parts (render/film_parts.py); each holds about 3 GB
+    priority: below_normal   # anything else open is served first; normal = no yielding
 
 blender:              # machine shorts (SHORTS.md): Blender 5.2 LTS renders each shot with EEVEE on the GPU
   path: tools/blender-5.2.3-windows-x64/blender.exe   # the portable zip from blender.org, unzipped; gitignored

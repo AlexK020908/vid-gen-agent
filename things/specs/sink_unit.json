@@ -1,0 +1,165 @@
+{
+ "what": "a deep white sink on a white cabinet, 86 cm high, with brown water in the bottom of it",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "cabinet",
+    "kind": "box",
+    "size": [
+     0.78,
+     0.56,
+     0.6
+    ],
+    "at": [
+     0,
+     0,
+     0.3
+    ],
+    "material": {
+     "color": [
+      0.88,
+      0.88,
+      0.87
+     ],
+     "rough": 0.3,
+     "coat": 0.5
+    },
+    "bevel": 0.004
+   },
+   {
+    "id": "hollow",
+    "kind": "box",
+    "size": [
+     0.64,
+     0.46,
+     0.24
+    ],
+    "at": [
+     0,
+     0,
+     0.745
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "sink",
+    "kind": "box",
+    "size": [
+     0.74,
+     0.54,
+     0.26
+    ],
+    "at": [
+     0,
+     0,
+     0.73
+    ],
+    "material": {
+     "color": [
+      0.86,
+      0.86,
+      0.84
+     ],
+     "rough": 0.22,
+     "coat": 0.6
+    },
+    "bevel": 0.012,
+    "subtract": [
+     "hollow"
+    ]
+   },
+   {
+    "id": "water",
+    "kind": "box",
+    "size": [
+     0.6395,
+     0.4595,
+     0.06
+    ],
+    "at": [
+     0,
+     0,
+     0.6505
+    ],
+    "material": {
+     "color": [
+      0.36,
+      0.22,
+      0.08
+     ],
+     "rough": 0.04,
+     "clear": 0.5
+    },
+    "liquid": true
+   },
+   {
+    "id": "tap_post",
+    "kind": "box",
+    "size": [
+     0.03,
+     0.03,
+     0.16
+    ],
+    "at": [
+     0,
+     0.25,
+     0.94
+    ],
+    "material": "chrome"
+   },
+   {
+    "id": "tap_spout",
+    "kind": "pipe",
+    "path": [
+     [
+      0,
+      0.25,
+      1.01
+     ],
+     [
+      0,
+      0.12,
+      1.01
+     ],
+     [
+      0,
+      0.12,
+      0.97
+     ]
+    ],
+    "r": 0.012,
+    "bend": 0.03,
+    "material": "chrome"
+   }
+  ]
+ },
+ "spots": {
+  "basin": [
+   0,
+   0,
+   0.6205
+  ],
+  "water": [
+   0,
+   0,
+   0.65
+  ],
+  "top": [
+   0,
+   0,
+   0.86
+  ],
+  "front": [
+   0,
+   -0.28,
+   0.73
+  ],
+  "middle": [
+   0,
+   0,
+   0.43
+  ]
+ }
+}

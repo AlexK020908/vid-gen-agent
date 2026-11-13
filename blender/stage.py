@@ -1326,6 +1326,9 @@ class Stage:
                         self._fit_inside(cid)
                     else:
                         self._fix_to(cid)
+                        other = below[cid]         # what's fixed to something that moves goes with it: a drum in a tub that hops, blades on a hub that turns
+                        if other in self.props and (self.props[other].get("carried") or any(e.get("prop") == other and e["do"] in MOVERS for e in self.events)):
+                            self._carry(cid, self.props[other]["root"])
                     waiting.remove(cid)
         if waiting:
             raise Refused([f"{', '.join(waiting)} are each resting on the other"])
@@ -2138,13 +2141,20 @@ class Stage:
             root.keyframe_insert("rotation_quaternion", frame=f)
             p["track"][f] = (here.copy(), tumble.copy())
 
-    def _sparks(self, at: Vector, frame: int, count: int = 26, kind: str = "sparks", slow: float = SLOW, away=None) -> None:
-        """Bright chips thrown from a hit, or chips of what was hit, each falling under gravity on its own arc, at this share of real speed: slow motion, by default."""
+    def _sparks(self, at: Vector, frame: int, count: int = 26, kind: str = "sparks", slow: float = SLOW, away=None, life_s=None, size: float = 1.0) -> None:
+        """Bright chips thrown from a hit, or chips of what was hit, or drops of water flung off something wet, each falling under gravity on its
+        own arc, at this share of real speed: slow motion, by default. `life_s`: seconds each lasts, so drops can stop where a wall would take them."""
         rng = random.Random(frame)
-        wood = kind == "chips"
+        wood, wet = kind == "chips", kind == "drops"
         for i in range(count):
-            chip = _splinter(f"Spark{frame}.{i}", rng, at) if wood else shapes.box(f"Spark{frame}.{i}", (0.003, 0.003, rng.uniform(0.01, 0.03)), "spark", at=at)
-            velocity = Vector((rng.uniform(-1, 1), rng.uniform(-1, 0.1), rng.uniform(0.15, 1.1))).normalized() * rng.uniform(0.8, 2.6)
+            if wet:
+                chip = shapes.sphere(f"Spark{frame}.{i}", rng.uniform(0.0025, 0.0045) * size, "water_drop", at=at, segments=12)
+            else:
+                chip = _splinter(f"Spark{frame}.{i}", rng, at) if wood else shapes.box(f"Spark{frame}.{i}", (0.003, 0.003, rng.uniform(0.01, 0.03)), "spark", at=at)
+            if wet:                   # drops fly straight on, close to the way they were flung, where chips scatter
+                velocity = Vector((rng.uniform(-0.3, 0.3), -1.0, rng.uniform(-0.2, 0.2))).normalized() * rng.uniform(0.8, 2.6)
+            else:
+                velocity = Vector((rng.uniform(-1, 1), rng.uniform(-1, 0.1), rng.uniform(0.15, 1.1))).normalized() * rng.uniform(0.8, 2.6)
             if away:                  # they fly off the surface they came from, whichever way that faces
                 velocity = Vector((0, -1, 0)).rotation_difference(Vector(away).normalized()) @ velocity
             chip.rotation_mode = "QUATERNION"
@@ -2152,7 +2162,7 @@ class Stage:
             chip.scale = (0, 0, 0)
             chip.keyframe_insert("scale", frame=frame - 1)
             chip.keyframe_insert("location", frame=frame - 1)
-            life = rng.randint(45, 70)
+            life = max(2, round(life_s * 30 * rng.uniform(0.8, 1.0))) if life_s else rng.randint(45, 70)
             for f in range(frame, frame + life + 1, 2):
                 t = (f - frame) / 30.0 * slow
                 chip.location = at + velocity * t + Vector((0, 0, -9.81)) * (0.5 * t * t)
@@ -2160,6 +2170,8 @@ class Stage:
                 chip.scale = (s, s, s)
                 chip.keyframe_insert("location", frame=f)
                 chip.keyframe_insert("scale", frame=f)
+            chip.scale = (0, 0, 0)
+            chip.keyframe_insert("scale", frame=frame + life + 1)
 
     def _glow(self, e: dict) -> None:
         person = self.people[e["who"]]
@@ -2194,7 +2206,7 @@ class Stage:
     def _tint(self, e: dict) -> None:
         p = self.props[e["prop"]]
         end = self.frame(e["to"]) if "to" in e else self.total
-        glow.tint(bounds.meshes_of(p["root"]), e["color"], self.frame(e["t"]), end, float(e.get("amount", 1.0)))
+        glow.tint(bounds.meshes_of(p["root"]), e["color"], self.frame(e["t"]), end, float(e.get("amount", 1.0)), mix=bool(e.get("mix")))
 
     def _ghost(self, e: dict) -> None:
         begin, end = self.frame(e["t"]), self.frame(e["to"]) if "to" in e else self.total
@@ -2369,7 +2381,8 @@ class Stage:
             elif kind == "rings":
                 self._clean_rings(e, f, self.aim(e["on"], f), self._facing_shot(e["t"]))
             elif kind == "sparks":
-                self._sparks(self.aim(e["on"], f), f, kind=e.get("kind", "sparks"), count=int(e.get("count", 26)), slow=float(e.get("slow", SLOW)), away=e.get("away"))
+                self._sparks(self.aim(e["on"], f), f, kind=e.get("kind", "sparks"), count=int(e.get("count", 26)), slow=float(e.get("slow", SLOW)), away=e.get("away"),
+                             life_s=float(e["life"]) if "life" in e else None, size=float(e.get("size", 1.0)))
             elif kind == "pour":
                 self._pour(e)
             elif kind == "air":

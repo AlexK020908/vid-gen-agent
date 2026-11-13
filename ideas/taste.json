@@ -25,6 +25,21 @@
    "date": "2026-11-08",
    "about": "which cases the mystery and crime channels re-stage, asked as a choice",
    "their_words": "Old real mysteries, Real murder cases, Invented cases"
+  },
+  {
+   "date": "2026-11-12",
+   "about": "wartime as a kind of idea, of the reference's Reel \"Why Soldiers Put Grenades In Glass Cups\"",
+   "their_words": "thi sis intersting too becauase it describes what happened or happens during war time, whihc nmight not exist anymore but is very interseting. Or smt like traps used in vietnam wars is pretty cool"
+  },
+  {
+   "date": "2026-11-12",
+   "about": "what kind of wartime idea, said after hearing the first six (a smokeless kitchen, trap markers, a fake head for a sniper, fire along a runway, a bridge by parachute, a dammed river)",
+   "their_words": "i think ppl would be more inetesretd in startegies used in war times like in WW2, there was chemical warefare right? there must be a lot of stargies in that area, or in the japan china war, how mao was hiding while the oher party fought japan and came to finish up the fivht because the other side was wounded, or the boogy traps use din vietnam war, or how japan used to fly planes into ships et cetc, idk"
+  },
+  {
+   "date": "2026-11-12",
+   "about": "survival stories like the cave Reel (theforgottenarchives): asked whether they want them made and on which channel, long and in parts or one short, and how real deaths are handled",
+   "their_words": "i want them made yea, long but not in paerts, the bvideo should o er everything, yea for real deaths, we wanna document it, and still show dead bodies in animated form like those videos, but yea"
   }
  ],
  "entries": [
@@ -629,6 +644,1272 @@
      "frog"
     ]
    }
+  },
+  {
+   "date": "2026-11-10",
+   "category": "inventions",
+   "verdict": "took",
+   "idea": "A balloon let go across a room, fixed step by step into the jet engine under most airliners",
+   "their_words": [
+    "lets do the touch screne and all os the ones you have shown in parralal sub agnts, ill heck the result later"
+   ],
+   "terms": [
+    "jet engine"
+   ],
+   "card": {
+    "topic": "A balloon let go across a room, fixed step by step into the jet engine under most airliners",
+    "hook": "Let go of a balloon and it flies. Now make it fly a plane.",
+    "first_picture": "A blown-up balloon let go in a living room, zooming across it with air rushing out of its neck.",
+    "everyday": "Letting go of a blown-up balloon and watching it zoom off.",
+    "goal": "Make a balloon push a plane, and never run out.",
+    "steps": [
+     "It's flat in two seconds and the plane drops, so you stop carrying air and grab it from in front with a spinning fan in a tube: the compressor.",
+     "The fan alone gives a feeble push, so you spray fuel into the squeezed air and light it, and it swells and blasts out of the back: the burner.",
+     "The engine spinning the fan weighs as much as an ordinary engine giving the same push, so you put a windmill in the blast on the fan's own shaft, and the fire spins its own fan: the turbine.",
+     "It's deafening and gulps fuel, so a second turbine at the back, on a shaft running inside the first, turns a giant fan at the front that blows most of the air round the outside, for more push from the same fuel: the turbofan."
+    ],
+    "invention": "the jet engine",
+    "seen_it": "Under the wings of most airliners, and roaring at any airport.",
+    "cycle": "suck, squeeze, bang, blow",
+    "inside": "The engine cut in half lengthways: air as blue balls squeezed through rows of blades, the flame in the middle, the turbines spun by the blast, the inner shaft glowing to show the back turbine turning the fan.",
+    "needs": [
+     "a balloon",
+     "an airliner",
+     "a jet engine cut in half: fan, compressor blades, burner, and two turbines on two shafts, one inside the other",
+     "a piston engine spinning a fan in a tube",
+     "air as moving balls",
+     "a flame and a hot blast",
+     "a fuel gauge dropping"
+    ],
+    "ending": "An airliner lifting off, one engine cut open to show the giant fan, the blades squeezing the air, the flame and both turbines turning at once: \"Congratulations, you just built a jet engine.\"",
+    "shape": "you_invent",
+    "source": "NASA Glenn Research Center's guide to how a jet engine works: a fan sucks air in, the compressor raises its pressure, fuel is sprayed in and lit, the burning gases blast out of the nozzle, the turbine is on the same shaft as the compressor, and in a turbofan most of the air flows round the outside, quieter and with more thrust for the same fuel. NASA's turbofan page (https://www.grc.nasa.gov/www/k-12/airplane/aturbf.html): the fan has its own turbine on a second shaft, which runs through the core's shaft. Frank Whittle's route (Wikipedia, Frank Whittle): in his 1928 Cranwell thesis a piston engine drove a compressor; he dropped it once his sums showed it would weigh as much as an ordinary engine of the same thrust, and asked \"Why not substitute a turbine for the piston engine?\"; he filed patent GB 347,206 on 16 January 1930. The Heinkel He 178 first flew on a turbine jet on 27 August 1939; Italy's piston-driven Caproni Campini N.1 still flew in 1940, slower than many ordinary planes of its day (Wikipedia, citing Alegi 2014 and Pavelec 2007).",
+    "source_url": "https://www.grc.nasa.gov/www/k-12/UEET/StudentSite/engines.html",
+    "terms": [
+     "jet engine"
+    ],
+    "like": [
+     "How A Fly-Powered Plane Works",
+     "She Threw Coins Into A Plane Engine"
+    ]
+   },
+   "reading": "Taken Nov 10 with all six shown and the touchscreen; scripts made in parallel first"
+  },
+  {
+   "date": "2026-11-10",
+   "category": "inventions",
+   "verdict": "took",
+   "idea": "A brick on a wall, fixed step by step into the tower crane that climbs its own tower",
+   "their_words": [
+    "lets do the touch screne and all os the ones you have shown in parralal sub agnts, ill heck the result later"
+   ],
+   "terms": [
+    "tower crane"
+   ],
+   "card": {
+    "topic": "A brick on a wall, fixed step by step into the tower crane that climbs its own tower",
+    "hook": "Put a brick on a wall. Now make the wall three hundred metres tall.",
+    "first_picture": "A hand setting one brick on top of a low brick wall.",
+    "everyday": "Lifting a brick, a box or a block up onto something taller.",
+    "goal": "Get the bricks to the top as the tower grows.",
+    "steps": [
+     "You can't reach, so you stand a tall pole beside the wall with a rope over a wheel at the top: the mast and hoist.",
+     "It only lifts straight up beside the pole, so you lay a long arm across the top with a trolley that runs out along it: the jib.",
+     "A heavy load out on the arm tips the whole tower over, so a short arm sticks out of the back stacked with concrete blocks: the counterweight.",
+     "It can only reach one side, so the arms sit on a giant turntable and swing all the way round: the slewing ring.",
+     "The building grows past the crane, so a frame round the tower jacks the top up, and the crane hoists the next piece of its own tower into the gap and bolts it in: the climbing frame.",
+     "Past about 80 metres it can't stand on its own, so as it climbs it's tied to the building with steel collars: the tie-ins."
+    ],
+    "invention": "the tower crane",
+    "seen_it": "Over every city building site, often standing taller than the building it's making.",
+    "cycle": "jack up, hoist in, bolt, repeat",
+    "inside": "The mast as an open steel lattice; the climbing frame's ram made glass so the push shows; glows on the load and the counterweight pulling against each other until they balance.",
+    "needs": [
+     "a hand and bricks",
+     "a skyscraper growing floor by floor",
+     "a tower crane: lattice mast, jib with trolley, counter-jib with concrete blocks, slewing ring, cab",
+     "a climbing frame with a hydraulic ram",
+     "a mast section on the hook",
+     "glows for the load's and the counterweight's pull",
+     "the crane toppling, with no one near",
+     "steel collars tying the mast to the building"
+    ],
+    "ending": "The tower nearly finished, the crane standing above it with its mast collared to the building's side, jacking its top up and hoisting the next piece of its own tower into the gap: \"Congratulations, you just built a tower crane.\"",
+    "shape": "you_invent",
+    "source": "Liebherr's patent US 10,273,122, 'Climbing device for a tower crane' (2019): the crane's upper part is released from the top tower section and held by a climbing frame, which a hydraulic cylinder pushes up so a further tower section fits into the gap, and the sections are hoisted by the crane itself. Wikipedia (Tower crane): the counter-jib carries a counterweight, usually of concrete blocks, to keep the centre of gravity over the tower; a tower crane's maximum unsupported height is about 265 ft (80 m), and tied to the building as the building rises it can reach nearly any height. Hans Liebherr built his first tower crane, the TK 10, in 1949 (Liebherr's history).",
+    "source_url": "https://patents.google.com/patent/US10273122",
+    "terms": [
+     "tower crane"
+    ],
+    "like": [
+     "How Tunnel Boring Machines Get Out",
+     "He Got Stuck On A Crane 36 Stories Up"
+    ]
+   },
+   "reading": "Taken Nov 10 with all six shown and the touchscreen; scripts made in parallel first"
+  },
+  {
+   "date": "2026-11-10",
+   "category": "inventions",
+   "verdict": "took",
+   "idea": "A wheelbarrow sinking in mud, fixed step by step into the caterpillar track",
+   "their_words": [
+    "lets do the touch screne and all os the ones you have shown in parralal sub agnts, ill heck the result later"
+   ],
+   "terms": [
+    "caterpillar track"
+   ],
+   "card": {
+    "topic": "A wheelbarrow sinking in mud, fixed step by step into the caterpillar track",
+    "hook": "A wheelbarrow sinks into mud. Now make it as heavy as a lorry.",
+    "first_picture": "A wheelbarrow full of bricks, its wheel sunk to the axle in mud.",
+    "everyday": "Pushing a loaded wheelbarrow, pram or bike onto soft ground and the wheel sinking in.",
+    "goal": "Get a machine as heavy as a lorry across a bog.",
+    "steps": [
+     "All the weight presses on one small patch of mud, so you make the wheels wider: Benjamin Holt's steam tractor, before 1904, got wheels sticking 18 feet out on each side, and it couldn't fit through a gate, cross a bridge or turn round, and it still sank.",
+     "So you lay planks on the mud to spread the weight, as armies did in the Boer War, but someone has to keep carrying the last plank round to the front.",
+     "So you fix the planks round the wheel's rim, and the wheel lays its own as it rolls: the endless railway wheel, 1846.",
+     "So you bolt the planks to a chain loop round the wheels, and a toothed wheel turns it, laying planks down in front and picking them up behind: the track."
+    ],
+    "invention": "the caterpillar track",
+    "seen_it": "Under diggers and bulldozers on building sites, and under tanks.",
+    "cycle": "lay down, roll over, pick up, carry round",
+    "inside": "A cut through the mud: a red glow of pressure under the one sinking wheel, spread to a faint glow under the whole track; the track loop see-through so the toothed wheel and rollers show.",
+    "needs": [
+     "a wheelbarrow of bricks in mud",
+     "an early steam tractor",
+     "extra wheels 18 feet out each side, and a farm gate",
+     "a wheel with flat boards round its rim",
+     "planks",
+     "a track: wooden slats on endless chains with a toothed wheel",
+     "soft mud in a cutaway",
+     "glows for the weight pressing down"
+    ],
+    "ending": "The steam tractor crawling across the bog on its loop of planks, laying them down in front and picking them up behind, then the same loop turning under a modern digger: \"Congratulations, you just built the caterpillar track.\"",
+    "shape": "ladder",
+    "source": "Farm Collector, 'Invention of the crawler tractor' (Sam Moore, 1999, citing Farm Implement News, 18 May 1905, and C. Parker Holt): in the peat bogs of California's Delta, Benjamin Holt bolted on drive wheels that stuck out 18 feet on each side, and the machine couldn't go through gates, cross bridges or turn round and still buried itself in the peat; on 24 November 1904 his engine No. 77 ran on tracks of wooden slats bolted to endless link chains, driven by sprockets. Caterpillar's own history tells the same test. Wikipedia (Continuous track): armies in the Boer War laid plank roads under wheels; James Boydell's 1846 'endless railway wheel' had flat feet round its rim to spread the weight, and was used in the Crimean War and on Burrell's engines from 1856 to 1862; Lombard's tracked log hauler ran in 1901.",
+    "source_url": "https://www.farmcollector.com/company-history/invention-of-the-crawler-tractor/",
+    "terms": [
+     "caterpillar track"
+    ],
+    "like": [
+     "Why The Hopping Tank Was Never Built",
+     "What If The Wheel Was Never Invented?"
+    ]
+   },
+   "reading": "Taken Nov 10 with all six shown and the touchscreen; scripts made in parallel first"
+  },
+  {
+   "date": "2026-11-10",
+   "category": "inventions",
+   "verdict": "took",
+   "idea": "A playground slide made a hundred times taller, fixed step by step into a roller coaster",
+   "their_words": [
+    "lets do the touch screne and all os the ones you have shown in parralal sub agnts, ill heck the result later"
+   ],
+   "terms": [
+    "roller coaster",
+    "lift hill"
+   ],
+   "card": {
+    "topic": "A playground slide made a hundred times taller, fixed step by step into a roller coaster",
+    "hook": "Whoosh down a playground slide. Now make it a hundred times taller.",
+    "first_picture": "A playground slide, a grown-up whooshing down it.",
+    "everyday": "Going down a playground slide.",
+    "goal": "Ride the giant slide safely, and go again.",
+    "steps": [
+     "Straight down from that height you'd hit the ground as fast as a racing car, so at the bottom the rails swoop back up and your speed carries you up the next hill instead of into the ground, in a car with wheels on rails: the track.",
+     "Over the top of a hill the car flies up off the rails, so a second set of wheels runs underneath the rail and holds it on: the upstop wheels.",
+     "At the end you're at the bottom, and someone has to haul you back up (on a Pennsylvania coal railway that became one of the first rides, mules did it), so a motor drags the car up the first hill on a chain: the lift hill.",
+     "If the chain snaps, the car rolls backwards down the hill, so a hook under the car rides up over teeth beside the chain and catches if it rolls back: the anti-rollback, clack, clack, clack."
+    ],
+    "invention": "the roller coaster",
+    "seen_it": "At every theme park and fair, clacking up its first hill.",
+    "cycle": "chain up, clack, drop, swoop, again",
+    "inside": "The car from the side with the rail cut through: running wheels on top, upstop wheels underneath; the hook dropping into the teeth in close-up on the lift hill.",
+    "needs": [
+     "a playground slide and a grown-up on it",
+     "a roller coaster car with running wheels and upstop wheels",
+     "track with a lift hill, hills and dips",
+     "a chain and motor",
+     "anti-rollback teeth and a hook",
+     "a crash-test dummy in the car"
+    ],
+    "ending": "The car clacking up the lift hill with a crash-test dummy in the front seat, over the top, down the drop and swooping up the next hill: \"Congratulations, you just built a roller coaster.\"",
+    "shape": "you_invent",
+    "source": "Lemelson-MIT on John A. Miller: his 1910 'safety chain dog' stopped cars rolling backwards down the lift hill if the pull chain broke, and became the clacking on the way up; his 1919 underfriction wheels keep cars locked to the track, so they can go fast, turn sharply and go upside down. Wikipedia (Lift hill): the clack is the anti-rollback catch passing over a toothed rack beside the chain, not the chain itself. Wikipedia (Mauch Chunk Switchback Railway): on the Pennsylvania coal railway that became one of the first thrill rides, mules hauled the cars back up until steam inclines took over in 1846 to 1847. Phillip Hinkle's powered chain lift, 1885, and Paris's 1817 rides with wheeled cars locked to the track (Wikipedia, History of the roller coaster). The racing-car speed in the first step is reasoned from the height, not sourced.",
+    "source_url": "https://lemelson.mit.edu/resources/john-miller",
+    "terms": [
+     "roller coaster",
+     "lift hill"
+    ],
+    "like": [
+     "Roller Coaster Without A Harness?",
+     "Why You Don't Fly Off Water Slides"
+    ]
+   },
+   "reading": "Taken Nov 10 with all six shown and the touchscreen; scripts made in parallel first"
+  },
+  {
+   "date": "2026-11-10",
+   "category": "inventions",
+   "verdict": "took",
+   "idea": "A thumb over a hose, fixed step by step into the sprinkler whose own jet knocks it round",
+   "their_words": [
+    "lets do the touch screne and all os the ones you have shown in parralal sub agnts, ill heck the result later"
+   ],
+   "terms": [
+    "impact sprinkler"
+   ],
+   "card": {
+    "topic": "A thumb over a hose, fixed step by step into the sprinkler whose own jet knocks it round",
+    "hook": "Put your thumb over a hose. Now water a whole football pitch.",
+    "first_picture": "A thumb over the end of a garden hose, the water fanning out across a lawn.",
+    "everyday": "Putting a thumb over a garden hose so the water sprays further.",
+    "goal": "Water the whole pitch without standing there.",
+    "steps": [
+     "You'd stand there all day, so you fix a nozzle on a stand, and it drowns one spot while the rest goes brown: the sprinkler head.",
+     "It has to turn slowly, a step at a time, so the long jet sweeps a whole circle, but there's no motor, so the jet itself hits a spoon on a swinging arm and knocks it away: the drive arm.",
+     "The arm would just stay out, so a spring snaps it back, and it whacks the nozzle round one small step and swings back into the jet: the arm spring.",
+     "The jet flies over the grass close by, which stays dry, so a pin pokes into the jet and breaks some of it into spray: the diffuser pin."
+    ],
+    "invention": "the impact sprinkler",
+    "seen_it": "On lawns, parks, golf courses and sports pitches, going tch, tch, tch as it ticks round.",
+    "cycle": "jet hits, arm flies, spring snaps back",
+    "inside": "Slow motion close up: the jet striking the spoon, the arm swinging out, the spring glowing as it pulls the arm back to strike the nozzle, the nozzle stepping round a notch.",
+    "needs": [
+     "a hand and a garden hose",
+     "a football pitch of grass, brown where it's dry",
+     "impact sprinklers: one in close-up (nozzle, drive arm with spoon, spring, diffuser pin), and six or more round the pitch",
+     "a water jet and spray",
+     "a person holding a hose, half asleep"
+    ],
+    "ending": "From above, a ring of them round the pitch, each ticking round its own circle until the whole field is green: \"Congratulations, you just built the impact sprinkler.\"",
+    "shape": "you_invent",
+    "source": "Orton Englehart's patent US 1,997,901, 'Water sprinkler' (filed 18 December 1933, granted 16 April 1935): the jet strikes a vane on a swinging arm, which swings away; a torsional spring brings it back to strike the nozzle arm, turning the sprinkler a small step, repeated until it has gone all the way round, so it slowly revolves and spreads water over a large area; a pin in the jet breaks some of it up to water the ground next to the sprinkler. The American Society of Agricultural and Biological Engineers made it a historic landmark (1990) for its slow rotation and even watering. One head waters one circle, so a pitch is ringed with several.",
+    "source_url": "https://patents.google.com/patent/US1997901A/en",
+    "terms": [
+     "impact sprinkler"
+    ],
+    "like": [
+     "How Fire Sprinklers Actually Work",
+     "How Gas Pumps Know When To Stop"
+    ]
+   },
+   "reading": "Taken Nov 10 with all six shown and the touchscreen; scripts made in parallel first"
+  },
+  {
+   "date": "2026-11-10",
+   "category": "inventions",
+   "verdict": "took",
+   "idea": "Scrubbing a shirt by hand, fixed step by step into a washing machine with concrete inside",
+   "their_words": [
+    "lets do the touch screne and all os the ones you have shown in parralal sub agnts, ill heck the result later"
+   ],
+   "terms": [
+    "washing machine",
+    "counterweight"
+   ],
+   "card": {
+    "topic": "Scrubbing a shirt by hand, fixed step by step into a washing machine with concrete inside",
+    "hook": "Scrub one muddy shirt in the sink. Now there's a mountain of them.",
+    "first_picture": "Two hands scrubbing a muddy T-shirt in a sink of brown water.",
+    "everyday": "Washing a dirty shirt by hand in a sink.",
+    "goal": "Get a mountain of muddy clothes clean.",
+    "steps": [
+     "Scrubbing them all takes all day, so you tip them into a drum with paddles that lift them up and drop them, and the fall does the beating: the drum.",
+     "They come out soaking and heavy, so you spin the drum fast and the water flies out through its holes: the spin.",
+     "The wet clothes clump to one side, and the machine bangs and walks across the floor (the first automatic home one, Bendix's of 1937, had to be bolted down), so you hang the tub the drum spins in on springs: the suspension.",
+     "On springs the tub swings about wildly, so you bolt blocks of concrete to it, about 25 kg in all, too heavy to throw around: the counterweight."
+    ],
+    "invention": "the washing machine",
+    "seen_it": "In your own kitchen or bathroom, thumping away on the spin.",
+    "cycle": "fill, tumble, drain, spin, stop",
+    "inside": "The machine's case made glass: the paddles lifting and dropping the clothes, water flying out of the drum's holes into the outer tub, the tub hanging on its springs and dampers, and concrete blocks bolted to the tub, one on top and one at the front.",
+    "needs": [
+     "hands and a muddy T-shirt in a sink",
+     "a mountain of laundry",
+     "a washing machine with a see-through case: the drum with paddles inside an outer tub hung on springs and dampers, and concrete blocks on the tub, one on top and one at the front or underneath",
+     "water as a liquid flying out of the drum",
+     "a machine shaking its way across a floor"
+    ],
+    "ending": "The machine thumping through its spin, the tub rocking on its springs while the concrete blocks hold it steady, the clean clothes whirling inside: \"Congratulations, you just built a washing machine, with concrete in it.\"",
+    "shape": "you_invent",
+    "source": "Washing machine (Wikipedia): in a front-loader the clothes are lifted by paddles on the drum wall and dropped; Henry Sidgier patented a rotating drum washer in Britain in 1782. That Bendix's 1937 home automatic had no drum suspension and had to be anchored to the floor rests on an uncited line in Wikipedia and on collectors' accounts (automaticwasher.org). The springs carry the outer tub, with the drum spinning inside it, and the counterweight is fastened to that tub (Electrolux patent US 7,520,147; Whitegoods Help); about 25 kg of concrete in all, usually in two blocks (New Atlas).",
+    "source_url": "https://en.wikipedia.org/wiki/Washing_machine",
+    "terms": [
+     "washing machine",
+     "counterweight"
+    ],
+    "like": [
+     "Cat Survives Washing Machine Cycle",
+     "Why Plastic Doesn't Dry In The Dishwasher"
+    ]
+   },
+   "reading": "Taken Nov 10 with all six shown and the touchscreen; scripts made in parallel first"
+  },
+  {
+   "date": "2026-11-10",
+   "category": "explainers",
+   "verdict": "took",
+   "idea": "The owner's idea: why a touchscreen ignores your gloved finger",
+   "their_words": [
+    "smt like maybe how touch screen works?"
+   ],
+   "terms": [
+    "touch screen",
+    "glove"
+   ],
+   "card": {
+    "topic": "The owner's idea: why a touchscreen ignores your gloved finger",
+    "hook": "Put gloves on in winter and your phone's screen ignores you, however hard you press.",
+    "first_picture": "A thick woollen glove pressing hard on a phone screen, and the screen doing nothing.",
+    "people_think": "The screen feels you pressing, so a glove is just too thick or too soft to press it properly.",
+    "truth": "The screen doesn't find your finger by pressing at all. Under the glass is a grid of see-through wires holding a little electric charge, and a bare fingertip draws some of that charge away into your body. A woollen or leather glove holds your fingertip a few millimetres further from the wires, through fibre and air that carry no charge, so it draws away far too little for the phone to count.",
+    "steps": [
+     "Under the glass are two layers of see-through wires, made of indium tin oxide: rows on one layer, columns on the other, crossing in a grid.",
+     "The phone charges one row at a time, and at every crossing some of that charge reaches across to the column.",
+     "A bare fingertip near a crossing draws some of the charge away into your body, so less reaches that column.",
+     "The phone charges every row in turn, over and over, finds the crossing that came up short, and that's where you touched.",
+     "A glove holds your fingertip a few millimetres further off, through wool or leather that carry no charge, so it draws away too little charge for the phone to notice, however hard you press."
+    ],
+    "turn": "Anything big, wet and salty draws charge like a finger. In South Korea's cold winter of 2010, phone users kept their gloves on and tapped with snack sausages, and the sausages' maker told a newspaper the sausage's convenience-store sales that December and January were up 39% on the same months a year before.",
+    "ending": "A glove with a patch of conductive thread sewn into its fingertip taps the screen, and the screen answers. Said: give the charge a path through the glove, and the screen finds your finger again.",
+    "inside": "A cut through the glass: rows and columns of thin glowing wire, charge as small balls crossing at each junction, a bright line sweeping row by row; a bare fingertip pulls balls away at one crossing and that spot lights up; a woollen glove as a thick gap that only a few balls reach across, too few to light the spot; the conductive thread as a bridge they can.",
+    "needs": [
+     "a person's hand",
+     "a phone",
+     "a woollen glove",
+     "a touchscreen glove with conductive thread in the fingertip",
+     "a snack sausage",
+     "a cutaway of the glass with its wire grid",
+     "charge as moving balls"
+    ],
+    "shape": "why_it_happens",
+    "source": "How the grid works: Apple's patent US 7,663,607, Multipoint touchscreen (Hotelling, Strickon and Huppi; filed 2004, granted 2010): ITO lines, rows driven one at a time, 'the object steals charge'. Gloves: background of US 9,851,794, Bulk resistive glove (2017); gloved fingers detected through thin gloves with a more sensitive scan: https://patents.google.com/patent/US9778742B2/en. Sausages: Etoday (Korea), 9 Feb 2010, quoting CJ CheilJedang's brand manager on Maxbong sales, Dec 2009 to Jan 2010.",
+    "source_url": "https://patents.google.com/patent/US7663607B2/en",
+    "terms": [
+     "touch screen",
+     "glove"
+    ],
+    "like": [
+     "How A Touch Screen Works",
+     "Why Dead People Can't Unlock Phones"
+    ]
+   },
+   "reading": "The owner's own idea (Nov 10), then 'lets do the touch screne and all os the ones you have shown'; told he made How A Touch Screen Works (2024) only after"
+  },
+  {
+   "date": "2026-11-11",
+   "category": "inventions",
+   "verdict": "turned_down",
+   "idea": "Scrubbing a shirt by hand, fixed step by step into a washing machine with concrete inside",
+   "their_words": [
+    "ion really like the washing machine idea"
+   ],
+   "terms": [
+    "washing machine",
+    "counterweight"
+   ],
+   "card": {
+    "topic": "Scrubbing a shirt by hand, fixed step by step into a washing machine with concrete inside",
+    "hook": "Scrub one muddy shirt in the sink. Now there's a mountain of them.",
+    "first_picture": "Two hands scrubbing a muddy T-shirt in a sink of brown water.",
+    "everyday": "Washing a dirty shirt by hand in a sink.",
+    "goal": "Get a mountain of muddy clothes clean.",
+    "steps": [
+     "Scrubbing them all takes all day, so you tip them into a drum with paddles that lift them up and drop them, and the fall does the beating: the drum.",
+     "They come out soaking and heavy, so you spin the drum fast and the water flies out through its holes: the spin.",
+     "The wet clothes clump to one side, and the machine bangs and walks across the floor (the first automatic home one, Bendix's of 1937, had to be bolted down), so you hang the tub the drum spins in on springs: the suspension.",
+     "On springs the tub swings about wildly, so you bolt blocks of concrete to it, about 25 kg in all, too heavy to throw around: the counterweight."
+    ],
+    "invention": "the washing machine",
+    "seen_it": "In your own kitchen or bathroom, thumping away on the spin.",
+    "cycle": "fill, tumble, drain, spin, stop",
+    "inside": "The machine's case made glass: the paddles lifting and dropping the clothes, water flying out of the drum's holes into the outer tub, the tub hanging on its springs and dampers, and concrete blocks bolted to the tub, one on top and one at the front.",
+    "needs": [
+     "hands and a muddy T-shirt in a sink",
+     "a mountain of laundry",
+     "a washing machine with a see-through case: the drum with paddles inside an outer tub hung on springs and dampers, and concrete blocks on the tub, one on top and one at the front or underneath",
+     "water as a liquid flying out of the drum",
+     "a machine shaking its way across a floor"
+    ],
+    "ending": "The machine thumping through its spin, the tub rocking on its springs while the concrete blocks hold it steady, the clean clothes whirling inside: \"Congratulations, you just built a washing machine, with concrete in it.\"",
+    "shape": "you_invent",
+    "source": "Washing machine (Wikipedia): in a front-loader the clothes are lifted by paddles on the drum wall and dropped; Henry Sidgier patented a rotating drum washer in Britain in 1782. That Bendix's 1937 home automatic had no drum suspension and had to be anchored to the floor rests on an uncited line in Wikipedia and on collectors' accounts (automaticwasher.org). The springs carry the outer tub, with the drum spinning inside it, and the counterweight is fastened to that tub (Electrolux patent US 7,520,147; Whitegoods Help); about 25 kg of concrete in all, usually in two blocks (New Atlas).",
+    "source_url": "https://en.wikipedia.org/wiki/Washing_machine",
+    "terms": [
+     "washing machine",
+     "counterweight"
+    ],
+    "like": [
+     "Cat Survives Washing Machine Cycle",
+     "Why Plastic Doesn't Dry In The Dishwasher"
+    ]
+   },
+   "reading": "Said Nov 11, 2026, after being handed the finished silent preview (four review rounds, no voice yet). They had taken it on Nov 10 in a batch of six without reading the scripts. No reason given yet. The short is shelved at the preview; nothing was spent."
+  },
+  {
+   "date": "2026-11-11",
+   "category": "inventions",
+   "verdict": "turned_down",
+   "idea": "Scrubbing a shirt by hand, fixed step by step into a washing machine with concrete inside",
+   "their_words": [
+    "ion really like the washing machine idea ... just feels boring"
+   ],
+   "terms": [
+    "washing machine",
+    "counterweight"
+   ],
+   "card": {
+    "topic": "Scrubbing a shirt by hand, fixed step by step into a washing machine with concrete inside",
+    "hook": "Scrub one muddy shirt in the sink. Now there's a mountain of them.",
+    "first_picture": "Two hands scrubbing a muddy T-shirt in a sink of brown water.",
+    "everyday": "Washing a dirty shirt by hand in a sink.",
+    "goal": "Get a mountain of muddy clothes clean.",
+    "steps": [
+     "Scrubbing them all takes all day, so you tip them into a drum with paddles that lift them up and drop them, and the fall does the beating: the drum.",
+     "They come out soaking and heavy, so you spin the drum fast and the water flies out through its holes: the spin.",
+     "The wet clothes clump to one side, and the machine bangs and walks across the floor (the first automatic home one, Bendix's of 1937, had to be bolted down), so you hang the tub the drum spins in on springs: the suspension.",
+     "On springs the tub swings about wildly, so you bolt blocks of concrete to it, about 25 kg in all, too heavy to throw around: the counterweight."
+    ],
+    "invention": "the washing machine",
+    "seen_it": "In your own kitchen or bathroom, thumping away on the spin.",
+    "cycle": "fill, tumble, drain, spin, stop",
+    "inside": "The machine's case made glass: the paddles lifting and dropping the clothes, water flying out of the drum's holes into the outer tub, the tub hanging on its springs and dampers, and concrete blocks bolted to the tub, one on top and one at the front.",
+    "needs": [
+     "hands and a muddy T-shirt in a sink",
+     "a mountain of laundry",
+     "a washing machine with a see-through case: the drum with paddles inside an outer tub hung on springs and dampers, and concrete blocks on the tub, one on top and one at the front or underneath",
+     "water as a liquid flying out of the drum",
+     "a machine shaking its way across a floor"
+    ],
+    "ending": "The machine thumping through its spin, the tub rocking on its springs while the concrete blocks hold it steady, the clean clothes whirling inside: \"Congratulations, you just built a washing machine, with concrete in it.\"",
+    "shape": "you_invent",
+    "source": "Washing machine (Wikipedia): in a front-loader the clothes are lifted by paddles on the drum wall and dropped; Henry Sidgier patented a rotating drum washer in Britain in 1782. That Bendix's 1937 home automatic had no drum suspension and had to be anchored to the floor rests on an uncited line in Wikipedia and on collectors' accounts (automaticwasher.org). The springs carry the outer tub, with the drum spinning inside it, and the counterweight is fastened to that tub (Electrolux patent US 7,520,147; Whitegoods Help); about 25 kg of concrete in all, usually in two blocks (New Atlas).",
+    "source_url": "https://en.wikipedia.org/wiki/Washing_machine",
+    "terms": [
+     "washing machine",
+     "counterweight"
+    ],
+    "like": [
+     "Cat Survives Washing Machine Cycle",
+     "Why Plastic Doesn't Dry In The Dishwasher"
+    ]
+   },
+   "reading": "Nov 11, 2026, on the finished silent preview. Asked what was off, they said only 'just feels boring'. My reading: a household appliance nobody wonders about, built up by sensible fixes (a drain, springs, a block of concrete) with no danger, no big force and no surprise on the way; the one surprise, concrete inside, comes in the last two seconds. The two they call star references have a stake in every beat: a bird that should be brain-damaged, a hammer the size of a building. They took it unread in a batch of six, so a yes to a batch isn't a yes to each idea."
+  },
+  {
+   "date": "2026-11-11",
+   "category": "inventions",
+   "verdict": "turned_down",
+   "idea": "A balloon let go across a room, fixed step by step into the jet engine under most airliners",
+   "their_words": [
+    "i think out of all the ideas touch screen is just better, its more engaging. I thik the other stuff is either boring or just wont catch much attention. I think how u frame it is important as well, despite of what kind of idea it is, like that nail thing"
+   ],
+   "terms": [
+    "jet engine"
+   ],
+   "card": {
+    "topic": "A balloon let go across a room, fixed step by step into the jet engine under most airliners",
+    "hook": "Let go of a balloon and it flies. Now make it fly a plane.",
+    "first_picture": "A blown-up balloon let go in a living room, zooming across it with air rushing out of its neck.",
+    "everyday": "Letting go of a blown-up balloon and watching it zoom off.",
+    "goal": "Make a balloon push a plane, and never run out.",
+    "steps": [
+     "It's flat in two seconds and the plane drops, so you stop carrying air and grab it from in front with a spinning fan in a tube: the compressor.",
+     "The fan alone gives a feeble push, so you spray fuel into the squeezed air and light it, and it swells and blasts out of the back: the burner.",
+     "The engine spinning the fan weighs as much as an ordinary engine giving the same push, so you put a windmill in the blast on the fan's own shaft, and the fire spins its own fan: the turbine.",
+     "It's deafening and gulps fuel, so a second turbine at the back, on a shaft running inside the first, turns a giant fan at the front that blows most of the air round the outside, for more push from the same fuel: the turbofan."
+    ],
+    "invention": "the jet engine",
+    "seen_it": "Under the wings of most airliners, and roaring at any airport.",
+    "cycle": "suck, squeeze, bang, blow",
+    "inside": "The engine cut in half lengthways: air as blue balls squeezed through rows of blades, the flame in the middle, the turbines spun by the blast, the inner shaft glowing to show the back turbine turning the fan.",
+    "needs": [
+     "a balloon",
+     "an airliner",
+     "a jet engine cut in half: fan, compressor blades, burner, and two turbines on two shafts, one inside the other",
+     "a piston engine spinning a fan in a tube",
+     "air as moving balls",
+     "a flame and a hot blast",
+     "a fuel gauge dropping"
+    ],
+    "ending": "An airliner lifting off, one engine cut open to show the giant fan, the blades squeezing the air, the flame and both turbines turning at once: \"Congratulations, you just built a jet engine.\"",
+    "shape": "you_invent",
+    "source": "NASA Glenn Research Center's guide to how a jet engine works: a fan sucks air in, the compressor raises its pressure, fuel is sprayed in and lit, the burning gases blast out of the nozzle, the turbine is on the same shaft as the compressor, and in a turbofan most of the air flows round the outside, quieter and with more thrust for the same fuel. NASA's turbofan page (https://www.grc.nasa.gov/www/k-12/airplane/aturbf.html): the fan has its own turbine on a second shaft, which runs through the core's shaft. Frank Whittle's route (Wikipedia, Frank Whittle): in his 1928 Cranwell thesis a piston engine drove a compressor; he dropped it once his sums showed it would weigh as much as an ordinary engine of the same thrust, and asked \"Why not substitute a turbine for the piston engine?\"; he filed patent GB 347,206 on 16 January 1930. The Heinkel He 178 first flew on a turbine jet on 27 August 1939; Italy's piston-driven Caproni Campini N.1 still flew in 1940, slower than many ordinary planes of its day (Wikipedia, citing Alegi 2014 and Pavelec 2007).",
+    "source_url": "https://www.grc.nasa.gov/www/k-12/UEET/StudentSite/engines.html",
+    "terms": [
+     "jet engine"
+    ],
+    "like": [
+     "How A Fly-Powered Plane Works",
+     "She Threw Coins Into A Plane Engine"
+    ]
+   },
+   "reading": "Nov 11, 2026, after the washing machine was built and turned down as boring. Said of the whole batch of six inventions at once, from one-line summaries. Their point is the frame as much as the subject: the nail's 'this is a nail, now make it a hundred times bigger'."
+  },
+  {
+   "date": "2026-11-11",
+   "category": "inventions",
+   "verdict": "turned_down",
+   "idea": "A brick on a wall, fixed step by step into the tower crane that climbs its own tower",
+   "their_words": [
+    "i think out of all the ideas touch screen is just better, its more engaging. I thik the other stuff is either boring or just wont catch much attention. I think how u frame it is important as well, despite of what kind of idea it is, like that nail thing"
+   ],
+   "terms": [
+    "tower crane"
+   ],
+   "card": {
+    "topic": "A brick on a wall, fixed step by step into the tower crane that climbs its own tower",
+    "hook": "Put a brick on a wall. Now make the wall three hundred metres tall.",
+    "first_picture": "A hand setting one brick on top of a low brick wall.",
+    "everyday": "Lifting a brick, a box or a block up onto something taller.",
+    "goal": "Get the bricks to the top as the tower grows.",
+    "steps": [
+     "You can't reach, so you stand a tall pole beside the wall with a rope over a wheel at the top: the mast and hoist.",
+     "It only lifts straight up beside the pole, so you lay a long arm across the top with a trolley that runs out along it: the jib.",
+     "A heavy load out on the arm tips the whole tower over, so a short arm sticks out of the back stacked with concrete blocks: the counterweight.",
+     "It can only reach one side, so the arms sit on a giant turntable and swing all the way round: the slewing ring.",
+     "The building grows past the crane, so a frame round the tower jacks the top up, and the crane hoists the next piece of its own tower into the gap and bolts it in: the climbing frame.",
+     "Past about 80 metres it can't stand on its own, so as it climbs it's tied to the building with steel collars: the tie-ins."
+    ],
+    "invention": "the tower crane",
+    "seen_it": "Over every city building site, often standing taller than the building it's making.",
+    "cycle": "jack up, hoist in, bolt, repeat",
+    "inside": "The mast as an open steel lattice; the climbing frame's ram made glass so the push shows; glows on the load and the counterweight pulling against each other until they balance.",
+    "needs": [
+     "a hand and bricks",
+     "a skyscraper growing floor by floor",
+     "a tower crane: lattice mast, jib with trolley, counter-jib with concrete blocks, slewing ring, cab",
+     "a climbing frame with a hydraulic ram",
+     "a mast section on the hook",
+     "glows for the load's and the counterweight's pull",
+     "the crane toppling, with no one near",
+     "steel collars tying the mast to the building"
+    ],
+    "ending": "The tower nearly finished, the crane standing above it with its mast collared to the building's side, jacking its top up and hoisting the next piece of its own tower into the gap: \"Congratulations, you just built a tower crane.\"",
+    "shape": "you_invent",
+    "source": "Liebherr's patent US 10,273,122, 'Climbing device for a tower crane' (2019): the crane's upper part is released from the top tower section and held by a climbing frame, which a hydraulic cylinder pushes up so a further tower section fits into the gap, and the sections are hoisted by the crane itself. Wikipedia (Tower crane): the counter-jib carries a counterweight, usually of concrete blocks, to keep the centre of gravity over the tower; a tower crane's maximum unsupported height is about 265 ft (80 m), and tied to the building as the building rises it can reach nearly any height. Hans Liebherr built his first tower crane, the TK 10, in 1949 (Liebherr's history).",
+    "source_url": "https://patents.google.com/patent/US10273122",
+    "terms": [
+     "tower crane"
+    ],
+    "like": [
+     "How Tunnel Boring Machines Get Out",
+     "He Got Stuck On A Crane 36 Stories Up"
+    ]
+   },
+   "reading": "Nov 11, 2026, after the washing machine was built and turned down as boring. Said of the whole batch of six inventions at once, from one-line summaries. Their point is the frame as much as the subject: the nail's 'this is a nail, now make it a hundred times bigger'."
+  },
+  {
+   "date": "2026-11-11",
+   "category": "inventions",
+   "verdict": "turned_down",
+   "idea": "A wheelbarrow sinking in mud, fixed step by step into the caterpillar track",
+   "their_words": [
+    "i think out of all the ideas touch screen is just better, its more engaging. I thik the other stuff is either boring or just wont catch much attention. I think how u frame it is important as well, despite of what kind of idea it is, like that nail thing"
+   ],
+   "terms": [
+    "caterpillar track"
+   ],
+   "card": {
+    "topic": "A wheelbarrow sinking in mud, fixed step by step into the caterpillar track",
+    "hook": "A wheelbarrow sinks into mud. Now make it as heavy as a lorry.",
+    "first_picture": "A wheelbarrow full of bricks, its wheel sunk to the axle in mud.",
+    "everyday": "Pushing a loaded wheelbarrow, pram or bike onto soft ground and the wheel sinking in.",
+    "goal": "Get a machine as heavy as a lorry across a bog.",
+    "steps": [
+     "All the weight presses on one small patch of mud, so you make the wheels wider: Benjamin Holt's steam tractor, before 1904, got wheels sticking 18 feet out on each side, and it couldn't fit through a gate, cross a bridge or turn round, and it still sank.",
+     "So you lay planks on the mud to spread the weight, as armies did in the Boer War, but someone has to keep carrying the last plank round to the front.",
+     "So you fix the planks round the wheel's rim, and the wheel lays its own as it rolls: the endless railway wheel, 1846.",
+     "So you bolt the planks to a chain loop round the wheels, and a toothed wheel turns it, laying planks down in front and picking them up behind: the track."
+    ],
+    "invention": "the caterpillar track",
+    "seen_it": "Under diggers and bulldozers on building sites, and under tanks.",
+    "cycle": "lay down, roll over, pick up, carry round",
+    "inside": "A cut through the mud: a red glow of pressure under the one sinking wheel, spread to a faint glow under the whole track; the track loop see-through so the toothed wheel and rollers show.",
+    "needs": [
+     "a wheelbarrow of bricks in mud",
+     "an early steam tractor",
+     "extra wheels 18 feet out each side, and a farm gate",
+     "a wheel with flat boards round its rim",
+     "planks",
+     "a track: wooden slats on endless chains with a toothed wheel",
+     "soft mud in a cutaway",
+     "glows for the weight pressing down"
+    ],
+    "ending": "The steam tractor crawling across the bog on its loop of planks, laying them down in front and picking them up behind, then the same loop turning under a modern digger: \"Congratulations, you just built the caterpillar track.\"",
+    "shape": "ladder",
+    "source": "Farm Collector, 'Invention of the crawler tractor' (Sam Moore, 1999, citing Farm Implement News, 18 May 1905, and C. Parker Holt): in the peat bogs of California's Delta, Benjamin Holt bolted on drive wheels that stuck out 18 feet on each side, and the machine couldn't go through gates, cross bridges or turn round and still buried itself in the peat; on 24 November 1904 his engine No. 77 ran on tracks of wooden slats bolted to endless link chains, driven by sprockets. Caterpillar's own history tells the same test. Wikipedia (Continuous track): armies in the Boer War laid plank roads under wheels; James Boydell's 1846 'endless railway wheel' had flat feet round its rim to spread the weight, and was used in the Crimean War and on Burrell's engines from 1856 to 1862; Lombard's tracked log hauler ran in 1901.",
+    "source_url": "https://www.farmcollector.com/company-history/invention-of-the-crawler-tractor/",
+    "terms": [
+     "caterpillar track"
+    ],
+    "like": [
+     "Why The Hopping Tank Was Never Built",
+     "What If The Wheel Was Never Invented?"
+    ]
+   },
+   "reading": "Nov 11, 2026, after the washing machine was built and turned down as boring. Said of the whole batch of six inventions at once, from one-line summaries. Their point is the frame as much as the subject: the nail's 'this is a nail, now make it a hundred times bigger'."
+  },
+  {
+   "date": "2026-11-11",
+   "category": "inventions",
+   "verdict": "turned_down",
+   "idea": "A playground slide made a hundred times taller, fixed step by step into a roller coaster",
+   "their_words": [
+    "i think out of all the ideas touch screen is just better, its more engaging. I thik the other stuff is either boring or just wont catch much attention. I think how u frame it is important as well, despite of what kind of idea it is, like that nail thing"
+   ],
+   "terms": [
+    "roller coaster",
+    "lift hill"
+   ],
+   "card": {
+    "topic": "A playground slide made a hundred times taller, fixed step by step into a roller coaster",
+    "hook": "Whoosh down a playground slide. Now make it a hundred times taller.",
+    "first_picture": "A playground slide, a grown-up whooshing down it.",
+    "everyday": "Going down a playground slide.",
+    "goal": "Ride the giant slide safely, and go again.",
+    "steps": [
+     "Straight down from that height you'd hit the ground as fast as a racing car, so at the bottom the rails swoop back up and your speed carries you up the next hill instead of into the ground, in a car with wheels on rails: the track.",
+     "Over the top of a hill the car flies up off the rails, so a second set of wheels runs underneath the rail and holds it on: the upstop wheels.",
+     "At the end you're at the bottom, and someone has to haul you back up (on a Pennsylvania coal railway that became one of the first rides, mules did it), so a motor drags the car up the first hill on a chain: the lift hill.",
+     "If the chain snaps, the car rolls backwards down the hill, so a hook under the car rides up over teeth beside the chain and catches if it rolls back: the anti-rollback, clack, clack, clack."
+    ],
+    "invention": "the roller coaster",
+    "seen_it": "At every theme park and fair, clacking up its first hill.",
+    "cycle": "chain up, clack, drop, swoop, again",
+    "inside": "The car from the side with the rail cut through: running wheels on top, upstop wheels underneath; the hook dropping into the teeth in close-up on the lift hill.",
+    "needs": [
+     "a playground slide and a grown-up on it",
+     "a roller coaster car with running wheels and upstop wheels",
+     "track with a lift hill, hills and dips",
+     "a chain and motor",
+     "anti-rollback teeth and a hook",
+     "a crash-test dummy in the car"
+    ],
+    "ending": "The car clacking up the lift hill with a crash-test dummy in the front seat, over the top, down the drop and swooping up the next hill: \"Congratulations, you just built a roller coaster.\"",
+    "shape": "you_invent",
+    "source": "Lemelson-MIT on John A. Miller: his 1910 'safety chain dog' stopped cars rolling backwards down the lift hill if the pull chain broke, and became the clacking on the way up; his 1919 underfriction wheels keep cars locked to the track, so they can go fast, turn sharply and go upside down. Wikipedia (Lift hill): the clack is the anti-rollback catch passing over a toothed rack beside the chain, not the chain itself. Wikipedia (Mauch Chunk Switchback Railway): on the Pennsylvania coal railway that became one of the first thrill rides, mules hauled the cars back up until steam inclines took over in 1846 to 1847. Phillip Hinkle's powered chain lift, 1885, and Paris's 1817 rides with wheeled cars locked to the track (Wikipedia, History of the roller coaster). The racing-car speed in the first step is reasoned from the height, not sourced.",
+    "source_url": "https://lemelson.mit.edu/resources/john-miller",
+    "terms": [
+     "roller coaster",
+     "lift hill"
+    ],
+    "like": [
+     "Roller Coaster Without A Harness?",
+     "Why You Don't Fly Off Water Slides"
+    ]
+   },
+   "reading": "Nov 11, 2026, after the washing machine was built and turned down as boring. Said of the whole batch of six inventions at once, from one-line summaries. Their point is the frame as much as the subject: the nail's 'this is a nail, now make it a hundred times bigger'."
+  },
+  {
+   "date": "2026-11-11",
+   "category": "inventions",
+   "verdict": "turned_down",
+   "idea": "A thumb over a hose, fixed step by step into the sprinkler whose own jet knocks it round",
+   "their_words": [
+    "i think out of all the ideas touch screen is just better, its more engaging. I thik the other stuff is either boring or just wont catch much attention. I think how u frame it is important as well, despite of what kind of idea it is, like that nail thing"
+   ],
+   "terms": [
+    "impact sprinkler"
+   ],
+   "card": {
+    "topic": "A thumb over a hose, fixed step by step into the sprinkler whose own jet knocks it round",
+    "hook": "Put your thumb over a hose. Now water a whole football pitch.",
+    "first_picture": "A thumb over the end of a garden hose, the water fanning out across a lawn.",
+    "everyday": "Putting a thumb over a garden hose so the water sprays further.",
+    "goal": "Water the whole pitch without standing there.",
+    "steps": [
+     "You'd stand there all day, so you fix a nozzle on a stand, and it drowns one spot while the rest goes brown: the sprinkler head.",
+     "It has to turn slowly, a step at a time, so the long jet sweeps a whole circle, but there's no motor, so the jet itself hits a spoon on a swinging arm and knocks it away: the drive arm.",
+     "The arm would just stay out, so a spring snaps it back, and it whacks the nozzle round one small step and swings back into the jet: the arm spring.",
+     "The jet flies over the grass close by, which stays dry, so a pin pokes into the jet and breaks some of it into spray: the diffuser pin."
+    ],
+    "invention": "the impact sprinkler",
+    "seen_it": "On lawns, parks, golf courses and sports pitches, going tch, tch, tch as it ticks round.",
+    "cycle": "jet hits, arm flies, spring snaps back",
+    "inside": "Slow motion close up: the jet striking the spoon, the arm swinging out, the spring glowing as it pulls the arm back to strike the nozzle, the nozzle stepping round a notch.",
+    "needs": [
+     "a hand and a garden hose",
+     "a football pitch of grass, brown where it's dry",
+     "impact sprinklers: one in close-up (nozzle, drive arm with spoon, spring, diffuser pin), and six or more round the pitch",
+     "a water jet and spray",
+     "a person holding a hose, half asleep"
+    ],
+    "ending": "From above, a ring of them round the pitch, each ticking round its own circle until the whole field is green: \"Congratulations, you just built the impact sprinkler.\"",
+    "shape": "you_invent",
+    "source": "Orton Englehart's patent US 1,997,901, 'Water sprinkler' (filed 18 December 1933, granted 16 April 1935): the jet strikes a vane on a swinging arm, which swings away; a torsional spring brings it back to strike the nozzle arm, turning the sprinkler a small step, repeated until it has gone all the way round, so it slowly revolves and spreads water over a large area; a pin in the jet breaks some of it up to water the ground next to the sprinkler. The American Society of Agricultural and Biological Engineers made it a historic landmark (1990) for its slow rotation and even watering. One head waters one circle, so a pitch is ringed with several.",
+    "source_url": "https://patents.google.com/patent/US1997901A/en",
+    "terms": [
+     "impact sprinkler"
+    ],
+    "like": [
+     "How Fire Sprinklers Actually Work",
+     "How Gas Pumps Know When To Stop"
+    ]
+   },
+   "reading": "Nov 11, 2026, after the washing machine was built and turned down as boring. Said of the whole batch of six inventions at once, from one-line summaries. Their point is the frame as much as the subject: the nail's 'this is a nail, now make it a hundred times bigger'."
+  },
+  {
+   "date": "2026-11-11",
+   "category": "explainers",
+   "verdict": "liked",
+   "idea": "The owner's idea: why a touchscreen ignores your gloved finger",
+   "their_words": [
+    "i think out of all the ideas touch screen is just better, its more engaging. I thik the other stuff is either boring or just wont catch much attention. I think how u frame it is important as well, despite of what kind of idea it is, like that nail thing"
+   ],
+   "terms": [
+    "touch screen",
+    "glove"
+   ],
+   "card": {
+    "topic": "The owner's idea: why a touchscreen ignores your gloved finger",
+    "hook": "Put gloves on in winter and your phone's screen ignores you, however hard you press.",
+    "first_picture": "A thick woollen glove pressing hard on a phone screen, and the screen doing nothing.",
+    "people_think": "The screen feels you pressing, so a glove is just too thick or too soft to press it properly.",
+    "truth": "The screen doesn't find your finger by pressing at all. Under the glass is a grid of see-through wires holding a little electric charge, and a bare fingertip draws some of that charge away into your body. A woollen or leather glove holds your fingertip a few millimetres further from the wires, through fibre and air that carry no charge, so it draws away far too little for the phone to count.",
+    "steps": [
+     "Under the glass are two layers of see-through wires, made of indium tin oxide: rows on one layer, columns on the other, crossing in a grid.",
+     "The phone charges one row at a time, and at every crossing some of that charge reaches across to the column.",
+     "A bare fingertip near a crossing draws some of the charge away into your body, so less reaches that column.",
+     "The phone charges every row in turn, over and over, finds the crossing that came up short, and that's where you touched.",
+     "A glove holds your fingertip a few millimetres further off, through wool or leather that carry no charge, so it draws away too little charge for the phone to notice, however hard you press."
+    ],
+    "turn": "Anything big, wet and salty draws charge like a finger. In South Korea's cold winter of 2010, phone users kept their gloves on and tapped with snack sausages, and the sausages' maker told a newspaper the sausage's convenience-store sales that December and January were up 39% on the same months a year before.",
+    "ending": "A glove with a patch of conductive thread sewn into its fingertip taps the screen, and the screen answers. Said: give the charge a path through the glove, and the screen finds your finger again.",
+    "inside": "A cut through the glass: rows and columns of thin glowing wire, charge as small balls crossing at each junction, a bright line sweeping row by row; a bare fingertip pulls balls away at one crossing and that spot lights up; a woollen glove as a thick gap that only a few balls reach across, too few to light the spot; the conductive thread as a bridge they can.",
+    "needs": [
+     "a person's hand",
+     "a phone",
+     "a woollen glove",
+     "a touchscreen glove with conductive thread in the fingertip",
+     "a snack sausage",
+     "a cutaway of the glass with its wire grid",
+     "charge as moving balls"
+    ],
+    "shape": "why_it_happens",
+    "source": "How the grid works: Apple's patent US 7,663,607, Multipoint touchscreen (Hotelling, Strickon and Huppi; filed 2004, granted 2010): ITO lines, rows driven one at a time, 'the object steals charge'. Gloves: background of US 9,851,794, Bulk resistive glove (2017); gloved fingers detected through thin gloves with a more sensitive scan: https://patents.google.com/patent/US9778742B2/en. Sausages: Etoday (Korea), 9 Feb 2010, quoting CJ CheilJedang's brand manager on Maxbong sales, Dec 2009 to Jan 2010.",
+    "source_url": "https://patents.google.com/patent/US7663607B2/en",
+    "terms": [
+     "touch screen",
+     "glove"
+    ],
+    "like": [
+     "How A Touch Screen Works",
+     "Why Dead People Can't Unlock Phones"
+    ]
+   },
+   "reading": "Their own idea, and the one they still want after seeing the rest. How it's framed is theirs to approve before it's built."
+  },
+  {
+   "date": "2026-11-11",
+   "category": "explainers",
+   "verdict": "took",
+   "idea": "Why fruit growers spray their blossom with water on a freezing night",
+   "their_words": [
+    "yea seems interesting"
+   ],
+   "terms": [
+    "frost",
+    "sprinkler"
+   ],
+   "card": {
+    "topic": "Why fruit growers spray their blossom with water on a freezing night",
+    "hook": "It's freezing tonight, and this farmer is spraying his apple blossom with water.",
+    "first_picture": "An apple tree in blossom at night, every branch and flower cased in clear ice with icicles hanging, and a sprinkler still spraying water over it.",
+    "people_think": "Ice is what kills a plant, so wetting it on a freezing night is the worst thing you could do. Or, at a guess, the ice must wrap the flower like a blanket.",
+    "truth": "Water gives out heat as it turns to ice. As long as fresh water keeps landing and freezing on the flower, that heat holds the flower at about 0 C, while the air around it drops to the temperatures that kill open apple blossom (about -2 C starts killing it, about -4 C kills most of it).",
+    "steps": [
+     "On a clear, still spring night the air in the orchard falls below freezing, and open apple blossom starts to die at about -2 C.",
+     "The grower turns on sprinklers over the trees, and water lands on every flower.",
+     "As each bit of water freezes it gives out heat: 334 kilojoules for every kilogram, straight into the flower it's freezing on.",
+     "While there's still wet water on top of the ice, the flower inside stays at about 0 C, while the air around it goes on getting colder.",
+     "So the sprinklers must keep running all night: clear ice with water dripping off it means enough water is arriving, and milky white ice means too little."
+    ],
+    "turn": "Do it badly and it's worse than doing nothing. Kilo for kilo, water that evaporates takes away about seven and a half times the heat that freezing gives out, so if the sprinklers stop early or spray too little, the wet flower falls well below the air's temperature and dies sooner than a dry one. And the ice gets heavy enough to snap branches.",
+    "ending": "Morning sun on the orchard: the ice melts and drips off, and the blossom under it is white and whole, beside an unsprayed tree whose blossom has gone brown. Said: the ice was never a blanket. The freezing was the heater.",
+    "inside": "A cut through one flower in its shell of ice: a wet film on the outside, each drop that freezes giving off a small warm glow into the flower; a thermometer badge inside the ice holding at 0 while a second badge in the air falls to -4; then the sprinkler stops, the wet film steams away as small balls leaving the surface, and the inside badge drops below the air's.",
+    "needs": [
+     "an apple tree in blossom, and one branch close up",
+     "an orchard sprinkler",
+     "water drops and a shell of clear ice with icicles",
+     "a cutaway of one flower inside the ice",
+     "warm glows for the heat given out",
+     "two thermometer badges",
+     "a second tree with browned blossom"
+    ],
+    "shape": "why_it_happens",
+    "source": "FAO, Frost Protection: fundamentals, practice and economics (Snyder and de Melo-Abreu, 2005), chapter on active protection, Sprinklers: 334.5 kJ released per kg of water freezing at 0 C against 2501 kJ/kg removed by evaporation; coated plant parts stay at about 0 C while a liquid-ice mixture remains; wet tissue can fall well below air temperature; inadequate rates in windy conditions 'can cause more damage than if the sprinklers are not used'; clear ice against milky ice; ice weight can snap branches; don't stop until the wet-bulb temperature upwind is above the damage temperature. Apple blossom figures: Michigan State University Extension's table of critical spring temperatures (full bloom: 10% killed at 28 F, 90% at 25 F), from Washington State University bulletins: https://www.canr.msu.edu/resources/critical-spring-temperatures-for-tree-fruit-bud-development-stages The 7.5 is 2501 divided by 334.5, our arithmetic; FAO's own break-even figure is 6.0 times, counting the water cooling from 20 C.",
+    "source_url": "https://www.fao.org/4/y7223e/y7223e0d.htm",
+    "terms": [
+     "frost",
+     "sprinkler"
+    ],
+    "like": [
+     "Why Farmers Blowtorch Cow Udders",
+     "Why Fire Won't Burn A Cup Of Water"
+    ]
+   },
+   "reading": "Said of the hook, first picture, answer, turn and ending shown alone in chat on Nov 11, 2026, the first idea found by the bizarre-sight rule. Read as a yes to the idea and its frame; they have not yet said to build it."
+  },
+  {
+   "date": "2026-11-11",
+   "category": "explainers",
+   "verdict": "took",
+   "idea": "Why Utah drops thousands of live fish out of a plane",
+   "their_words": [
+    "gooood"
+   ],
+   "terms": [
+    "trout",
+    "plane"
+   ],
+   "card": {
+    "topic": "Why Utah drops thousands of live fish out of a plane",
+    "hook": "A plane skims a mountain lake and dumps thousands of live fish out.",
+    "first_picture": "A small plane low over a mountain lake, a long white cloud of water and tiny fish pouring out from under its belly.",
+    "people_think": "It's a stunt, or the fish must die when they hit: a fall like that onto water would kill anything.",
+    "truth": "It's how Utah's wildlife agency stocks more than 300 mountain lakes a year that no road reaches. Only fish 1 to 3 inches long are dropped, because for something that small the air slows the fall, so they land gently. The agency's biologists have netted lakes minutes after a drop and report high survival, and say bigger fish would not survive as well.",
+    "steps": [
+     "The lakes sit high in the mountains with no road to them, so a hatchery truck can't get there.",
+     "So the young fish, 1 to 3 inches long, go into a tank in the plane's belly: more than 10,000 of them a flight, in seven chambers with hundreds of pounds of water.",
+     "The pilot comes in 50 to 150 feet above the lake and opens one chamber, and fish and water pour out together.",
+     "A fish that small weighs almost nothing for the amount of air it has to push through, so the air slows its drop and it flutters down instead of plunging.",
+     "It lands, and swims off. A bigger fish falls harder, which is why only the small ones go by air."
+    ],
+    "turn": "It isn't the desperate option. The agency says dropping them from a plane would still be the cheaper way even if every one of those lakes had a road, and it has done it since at least 1956. Before the planes, by its own account in press reports, the fish went up in metal milk cans tied to pack horses.",
+    "ending": "The fingerlings hit the water in a patter of small splashes and dart away, while the plane banks toward the next lake with six chambers still shut. Said: a fish this small falls slowly enough that nearly all of them survive. That's the whole trick, and it's why only the small ones fly.",
+    "inside": "The plane's belly cut open to show the tank's seven chambers and one door opening; then the fall slowed right down: one fingerling beside a big trout dropped from the same height, air as moving balls piling up under each, a speed badge on each with no numbers, the small one's reading slower and the big one's faster.",
+    "needs": [
+     "a small plane with a belly tank cut open to show seven chambers",
+     "a mountain lake",
+     "trout fingerlings 1 to 3 inches long, in a cloud of water",
+     "one large trout for the comparison",
+     "air as moving balls",
+     "speed badges",
+     "a pack horse with milk cans"
+    ],
+    "shape": "why_it_happens",
+    "source": "Utah Division of Wildlife Resources, Aerial fish stocking in Utah (the agency's own page): fish 1 to 3 inches, 'the air slows their drop', larger fish would survive less well, 50 to 150 feet above the water, over 10,000 2.5-inch fish and up to 84 pounds of fish a flight, seven chambers, hundreds of pounds of water, more than 300 lakes a year, since as early as 1956, cheaper than a truck even where a road exists, biologists surveying within minutes of a drop. The page gives no survival percentage: the '95%' in news reports (CNN 2018 and others) is the agency quoted by the press. Pack horses and milk cans: Fox News, 13 Jul 2021, quoting the agency, not its current page. That a small body reaches a low falling speed because of its weight against its surface is ordinary physics, stated by us, not by the agency.",
+    "source_url": "https://wildlife.utah.gov/fishing/aerialstocking",
+    "terms": [
+     "trout",
+     "plane"
+    ],
+    "like": [
+     "Dropping An Ant Off The Empire State Building",
+     "Why Mice With Parachutes Were Dropped"
+    ]
+   },
+   "reading": "Said of the fish-from-a-plane idea shown alone in chat on Nov 11, 2026, the second found by the bizarre-sight rule. Read as a yes to the idea and its frame; not yet told to build it."
+  },
+  {
+   "date": "2026-11-11",
+   "category": "explainers",
+   "verdict": "turned_down",
+   "idea": "Why road crews fire army howitzers at snowy mountains",
+   "their_words": [
+    "must be about things that still exist today"
+   ],
+   "terms": [
+    "avalanche",
+    "howitzer"
+   ],
+   "card": {
+    "topic": "Why road crews fire army howitzers at snowy mountains",
+    "hook": "A road crew aims an army howitzer at a mountain, and fires.",
+    "first_picture": "A 105 mm howitzer on a platform beside an empty snowy highway, its barrel pointed up at a slope loaded with snow.",
+    "people_think": "They're blasting the snow off the mountain, or stopping an avalanche from happening.",
+    "truth": "They're causing the avalanche, on purpose, early. A slab of snow slides when a crack about a foot long opens in a weak layer underneath it and runs across the slope, and an explosion can make that crack. So the crew empties the road, fires a shell into the top of the slope, and brings the snow down while it's still a small slide and nobody is under it.",
+    "steps": [
+     "Snow lies on the mountain in layers, and sometimes a strong slab sits on top of a weak, crumbly layer.",
+     "Every storm adds weight, until a crack opens in the weak layer. Once it's about a foot long it runs across the slope, the slab comes loose, and it slides down onto the road.",
+     "Nobody can say which minute that will happen, and the longer it waits the more snow comes down.",
+     "So the crew closes the highway, clears every car out, and fires a 105 mm shell into the top of the slope.",
+     "The blast makes that crack itself, and the slab slides now, small, onto an empty road. A plough clears it, and the road reopens, usually within 30 minutes to two hours."
+    ],
+    "turn": "The guns are surplus military artillery: by a ski-industry report, they belong to the US Army and are lent out through the Forest Service, and the shells are running out because the Army has stopped using them. So the howitzers are being swapped for towers on the mountain that drop a charge by remote control. Washington's Snoqualmie Pass fired its last rounds before the 2025 winter.",
+    "ending": "The highway open again, cars driving past a ploughed heap of snow at the foot of a bare slide path, the howitzer under its cover. Said: they never stopped the avalanche. They chose the minute it fell.",
+    "inside": "A cut through the snow on the slope: a thick slab over a thin crumbly layer, the bedrock under both; a weight badge on the slab growing with each storm; the shell landing and a ring of force pushing down, a bright crack opening in the weak layer and racing sideways across the slope; then the slab sliding as one sheet.",
+    "needs": [
+     "a 105 mm howitzer on a platform",
+     "a mountain slope above a highway",
+     "a cutaway of the snow: slab, weak layer and ground",
+     "a shell and a ring of force where it lands",
+     "a glowing crack",
+     "a snow plough",
+     "cars, and a closed-road barrier",
+     "a remote tower on the ridge for the turn"
+    ],
+    "shape": "why_it_happens",
+    "source": "Washington State Department of Transportation, Avalanche control: unstable snow brought down 'in a controlled manner'; explosives placed by hand, by cable trams 'or with surplus military weapons'; a 105 mm howitzer at Snoqualmie and at Stevens Pass (twelve avalanche paths); delays of 30 minutes to two hours; remote systems to replace 'the aging surplus military artillery'. How a slab releases, and that a skier or an explosive can make the critical crack (about a foot): the American Avalanche Association and Forest Service's avalanche.org encyclopedia, Slab avalanche release: https://avalanche.org/avalanche-encyclopedia/avalanche/avalanche-release/slab-avalanche-release/. Army ownership, the Forest Service's part and the ammunition running out: SnowBrains, 'Those Window-Rattling Booms on Powder Days? The Howitzers Behind Them Are Nearly Gone' (a trade news site citing the Forest Service and state road agencies; secondary). Snoqualmie's last season with artillery: Spokesman-Review, 17 Nov 2025.",
+    "source_url": "https://wsdot.wa.gov/travel/operations-services/avalanche-control",
+    "terms": [
+     "avalanche",
+     "howitzer"
+    ],
+    "like": [
+     "How Do You Escape An Avalanche",
+     "Why They Flooded A 355 Foot Ship"
+    ]
+   },
+   "reading": "Said of the avalanche howitzer on Nov 11, 2026, after being told the practice is being retired. A rule for every idea: the sight has to be something still done or still there now, not a vanishing or past practice."
+  },
+  {
+   "date": "2026-11-11",
+   "category": "explainers",
+   "verdict": "turned_down",
+   "idea": "Why a lineman can grab a live high-voltage line from a helicopter",
+   "their_words": [
+    "i also dont get the live power line from helicopter, is it to charge the hleicopter or what"
+   ],
+   "terms": [
+    "power line",
+    "helicopter"
+   ],
+   "card": {
+    "topic": "Why a lineman can grab a live high-voltage line from a helicopter",
+    "hook": "A man leans out of a helicopter and grabs a live power line.",
+    "first_picture": "A helicopter hovering level with a thick power cable, a lineman in a silvery suit on a platform at its side, holding a metal wand out to the cable as a spark jumps to it.",
+    "people_think": "The line must be switched off, or his suit and gloves are thick rubber that keeps the electricity out.",
+    "truth": "The line is live and his suit is made to carry electricity, not block it. Electricity only flows through you when you touch two things at different voltages. The helicopter touches nothing but air, so once it's joined to the line, the man, the helicopter and the line are all at the same voltage, and nothing flows through him. He is, in the US safety agency's words, 'literally charged to the same voltage as the line'.",
+    "steps": [
+     "Electricity flows through a body only when it bridges two things at different voltages, like the line and the ground.",
+     "The helicopter hovers beside the line touching nothing but air, so it has no path to the ground.",
+     "The lineman reaches out a metal wand: a spark jumps as the helicopter and everyone on it are charged up to the line's voltage.",
+     "He clamps a wire from the platform to the line, so they stay joined. Now there's no difference between him and the line, and nothing flows through him.",
+     "His suit is woven to conduct, so the charge runs round the outside of him instead of through him, and he works on the live cable with his hands."
+    ],
+    "turn": "It's the bird on the wire, and it holds only while he touches nothing else: reach from the line toward the steel tower, which is joined to the ground, and the full voltage is across him. They do it this way because the line can't be spared: Idaho Power says switching lines off for repairs is harder and harder to get permission for, and one job its helicopter crews did live in 15 days would have taken a ground crew about three and a half months.",
+    "ending": "The clamp comes off, a last spark jumps from the wand, and the helicopter peels away from a line that was never switched off, towns lit below. Said: safe as a bird on a wire, as long as he touched nothing else. And the lights never went out.",
+    "inside": "Voltage shown as a colour: the line bright, the ground and the tower dark, the helicopter dark until the wand's spark floods it and the man the same bright colour as the line; charge as small balls running over the outside of the suit and none through the x-ray body inside; then a dotted reach toward the dark tower with a cross on it.",
+    "needs": [
+     "a small helicopter with a side platform",
+     "a lineman in a conductive suit, seated on the platform",
+     "a metal wand and a bond clamp on a wire",
+     "a high-voltage line and a steel tower",
+     "a spark",
+     "a colour wash for voltage",
+     "charge as moving balls on an x-ray body",
+     "a bird on the wire"
+    ],
+    "shape": "why_it_happens",
+    "source": "US Occupational Safety and Health Administration, electric power eTool, Live-Line Bare-Hand Work: workers 'literally charged to the same voltage as the line', the platform insulated from the ground and bonded to the line, conductive hooded coveralls and gloves, 'the bird on the wire concept', minimum approach distances from the tower and other grounded surfaces. The helicopter method, 'an arc wand and bond clamp hooked to his hot suit', lines of 230 to 500 kV, outages hard to get, 15 days against about three and a half months: T&D World, 'Get It Done From the Air: Idaho Power Uses Helicopter-Based Live-Line Maintenance' (a trade magazine, written with the utility): https://tdworld.com/overhead-transmission/article/20962907/get-it-done-from-the-air-idaho-power-uses-helicopter-based-live-line-maintenance. That the suit works by carrying charge round the body is the usual account (Smithsonian Air and Space, 'High Tension'; US patent 4,637,575) and was read here only in summary, not in OSHA's words.",
+    "source_url": "https://www.osha.gov/etools/electric-power/energized-deenergized-work/live-line-bare-hand-work",
+    "terms": [
+     "power line",
+     "helicopter"
+    ],
+    "like": [
+     "How Birds Avoid Electrocution",
+     "How Power Lines Light A Bulb Wirelessly"
+    ]
+   },
+   "reading": "Nov 11, 2026. They didn't follow the explanation after reading it slowly, then agreed with my reading that it stops a scroller but loses them, because the answer rests on voltage, which can't be seen (their words: 'what u said is correct'). Marked as a no on that agreement."
+  },
+  {
+   "date": "2026-11-11",
+   "category": "explainers",
+   "verdict": "took",
+   "idea": "Why live chicks can be posted in a box with no food or water",
+   "their_words": [
+    "goooooood"
+   ],
+   "terms": [
+    "chicks",
+    "post"
+   ],
+   "card": {
+    "topic": "Why live chicks can be posted in a box with no food or water",
+    "hook": "Live chicks come by post in a box with no food or water.",
+    "first_picture": "A cardboard box with round air holes on a post office counter, small yellow chick heads and beaks poking out of the holes, a parcel label on its side.",
+    "people_think": "That it must be cruel or a mistake: a baby animal a day old, shut in a box for up to three days with nothing to eat or drink, should arrive dead or starving.",
+    "truth": "A chick hatches with its food already inside it. Just before hatching it takes what is left of the egg's yolk into its own belly, and that yolk feeds and waters it for the first days. So hatcheries post chicks on the day they hatch, and the US Postal Service's rules give the box 72 hours from hatching to arrive.",
+    "steps": [
+     "A hatchery packs chicks into a ventilated box on the day they hatch: by the postal rules they must be no more than 24 hours old.",
+     "The box holds no food and no water, and the rules give it until 72 hours after hatching to be delivered, with the hour of hatching written on its side.",
+     "Just before a chick breaks out of its egg, it draws the last of the egg's yolk into its own belly.",
+     "That yolk is rich in energy and water, so the chick lives on it for its first days and doesn't need to eat or drink yet.",
+     "As the hours pass the yolk is used up, so the box has to arrive before it runs out, and the first thing the chicks are given is water and feed."
+    ],
+    "turn": "The yolk was never meant for the post. Eggs under a hen don't all hatch at once, and she can't leave the nest until the last one is out, so the first chicks out have to wait under her with nothing to eat. That wait is up to about two days. The post office stretches it to three. And it's a hard limit: a Purdue University article warns that when a box takes longer than 72 hours, the chicks are in danger.",
+    "ending": "The box is opened at a farm and the chicks tumble out and go straight to a dish of water, one seen in x-ray with its yolk much smaller. Said: every chick hatches with enough yolk inside it to last about three days. The post office has three days to get it there.",
+    "inside": "An x-ray of one chick in the box: the yellow yolk inside its belly, big at the start, with a clock badge counting from 0 to 72 hours as the yolk shrinks. Then a cut through an egg just before hatching, the chick drawing the yolk in. Then a nest under a hen: two chicks already out and waiting beside eggs that haven't hatched yet.",
+    "needs": [
+     "a ventilated cardboard chick box with a parcel label",
+     "day-old chicks",
+     "a post office counter",
+     "an x-ray of a chick showing the yolk in its belly",
+     "an egg cut open with a chick about to hatch",
+     "a hen on a nest with eggs",
+     "a clock badge counting to 72 hours",
+     "a dish of water and feed"
+    ],
+    "shape": "why_it_happens",
+    "source": "US Postal Service, Publication 52, section 526.3, Live Day-Old Poultry: chickens, ducks, geese, turkeys and others mailable; 'Poultry must be no more than 24 hours old'; in the hatchery's original unopened box with proper ventilation; 'may be delivered to the addressee within 72 hours of the time of hatching'; the section says nothing of food or water. Still done today: USPS Postal Bulletin 22706, 9 Jul 2026, revised this very rule (boxes to carry the hatching date and hour and the words 'Delivery is expected within 72 hours of hatching'): https://about.usps.com/postal-bulletin/2026/pb22706/html/updt_001.htm ; and The Alpena News, 24 Mar 2025, on a Michigan post office handling about 150 boxes of chicks a year. No food or water in the box, and the yolk: Purdue University, 4 Aug 2020, quoting poultry scientists at Purdue, Virginia Tech and Maryland ('a specially ventilated box ... without any source of food or water'; 'Chicks can survive a few days after hatching without food and water through their yolk reserves'; delays past 72 hours endanger them): https://ag.purdue.edu/news/2020/08/you-can-order-live-poultry-through-the-mail-but-should-you.html That the yolk is taken into the belly just before hatching, lasts up to three days, and lets early chicks wait while the hen finishes hatching the rest: the hatchery My Pet Chicken's own explanation (a seller, not a study): https://www.mypetchicken.com/blogs/faqs/how-come-you-can-only-ship-chicks-when-theyre-one-day-old That the yolk is 'rich in energy and moisture' and sustains a chick up to 72 hours is from a University of California extension leaflet seen only in a search summary, not opened. Studies find chicks kept 48 hours without feed and water lose weight, so 72 hours is a limit, not a comfortable allowance. Added by the fact-check, Nov 11, 2026: junglefowl hens stay on the nest until the last chick is out, early chicks living on yolk up to two days (The Poultry Site, 2016: https://www.thepoultrysite.com/news/2016/07/using-nature-as-a-reference-to-optimise-welfare-and-performance); unfed chicks held 72 hours used just over 80% of their yolk (Aviagen brief, seen in summary). The University of California leaflet was never opened and isn't relied on.",
+    "source_url": "https://pe.usps.com/text/pub52/pub52c5_009.htm",
+    "terms": [
+     "chicks",
+     "post"
+    ],
+    "like": [
+     "They Sent Children Through The Mail",
+     "Why Farmers Put Glasses On Chickens"
+    ],
+    "silent": "A parcel box on a post office counter with live chicks' heads poking out of its air holes.",
+    "mistake": "Baby animals a day old are being posted like a parcel, with nothing to eat or drink for up to three days.",
+    "stake": "The chicks in the box: they starve or dry out if the yolk runs out before the box arrives.",
+    "seen": "In x-ray, the yolk inside a chick's belly shrinking as a clock counts to 72 hours; a chick in the egg drawing the yolk in; chicks under a hen waiting for the last eggs."
+   },
+   "reading": "Said of live chicks sent by post, shown alone in chat on Nov 11, 2026, the first idea found under the four tests. Read as a yes to the idea and its frame; not yet told to build it."
+  },
+  {
+   "date": "2026-11-11",
+   "category": "explainers",
+   "verdict": "took",
+   "idea": "Why rescuers tie big floats to a whale that's already tangled in rope",
+   "their_words": [
+    "i thik just add all of them to backlog"
+   ],
+   "terms": [
+    "whale",
+    "floats"
+   ],
+   "card": {
+    "topic": "Why rescuers tie big floats to a whale that's already tangled in rope",
+    "hook": "This whale is tangled in rope, so rescuers tie big floats to it.",
+    "first_picture": "A whale's back and tail at the surface wrapped in rope, a small inflatable boat close behind it, and a line of big orange buoys dragging in the water from the rope.",
+    "people_think": "That it's backwards: the whale is already dragging rope it can't shake off, and they're adding more weight and more drag. Surely you'd dive in and cut it free.",
+    "truth": "A tangled whale is free-swimming and far too strong to hold, and it can dive and swim away from a boat. So the team hooks the rope it's trailing and clips large floats to it. The floats add lift and drag, so the whale finds it hard to dive and tires, and stays near the surface moving slowly. Only then can a small boat get close enough to cut the rope with a hooked knife on a long pole.",
+    "steps": [
+     "A whale swims with fishing rope wrapped round its tail, and it can dive and swim away from any boat that comes close.",
+     "From a small inflatable boat the team throws a grapple, a hook on a line, that catches the rope trailing behind the whale.",
+     "They clip large floats onto that line, and the floats pull up and drag through the water behind the whale.",
+     "Now the whale finds it hard to dive and has to pull the floats along, so it tires, slows down and stays at the surface.",
+     "The boat comes up close behind it, and a hook-shaped knife on a thirty-foot pole reaches out and cuts the rope from the tail.",
+     "The rope and the floats fall away together, and the whale swims off."
+    ],
+    "turn": "The trick comes from whaling. Whalers called it kegging: they harpooned a whale and tied wooden kegs to the line, to wear it out and hold it at the surface. The rescuers kept the floats and swapped the weapon for a knife that cuts rope. It doesn't always work: in January 2026 a young right whale off the US coast, slowed with buoys and a sea anchor, still swam away with rope round its tail.",
+    "ending": "The last wrap of rope is cut, the orange floats bob loose on the surface, and the whale lifts its tail and dives. Said: the floats were never there to save it. They were there to slow it down long enough for one cut.",
+    "inside": "A view from the side, half above and half under the water: the whale diving freely with the rope, then the floats added and a lift arrow at each float and a drag arrow behind it, the whale's dive getting shallower each time until it stays at the top; a speed badge with no numbers falling. Then the old picture beside it: a wooden whaleboat and kegs on a line, the same shape.",
+    "needs": [
+     "a humpback whale with rope wrapped round its tail",
+     "a small inflatable boat with two people in helmets and life jackets",
+     "a grapple on a line",
+     "large orange buoys",
+     "a hook-shaped knife on a thirty-foot pole",
+     "sea surface with a view above and below",
+     "lift and drag arrows",
+     "a wooden whaleboat with kegs on a line"
+    ],
+    "shape": "why_it_happens",
+    "source": "Center for Coastal Studies (Provincetown, Massachusetts), Marine Animal Entanglement Response, which works under a NOAA Fisheries permit and says it has freed more than 200 large whales and other animals since 1984: the technique is 'a modification of an old whaling practice called kegging', attaching 'large floats, or kegs, to the gear entangling the animal'; 'The floats add buoyancy and drag to the animal, making it difficult for it to dive, eventually tiring it out'; the aim is 'a relatively immobile animal that is more safe to cut free'. The steps (grappling hooks attaching working ropes, buoys added 'to slow the whale and keep it at the surface', a hooked knife on a long pole) are from the Center's report of an 11-hour rescue on 2 Aug 2015. Still done today: the Center's report of 20 Jan 2026 (large buoys and a sea anchor added to a yearling right whale's entanglement to slow it; part of the gear broke away and the whale left with rope round its tail): https://coastalstudies.org/?p=19047 ; its report of 15 Jun 2026 (a humpback freed with 'a hook-shaped knife at the end of a thirty-foot pole'); and the San Juan Journal, 6 Sep 2025, on Cascadia Research Collective and The Whale Museum kegging a young humpback on 21 Aug 2025 ('adding large buoys to slow the whale and keep it at the surface'). That whalers fastened kegs to whales to tire them and keep them up is NOAA's account as given in a search summary, not opened; the Center's own page says only 'an old whaling practice'. That the boat comes up close behind once the whale is slow is how the reports read; the exact way the boat closes the distance is not spelled out in what was read. Added by the fact-check, Nov 11, 2026: the whaling history is NOAA Fisheries' Alaska page (https://www.fisheries.noaa.gov/alaska/marine-life-distress/large-whale-entanglements-alaska); the San Juan Journal's own caption reads 'Trained responders slow the whale down by adding large kegging buoys to the entangling gear'. The first picture shows no wound on the whale.",
+    "source_url": "https://coastalstudies.org/whale-rescue/",
+    "terms": [
+     "whale",
+     "floats"
+    ],
+    "like": [
+     "Why Rescuers Put Sweaters On Penguins",
+     "The Final Mission Of A Whale Rescuer"
+    ],
+    "silent": "A whale wrapped in rope at the surface, with people in a small boat clipping big orange buoys onto it.",
+    "mistake": "The whale is already dragging rope it can't get rid of, and they're fastening more things to it.",
+    "stake": "The whale, which can't get the rope off by itself, and the people in a small boat beside an animal the size of a bus.",
+    "seen": "The floats pulling up and dragging behind the whale, each dive shallower than the last until it stays at the surface, then one cut with a knife on a long pole and the rope falling away."
+   },
+   "reading": "Nov 11, 2026. Said after the whale idea was shown, with the panda twins, the premature baby in a plastic bag and the sequoia burns named but not shown in full. Kept as a backlog of ideas to build later, not an order to build. They have not ruled on the baby's first picture."
+  },
+  {
+   "date": "2026-11-11",
+   "category": "explainers",
+   "verdict": "took",
+   "idea": "Why zookeepers keep taking a newborn cub away from a panda with twins",
+   "their_words": [
+    "i thik just add all of them to backlog"
+   ],
+   "terms": [
+    "panda",
+    "twins"
+   ],
+   "card": {
+    "topic": "Why zookeepers keep taking a newborn cub away from a panda with twins",
+    "hook": "A zookeeper is taking a newborn cub away from its mother panda.",
+    "first_picture": "A giant panda sitting with a tiny pink cub held against her chest, and a keeper's gloved hand lifting a second tiny pink cub away from beside her.",
+    "people_think": "That taking a newborn from its mother is the worst thing you could do to it, and that a mother with twins would simply raise both.",
+    "truth": "A panda has twins about half the time, but she can hold and nurse only one newborn at a time, and the other is left. So keepers put one twin in a warm incubator and leave her the other, and every few hours they swap them. She only ever has one cub to hold, and both get her milk.",
+    "steps": [
+     "A giant panda gives birth to twins about half the time, and each newborn is tiny: about 90 to 140 grams, pink and helpless.",
+     "A newborn has to be held against her and put in place to feed. She can do that for one cub, and the second is left lying apart.",
+     "So keepers lift one cub away and put it in an incubator, where it's kept warm and fed from a bottle.",
+     "A few hours later they swap: the cub from the incubator goes to the mother, and the one she was holding goes to the incubator.",
+     "The swap is repeated day and night, so she only ever has one cub to hold, and both cubs get their turn at her milk and both grow."
+    ],
+    "turn": "It only works if she lets go. At the Smithsonian's National Zoo in 2015 the mother, Mei Xiang, sometimes would not put down the cub she was holding, and the keepers could only wait with the other one in the incubator. The zoo's own words: much of their method 'will be dictated by Mei Xiang'.",
+    "ending": "Two round black-and-white cubs at two months old, side by side, one heavier than the other by a little, their mother behind them holding one. Said: she never raised two cubs at once. She raised one at a time, twice, and never knew.",
+    "inside": "The den seen from above with two places lit: the mother's arms and the incubator. A cub in each, a small milk badge filling beside whichever cub is with the mother and a warm glow round the one in the incubator; a clock badge turns, the cubs change places, and the other cub's milk badge fills. Two weight badges climb together.",
+    "needs": [
+     "an adult giant panda sitting, arms able to cradle",
+     "two newborn panda cubs, pink, about the size of a stick of butter",
+     "a keeper in gloves and a mask, reaching",
+     "an incubator with a warm glow",
+     "a feeding bottle",
+     "a clock badge, milk badges and weight badges",
+     "two panda cubs at two months old"
+    ],
+    "shape": "why_it_happens",
+    "source": "Smithsonian's National Zoo, update of 23 Aug 2015 on Mei Xiang's twins: 'Giant pandas give birth to twins approximately 50 percent of the time'; cubs weighed 138 g and 86.3 g; 'The panda team will alternately swap the cubs, allowing one to nurse and spend time with Mei Xiang' while the other is kept warm in an incubator and bottle-fed; 'Much of their methods will be dictated by Mei Xiang'. Why one twin is usually lost: Rebecca Snyder, Zoo Atlanta's curator of mammals, in National Geographic, 17 Jul 2013: 'Sometimes they're just not capable of getting them positioned and one of them fails'; that zoo swapped its twins 'every few hours'. That Mei Xiang at times would not put a cub down, delaying swaps, is from news reports of Aug 2015 (NBC Washington, CBS) read as search summaries. Still done today: CCTV+ report carried by Bastille Post, 15 Aug 2026, from the China Conservation and Research Center for the Giant Panda's Ya'an base: the panda Qian Qian's twins, born 10 Jun 2026, are rotated by keepers, one nursing with her while the other rests in an incubator, and weighed 3,140 g and 2,840 g at two months: https://www.bastillepost.com/global/article/6084392-giant-panda-qian-qian-cradles-newborn-twins-as-keepers-rotate-nursing-shift 'Never knew' in the ending is how news reports put it; no source read says what the mother notices, so it may need softening. News reports also say a mother lacks the milk for two; no zoo source read confirms it, so it's left out. The smaller of the 2015 National Zoo twins died days later; the method raises the odds, it doesn't guarantee both.",
+    "source_url": "https://nationalzoo.si.edu/node/7988",
+    "terms": [
+     "panda",
+     "twins"
+    ],
+    "like": [
+     "How Hospitals Prevent Baby Mix-Ups",
+     "Why Rescuers Put Sweaters On Penguins"
+    ],
+    "silent": "A hand lifting a tiny pink newborn cub away from a giant panda who is holding another one.",
+    "mistake": "Someone is taking a newborn away from its mother.",
+    "stake": "The second twin: left alone, it's the one that doesn't get held or fed.",
+    "seen": "Two cubs changing places between the mother's arms and an incubator, again and again, a milk badge filling for whichever is with her, and both growing.",
+    "checker_fixes": [
+     "Ending said: 'She never raised two cubs at once. She raised one at a time, twice.' (drop 'and never knew': no source)",
+     "Step 1: 'about 85 to 140 grams'.",
+     "Truth and step 2: 'she often can't hold and feed two newborns at once, and one is left'.",
+     "Turn: use Zoo Atlanta 2013 (the mother was reluctant to give a cub up, both cubs got formula, both lived), not the National Zoo 2015 twins, whose smaller cub died four days after birth."
+    ]
+   },
+   "reading": "Nov 11, 2026. Said after the whale idea was shown, with the panda twins, the premature baby in a plastic bag and the sequoia burns named but not shown in full. Kept as a backlog of ideas to build later, not an order to build. They have not ruled on the baby's first picture."
+  },
+  {
+   "date": "2026-11-11",
+   "category": "explainers",
+   "verdict": "took",
+   "idea": "Why a baby born very early is put straight into a plastic bag, still wet",
+   "their_words": [
+    "i thik just add all of them to backlog"
+   ],
+   "terms": [
+    "premature",
+    "bag"
+   ],
+   "card": {
+    "topic": "Why a baby born very early is put straight into a plastic bag, still wet",
+    "hook": "A tiny newborn has just been slid into a clear plastic bag.",
+    "first_picture": "A very small newborn baby under a warming lamp, its body inside a clear plastic bag up to the neck, its head outside the bag in a small knitted hat, a nurse's gloved hands closing the bag.",
+    "people_think": "That a plastic bag is the last thing you'd put a baby in, and that a wet newborn should be rubbed dry and wrapped in a warm blanket.",
+    "truth": "A baby born more than eight weeks early arrives wet, and the water drying off its skin carries its heat away faster than its small body can make more. Drying it with a towel takes time and leaves the skin bare. So the team dries only the head, puts on a hat, and slides the wet body into a polythene bag up to the neck. The water can't leave the bag, so the heat stays in the baby.",
+    "steps": [
+     "A baby born before 32 weeks arrives very small and wet, into a room far cooler than the womb.",
+     "As the water on its skin dries off into the air, it takes heat from the baby with it, and the baby's temperature starts to fall.",
+     "So the team doesn't dry the body. They dry only the head and put a hat on it, and slide the wet body into a clear polythene bag up to the neck.",
+     "Inside the bag the water has nowhere to go, so it stops carrying heat away, and a warming lamp above keeps heating the baby through the bag.",
+     "The baby's temperature holds: in the trial that started it, bagged babies reached the ward at 36.5 C on average, and towel-dried babies at 35.6 C."
+    ],
+    "turn": "It works well enough to cause the opposite problem. Across the trials, about 12 in every 1,000 babies cared for the usual way got too hot, and about 46 in every 1,000 of the bagged ones did. So a thermometer stays on the baby the whole time, and the aim is a narrow band: 36.5 to 37.5 C.",
+    "ending": "The baby lies in an incubator, still in its bag and hat, with a thermometer badge reading 37.0 beside it, and beside that the same scene without the bag, the badge falling. Said: the cold room wasn't the danger. Drying off was. So they don't let the baby dry.",
+    "inside": "Close on the baby's wet skin: water leaving it as small balls rising into the air, each one carrying off a small warm glow, a thermometer badge falling. Then the bag closes round the body: the balls rise, meet the plastic and stay inside, the glow stays on the baby, and warmth from the lamp above comes down through the bag. The badge holds.",
+    "needs": [
+     "a very small newborn baby, shown plainly and gently, head always outside the bag",
+     "a clear polythene bag closed at the neck",
+     "a small knitted hat",
+     "a warming lamp over a cot",
+     "a nurse's gloved hands",
+     "water leaving skin as small balls, with warm glows",
+     "a thermometer badge",
+     "an incubator"
+    ],
+    "shape": "why_it_happens",
+    "source": "Resuscitation Council UK, Newborn resuscitation and support of transition of infants at birth, guidelines published 27 Oct 2025 (which also shows it is today's practice), under 'Newborn infants < 32 weeks': 'Dry the infant's head and cover with a hat'; 'Put the infant's body in a plastic (polyethene) bag or wrap without drying'; 'Use a preheated heat source (e.g. radiant warmer)'; all newborns to be kept between 36.5 C and 37.5 C. The American Heart Association's 2025 neonatal guidelines also name plastic wrap or a bag, by a search summary; their page refused to open. Temperatures: Vohra and others, Journal of Pediatrics, 2004, a trial in babies under 28 weeks wrapped from the neck down with only the head dried: 36.5 C against 35.6 C on admission (read in a search summary of the abstract; an hour later the two groups were alike). Hypothermia and overheating: Cochrane review of 2018 as summarised by the UK's NIHR: 495 against 738 per 1,000 babies cold on admission; overheating 46 against 12 per 1,000; no clear difference in deaths (153 against 168 per 1,000): https://evidence.nihr.ac.uk/alert/plastic-wraps-or-bags-keep-pre-term-infants-warm-immediately-after-birth That evaporation from wet skin is the largest route of heat loss in these babies, and that the bag cuts it, is from Oatley, Blencowe and Lawn, Journal of Perinatology, 2016, and the Cochrane review, both read in search summaries. That the lamp's warmth passes through the clear bag is our reading of why the guideline pairs the bag with a radiant warmer, not a quoted sentence. This is done by a hospital team under a heater with the head outside the bag: the short must show that plainly, since a plastic bag is otherwise a danger to a baby.",
+    "source_url": "https://www.resus.org.uk/node/36506",
+    "terms": [
+     "premature",
+     "bag"
+    ],
+    "like": [
+     "How Hospitals Prevent Baby Mix-Ups",
+     "Premature Babies Displayed At Carnivals"
+    ],
+    "silent": "A tiny newborn baby in a clear plastic bag up to its neck, a nurse's hands closing the bag.",
+    "mistake": "A plastic bag is what you keep away from a baby, and this one is wet and hasn't even been dried.",
+    "stake": "A baby born more than eight weeks early, whose temperature starts falling the moment it's born.",
+    "seen": "Water leaving wet skin as small balls that each carry off a glow of heat while a thermometer falls; then the same balls stopped by the bag, the glow staying, and the thermometer holding.",
+    "checker_fixes": [
+     "THE OWNER HAS NOT RULED ON THE FIRST PICTURE: with the sound off, a baby in a plastic bag reads as harm to a child, and a plastic bag on a baby outside a hospital is a suffocation hazard. Ask before any script.",
+     "Step 5: 'in an early trial of babies born before 28 weeks, bagged babies reached the ward at 36.5 C on average, and towel-dried babies at 35.6 C'.",
+     "Step 4 and inside: 'a warmer above keeps heating the baby', without 'through the bag'.",
+     "Truth: cut 'Drying it with a towel takes time and leaves the skin bare'.",
+     "Ending said: 'The cold room wasn't the only danger. Drying off was the bigger one. So they don't let the baby dry.'",
+     "Ending picture: a falling thermometer badge alone, not a second unbagged baby.",
+     "The seen test is weak: heat leaving wet skin is shown only by balls, glows and a badge."
+    ]
+   },
+   "reading": "Nov 11, 2026. Said after the whale idea was shown, with the panda twins, the premature baby in a plastic bag and the sequoia burns named but not shown in full. Kept as a backlog of ideas to build later, not an order to build. They have not ruled on the baby's first picture."
+  },
+  {
+   "date": "2026-11-11",
+   "category": "explainers",
+   "verdict": "took",
+   "idea": "Why fire crews set fire to the ground under giant sequoias",
+   "their_words": [
+    "i thik just add all of them to backlog"
+   ],
+   "terms": [
+    "sequoia",
+    "fire"
+   ],
+   "card": {
+    "topic": "Why fire crews set fire to the ground under giant sequoias",
+    "hook": "These firefighters are setting fire to the ground under the world's biggest trees.",
+    "first_picture": "The huge red trunk of a giant sequoia, a firefighter small at its foot, and a line of low flame spreading across the forest floor toward the trunk from where the firefighter stands.",
+    "people_think": "That fire is the one thing these trees need protecting from, so the job is to put every fire out. Lighting one on purpose looks like vandalism.",
+    "truth": "A low fire is what keeps a sequoia grove alive. It burns up the dead wood on the ground before that wood can feed a big fire, the tree's bark is thick enough to shrug it off, and the heat opens the tree's cones so its seeds fall onto the bare soil they need.",
+    "steps": [
+     "Dead branches, needles and logs pile up on the ground under the trees, year after year: fuel waiting for a fire.",
+     "A crew lights a low fire on a calm, damp day, and it creeps along the ground eating that fuel.",
+     "The flames reach the trunk and do little: a sequoia's bark is fibrous and up to 18 inches (46 cm) thick, so it resists burning and keeps the heat out of the living wood.",
+     "Hot air rises into the branches and dries out the old cones, which have held their seeds shut for as long as 20 years. They open, and within a week or two the seeds begin to fall.",
+     "The seeds land on soil the fire has swept bare, the only ground where they can sprout, with sunlight reaching it.",
+     "When a wildfire comes later, it reaches the burned ground and finds little left to burn: in 2021 one was stopped below the General Sherman Tree by a patch burned on purpose in 2019."
+    ],
+    "turn": "For about a hundred years people put the fires out, and the fuel kept piling up. Then one wildfire in 2020 killed an estimated 7,500 to 10,600 large sequoias. A study in 2026 of about 26,400 sequoias in those fires found that trees standing where crews had burned on purpose were nearly four times more likely to survive.",
+    "ending": "Blackened ground under the giant, its trunk scorched at the foot and green at the top, and a scatter of tiny green seedlings coming up through the ash. Said: putting every fire out is what nearly killed them. Lighting small ones is how they're kept alive.",
+    "inside": "A cut through the trunk at ground level: flame against the bark, a heat glow that fades out inside the thick bark and never reaches the pale living wood. Then up in the branches: warm air as rising balls reaching a closed green cone, the cone drying brown and opening, seeds spinning down. Then from above: a wall of wildfire running through thick fuel, reaching the black burned patch and dying down.",
+    "needs": [
+     "a giant sequoia, trunk and crown",
+     "a firefighter with a hand torch, standing",
+     "forest floor litter: needles, branches, logs",
+     "low ground flames and blackened ground",
+     "a cutaway of bark and wood at the trunk's foot",
+     "heat as a glow, warm air as rising balls",
+     "a sequoia cone, closed and open, with seeds",
+     "seedlings in ash, and a tall wildfire front for the comparison"
+    ],
+    "shape": "why_it_happens",
+    "source": "US National Park Service, Sequoia and Kings Canyon National Parks, Giant Sequoias: bark 'up to 18 inches (46 cm) thick and extremely fibrous' resists burning and insulates; seeds held 'in closed cones for perhaps 20 years'; 'When fire burns through the forest the hot air dries out older cones', which open, and 'within a week or two' seeds fall onto 'fire-swept, bare soil'; 'To germinate and survive, sequoia seeds must fall on the mineral soil left bare by fire'; fire clears competitors for the sunlight young sequoias need. Still done today: NPS news release of 16 Oct 2026, a 482-acre prescribed fire in the Grant Grove area of Kings Canyon to start 17 Oct 2026 ('Prescribed burns promote the regeneration of giant sequoias'): https://www.nps.gov/seki/learn/news/update-prescribed-burning-planned-at-grant-grove-starting-october-17-to-reduce-wildfire-risk.htm ; and NPS, 24 Jun 2025, about 126 acres burned at Big Stump East to help defend Grant Grove. The 2021 fire stopped 'below the General Sherman Tree by a 2019 prescribed burn unit': NPS, Two Sequoia Groves and a Wildfire: https://www.nps.gov/seki/two-sequoia-groves-and-a-wildfire.htm Castle Fire, 2020, 'killed an estimated 7,500 to 10,600 large sequoias' (preliminary), after a 'lack of frequent fire for the past century in most groves', where fire once burned every 6 to 35 years: NPS, Wildfires Kill Unprecedented Numbers of Large Sequoia Trees. The 2026 study: Dixon and others, Nature Communications, as reported by UC Davis on 22 Jul 2026 (about 26,400 sequoias in 19 groves; treated trees 'nearly four times more likely to survive'; about 1,900 deaths prevented): https://www.ucdavis.edu/climate/news/prescribed-burns-saved-thousands-giant-sequoias The October 2026 release doesn't say whether the burn went ahead or that sequoias stand inside that unit, and no release read says how the fire is lit: the hand torch and the 'calm, damp day' are our picture of a prescribed burn, not the Park Service's words.",
+    "source_url": "https://www.nps.gov/seki/learn/nature/bigtrees.htm",
+    "terms": [
+     "sequoia",
+     "fire"
+    ],
+    "like": [
+     "Why Ranchers Burn Cactus",
+     "Why They Set This Fortress On Fire"
+    ],
+    "silent": "A firefighter at the foot of an enormous tree, with flames spreading from their hands across the ground toward its trunk.",
+    "mistake": "The people whose job is putting fires out are lighting one under the biggest trees on Earth.",
+    "stake": "The largest trees alive, thousands of which were killed by wildfire in 2020 and 2021.",
+    "seen": "Low flames eating the dead wood on the ground and stopping at bark too thick to burn through; cones drying open in the rising heat and seeds falling; a wildfire reaching the burned patch and dying down.",
+    "checker_fixes": [
+     "Turn: 'Then one wildfire in 2020 killed an estimated 7,500 to 10,600 large sequoias, and another came the next year. A 2026 study of about 26,400 sequoias in those two fires found that trees where crews had burned on purpose in the ten years before were nearly four times more likely to survive.'",
+     "Step 6: 'its growth was stopped below the General Sherman Tree'.",
+     "Step 2: 'A crew lights a low fire on a day chosen for its weather'.",
+     "Source: 'still done today' rests on Big Stump East, ignitions complete 24 Jun 2025, about 126 acres; the October 2026 Grant Grove burn was planned and not confirmed lit."
+    ]
+   },
+   "reading": "Nov 11, 2026. Said after the whale idea was shown, with the panda twins, the premature baby in a plastic bag and the sequoia burns named but not shown in full. Kept as a backlog of ideas to build later, not an order to build. They have not ruled on the baby's first picture."
   }
  ]
 }

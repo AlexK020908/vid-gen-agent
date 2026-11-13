@@ -1,0 +1,98 @@
+{
+ "what": "a white bathroom scale whose display reads 25 KG",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "body",
+    "kind": "box",
+    "size": [
+     0.32,
+     0.32,
+     0.045
+    ],
+    "at": [
+     0,
+     0,
+     0.0225
+    ],
+    "material": {
+     "color": [
+      0.88,
+      0.88,
+      0.87
+     ],
+     "rough": 0.3,
+     "coat": 0.5
+    },
+    "bevel": 0.012
+   },
+   {
+    "id": "window",
+    "kind": "box",
+    "size": [
+     0.13,
+     0.055,
+     0.003
+    ],
+    "at": [
+     0,
+     -0.115,
+     0.046
+    ],
+    "material": {
+     "color": [
+      0.03,
+      0.05,
+      0.04
+     ],
+     "rough": 0.2,
+     "coat": 0.8
+    }
+   },
+   {
+    "id": "reading",
+    "kind": "text",
+    "body": "25 KG",
+    "height": 0.032,
+    "depth": 0.0012,
+    "at": [
+     0,
+     -0.115,
+     0.0475
+    ],
+    "rot": [
+     -90,
+     0,
+     0
+    ],
+    "material": {
+     "color": [
+      0.3,
+      1.0,
+      0.55
+     ],
+     "rough": 0.4,
+     "glow": 2.0
+    }
+   }
+  ]
+ },
+ "spots": {
+  "top": [
+   0,
+   0.03,
+   0.045
+  ],
+  "reading": [
+   0,
+   -0.115,
+   0.048
+  ],
+  "middle": [
+   0,
+   0,
+   0.022
+  ]
+ }
+}

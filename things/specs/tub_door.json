@@ -1,0 +1,46 @@
+{
+ "what": "a round glass door for the tub's mouth, 36 cm across, in a dark rim",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "glass",
+    "kind": "cylinder",
+    "r": 0.176,
+    "h": 0.006,
+    "at": [
+     0,
+     0,
+     0
+    ],
+    "material": {
+     "color": [
+      0.7,
+      0.75,
+      0.8
+     ],
+     "rough": 0.02,
+     "clear": 0.97
+    },
+    "segments": 64,
+    "rot": [
+     90,
+     0,
+     0
+    ]
+   }
+  ]
+ },
+ "spots": {
+  "seat": [
+   0,
+   0,
+   0
+  ],
+  "middle": [
+   0,
+   -0.003,
+   0
+  ]
+ }
+}

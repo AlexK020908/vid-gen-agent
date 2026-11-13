@@ -38,8 +38,8 @@ def _work(ctx, conn, video) -> None:
                                  script, lambda found: ctx.llm.script(
                                      channel, outline, notes + found, script,
                                      ctx.meter(conn, video, NAME, "the script, revised"), progress, earlier))
-        script = transitions.checked_script(ctx, conn, video, channel, outline, script, lambda found: ctx.llm.script(
-            channel, outline, notes + found, script, ctx.meter(conn, video, NAME, "the script, revised for its joins"),
+        script = transitions.checked_script(ctx, conn, video, channel, outline, script, lambda found, draft: ctx.llm.script(
+            channel, outline, notes + found, draft, ctx.meter(conn, video, NAME, "the script, revised for its joins"),
             progress, earlier))
     except Stopped:  # back to the draft the reviewer or the check of the joins was reading
         db.update_video(conn, video["id"], script_json=json.dumps(script["scenes"]),

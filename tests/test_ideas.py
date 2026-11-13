@@ -17,6 +17,8 @@ INVENTIONS = briefs.load(ROOT, "inventions")
 
 def _card(**changes) -> dict:
     card = {"topic": "Why no straw works past ten metres", "hook": "If you built a straw as tall as a house, nothing would come up it, however hard you sucked.",
+            "silent": "A man red in the face on a straw three floors tall, the water stuck halfway.", "mistake": "A straw that tall looks like a joke.",
+            "stake": "A thirsty man who cannot get a drink.", "seen": "The water climbing and stopping at ten metres.",
             "people_think": "You suck the water up, so sucking harder lifts it higher.", "truth": "The air outside pushes the water up, and it can only push so far.",
             "steps": ["Sucking takes air out of the straw.", "The air outside pushes down on the water.", "That push only holds up ten metres of water."],
             "turn": "A redwood lifts water ten times higher than that.", "first_picture": "A man sucking on a straw three floors tall.", "inside": "A cut through the straw, with air as moving balls.",
@@ -28,6 +30,8 @@ def _card(**changes) -> dict:
 
 def _machine(**changes) -> dict:
     card = {"topic": "You invent the pile driver", "hook": "This is a nail, and one tap puts it in. Now make it a hundred times bigger.",
+            "silent": "A nail the size of a tree standing on the ground.", "mistake": "Nobody could hammer that.", "stake": "The house that needs it driven.",
+            "seen": "The ram falling and the pile going down a step.",
             "first_picture": "A hand tapping a nail into a plank.", "everyday": "Tapping a nail in with a hammer.", "goal": "Get the giant nail into the ground.",
             "steps": ["Too heavy to swing, so drop a block: the ram.", "Too slow to lift, so explosives push it up.", "It lands crooked, so guide rods.",
                       "Explosives are deadly, so burn fuel: the injector."],

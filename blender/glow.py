@@ -395,8 +395,9 @@ def ghost_materials(mats: list, color, begin: int, end: int, fade: int, last: in
         tree.links.new(last_shader, output.inputs["Surface"])
 
 
-def tint(meshes: list, color, begin: int, end: int, amount: float = 1.0) -> None:
-    """These meshes' own color multiplied toward `color` from `begin` to `end`, and staying there."""
+def tint(meshes: list, color, begin: int, end: int, amount: float = 1.0, mix: bool = False) -> None:
+    """These meshes' own color multiplied toward `color` from `begin` to `end`, and staying there: a steak browning. With `mix` it goes to that color
+    instead, whatever it was: multiplying only ever darkens, so mud going the blue of the shirt under it came out black."""
     for mat in _materials(meshes):
         tree = mat.node_tree
         bsdf = next((n for n in tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
@@ -405,7 +406,7 @@ def tint(meshes: list, color, begin: int, end: int, amount: float = 1.0) -> None
         base = bsdf.inputs["Base Color"]
         multiply = tree.nodes.new("ShaderNodeMix")
         multiply.data_type = "RGBA"
-        multiply.blend_type = "MULTIPLY"
+        multiply.blend_type = "MIX" if mix else "MULTIPLY"
         if base.links:
             tree.links.new(base.links[0].from_socket, multiply.inputs[6])
         else:

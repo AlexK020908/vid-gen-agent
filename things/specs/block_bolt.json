@@ -1,0 +1,55 @@
+{
+ "what": "a steel bolt with a wide hex head, 6 cm long",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "head",
+    "kind": "cylinder",
+    "r": 0.016,
+    "h": 0.01,
+    "at": [
+     0,
+     0,
+     0
+    ],
+    "material": "bright_steel",
+    "segments": 6,
+    "rot": [
+     90,
+     0,
+     0
+    ]
+   },
+   {
+    "id": "shank",
+    "kind": "cylinder",
+    "r": 0.007,
+    "h": 0.05,
+    "at": [
+     0,
+     0.05,
+     0
+    ],
+    "material": "bright_steel",
+    "rot": [
+     90,
+     0,
+     0
+    ]
+   }
+  ]
+ },
+ "spots": {
+  "seat": [
+   0,
+   0,
+   0
+  ],
+  "middle": [
+   0,
+   -0.005,
+   0
+  ]
+ }
+}

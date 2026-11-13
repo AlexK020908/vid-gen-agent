@@ -21,6 +21,15 @@ An idea here is a mysterious event re-staged in 3D: the strange thing seen first
 7. **The cause is nature, an accident or a mistake.** A case with someone to blame is a crime, and its brief is `crimes.md`.
 8. **An invented case plays fair**: every clue the answer needs is seen before the answer, and the answer rests on something true (ice melts, a candle burns at a steady rate), named in `source`. His invented stories do a little better than his median (`(fiction)` in his titles, 1.5x in the middle over 27 shorts, with far more comments), a lean worth knowing.
 
+## Unsolved cases and conspiracy theories
+
+The owner, Nov 11, 2026: "also research on unsolved mysteries too, u can have conspiracies". So a card may be a case nobody has solved, and it may be about a conspiracy theory. How each is told:
+
+- **Unsolved stays unsolved.** The short shows the strange thing, the clues, and then the two or three explanations people hold, each one staged as it would have happened and each tested against the clues on the picture: this one fits the footprints and not the clock. It ends on the clue no explanation covers, said plainly as still open. `solved` says "unsolved" and names what's still argued. Never invent an answer to close it.
+- **A conspiracy theory is told as a theory.** What some people believe, where the belief started, and the physical evidence for and against it, each piece seen. The words always mark it ("some believe", "the theory says"), and the short says what the record shows. `answer` is what the evidence best supports, and `solved` says how firmly. It's a theory about an event, a place or a thing, never a charge against a person or a people.
+- **What stays out, whatever the views:** a theory that blames a religion, a people or a group; one that denies a massacre, an attack or a disaster in which people died, or says its victims were actors; one about medicine, vaccines or an illness; one about an election; one that accuses a named living person, or someone no court found guilty, of a crime; one about a case less than fifty years old with victims' families living.
+- The four tests still hold where they can (`all.md`): a first second that stops someone with the sound off, something or someone at stake, and clues that are seen, not said.
+
 ## Where to look
 
 - Wikipedia's lists of unexplained events, ghost ships, disappearances and explained phenomena, with what they cite; official inquiries; the papers or investigations that finally explained one.

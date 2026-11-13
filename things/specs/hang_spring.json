@@ -1,0 +1,65 @@
+{
+ "what": "a long steel coil spring with a hook at each end, 24 cm hook to hook",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "coil",
+    "kind": "spring",
+    "r": 0.022,
+    "wire": 0.0045,
+    "turns": 9,
+    "h": 0.204,
+    "at": [
+     0,
+     0,
+     0.02
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "hook_top",
+    "kind": "torus",
+    "major": 0.012,
+    "minor": 0.004,
+    "axis": "y",
+    "at": [
+     0,
+     0,
+     0.23199999999999998
+    ],
+    "material": "bright_steel"
+   },
+   {
+    "id": "hook_low",
+    "kind": "torus",
+    "major": 0.012,
+    "minor": 0.004,
+    "axis": "y",
+    "at": [
+     0,
+     0,
+     0.012
+    ],
+    "material": "bright_steel"
+   }
+  ]
+ },
+ "spots": {
+  "top": [
+   0,
+   0,
+   0.244
+  ],
+  "bottom": [
+   0,
+   0,
+   0
+  ],
+  "middle": [
+   0,
+   0,
+   0.122
+  ]
+ }
+}

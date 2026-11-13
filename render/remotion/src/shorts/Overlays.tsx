@@ -210,6 +210,9 @@ export const TagMark: React.FC<{t: Tag}> = ({t}) => {
         alignItems: 'center',
         opacity,
         ...labelStyle(color, t.size ?? 38),
+        // a dark halo round the words and the icon, so a red verdict still reads over skin or a red glove (three reviewers
+        // running called NO TOUCH, ONE TOUCH and NOTHING hard to read there, Nov 12, 2026). Over a dark picture it doesn't show.
+        filter: 'drop-shadow(0 0 9px rgba(0,0,0,0.8)) drop-shadow(0 0 22px rgba(0,0,0,0.6))',
       }}
     >
       {t.kind === 'fail' || t.kind === 'ok' ? <Icon icon={t.icon ?? (t.kind === 'ok' ? 'check' : 'x')} color={color} size={t.size ?? 38} /> : null}

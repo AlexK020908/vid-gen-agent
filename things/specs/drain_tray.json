@@ -1,0 +1,79 @@
+{
+ "what": "a steel trough on the floor that the drain runs into, 68 cm long and 12 cm deep",
+ "source": {
+  "kind": "built",
+  "parts": [
+   {
+    "id": "hole",
+    "kind": "box",
+    "size": [
+     0.2,
+     0.66,
+     0.08
+    ],
+    "at": [
+     0,
+     0,
+     0.05
+    ],
+    "material": "steel",
+    "helper": true
+   },
+   {
+    "id": "tray",
+    "kind": "box",
+    "size": [
+     0.22,
+     0.68,
+     0.07
+    ],
+    "at": [
+     0,
+     0,
+     0.035
+    ],
+    "material": "stainless",
+    "subtract": [
+     "hole"
+    ],
+    "bevel": 0.004
+   },
+   {
+    "id": "water",
+    "kind": "box",
+    "size": [
+     0.1995,
+     0.6595,
+     0.058
+    ],
+    "at": [
+     0,
+     0,
+     0.0395
+    ],
+    "material": {
+     "color": [
+      0.42,
+      0.62,
+      0.86
+     ],
+     "rough": 0.04,
+     "clear": 0.55
+    },
+    "liquid": true
+   }
+  ]
+ },
+ "spots": {
+  "middle": [
+   0,
+   0,
+   0.035
+  ],
+  "surface": [
+   0,
+   0,
+   0.04
+  ]
+ }
+}

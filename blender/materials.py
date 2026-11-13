@@ -516,6 +516,7 @@ _BUILD = {
     "gym_trim": lambda n: _plain(n, (0.70, 0.80, 0.92), roughness=0.45),
     "impact_red": lambda n: _plain(n, (1.0, 0.04, 0.03), emission=7.0),                  # shock rings on a hit
     "spark": lambda n: _plain(n, (1.0, 0.95, 0.85), emission=9.0),
+    "water_drop": lambda n: _plain(n, (0.08, 0.42, 0.95), roughness=0.05, emission=0.8),    # a drop flung off something wet: a strong blue that reads small
     "stainless": lambda n: _plain(n, (0.56, 0.56, 0.57), metallic=1.0, roughness=0.24),    # a good steel pan
     "cast_iron": lambda n: _plain(n, (0.17, 0.16, 0.15), metallic=0.92, roughness=0.4),    # a seasoned iron pan
     "black_glass": _black_glass,                                                           # a cooktop's top
