@@ -215,6 +215,8 @@ Sizes are in meters. A part has an `id`, a `kind` with its sizes, a `material`, 
 
 ### Overlays and sound (`render/remotion/src/shorts/`)
 
+**Since Nov 20, 2026 the 3D shorts carry captions only:** no callouts, tags, counters or titles over the picture. The owner on the poop jet's labels ("ABOUT 470 KG", "ENGINE: BUTT"): "those are extra, we dont need those, just anitmations and the subtitles are fine". The voice says the numbers and the picture shows them. The components below stay for the 2D systems shorts, whose badges (HIT, MISS, times) the owner asked for on Nov 9.
+
 - **Captions,** set per channel:
   - `box` is A's: sentence case, white in a dark rounded box, just above the platform's caption area;
   - `word` is B's: one word at a time, big, white with a dark outline, in the middle.
