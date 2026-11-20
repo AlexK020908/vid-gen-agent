@@ -7,7 +7,9 @@ export type Point = [number, number, boolean];
 export type Tone = 'yellow' | 'white' | 'blue' | 'red' | 'green';
 
 // a "\n" in the text breaks the line there
-export type Caption = {text: string; from: number; to: number};
+// `at`: how far down the picture the line sits, as a share of its height (0.72 unless a shot's action is there: the poop jet's
+// panel, Nov 19, 2026, found lines sitting on the spray and the jet being hit)
+export type Caption = {text: string; from: number; to: number; at?: number};
 
 // A part's label: a dot on the anchor, a leader line, the label beside it on `side`
 // `stay` keeps a label on its side past the safe area, where the other side would put it on something it can't be

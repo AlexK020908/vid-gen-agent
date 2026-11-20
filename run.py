@@ -258,13 +258,15 @@ def _ideas(args) -> None:
     elif args.do == "show":
         leads.show(folder, args.what or "")
     elif args.do == "reference":
-        if args.words:
+        if args.map:
+            reference.catalogue(cfg.data_dir, top=args.top)
+        elif args.words:
             reference.show(cfg.data_dir, [w for w in args.words.split(",") if w.strip()], top=args.top)
         elif args.category:
             brief = briefs.load(cfg.root, args.category)
             reference.show(cfg.data_dir, list(brief.words), name=brief.name, top=args.top)
         else:
-            sys.exit(f"give a category ({', '.join(briefs.names(cfg.root))}) or --words")
+            sys.exit(f"give a category ({', '.join(briefs.names(cfg.root))}), --words or --map")
     elif args.do == "taste":
         taste.show(cfg.root / "ideas")
     elif args.do == "verdict":
@@ -628,6 +630,7 @@ def main() -> None:
     q = ideas.add_parser("reference", help="the reference's shorts of a kind, best first, against his median for their quarter")
     q.add_argument("category", nargs="?", help="a category's brief (prompts/ideas/<category>.md), for its words")
     q.add_argument("--words", help="these words instead, by commas: a whole word, singular or plural, or the start of one with *")
+    q.add_argument("--map", action="store_true", help="everything he posts, by kind: how much of it each kind is and how each did")
     q.add_argument("--top", type=int, default=25, help="how many of the best to list")
     ideas.add_parser("taste", help="what the owner liked, took, turned down and was offered, in their words (ideas/taste.json)")
     q = ideas.add_parser("verdict", help="keep the owner's answer on one card in the taste file, with what they said")

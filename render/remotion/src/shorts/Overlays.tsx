@@ -24,8 +24,11 @@ export const CaptionBig: React.FC<{captions: Caption[]}> = ({captions}) => {
   if (!cur) return null;
   return (
     <AbsoluteFill style={{alignItems: 'center'}}>
-      <div style={{position: 'absolute', top: SHORT_H * 0.72, width: SHORT_W * 0.8, textAlign: 'center', fontFamily: FONT,
-        fontWeight: 800, fontSize: 68, lineHeight: 1.1, color: 'white', whiteSpace: 'pre-line',
+      <div style={{position: 'absolute', top: SHORT_H * (cur.at ?? 0.72), width: SHORT_W * 0.8, textAlign: 'center', fontFamily: FONT,
+        fontWeight: 800, fontSize: 68, lineHeight: 1.1, color: 'white', whiteSpace: 'pre-line', textWrap: 'balance',
+        // a thin dark outline under the white, so it reads on a white plate as well as in a dark kitchen (the microwave short's
+        // sixth cut, Nov 16, 2026: white on white, washed out)
+        WebkitTextStroke: '8px rgba(0,0,0,0.85)', paintOrder: 'stroke fill',
         textShadow: '0 2px 3px rgba(0,0,0,0.9), 0 0 14px rgba(0,0,0,0.75), 0 4px 22px rgba(0,0,0,0.5)'}}>
         {cur.text}
       </div>

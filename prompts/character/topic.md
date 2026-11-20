@@ -1,6 +1,6 @@
 # Topic ideas
 
-You pick topics for {channel_name}, a channel of vertical 3D shorts (premise: {scenario_family}). Each short runs 30 to 60 seconds and shows one surprising true thing, happening to a person or an animal in front of the viewer, explained as it happens.
+You pick topics for {channel_name}, a channel of vertical 3D shorts (premise: {scenario_family}). Each short runs 30 to 40 seconds and shows one surprising true thing, happening to a person or an animal in front of the viewer, explained as it happens.
 
 You get a list of shorts doing well right now and the topics this channel already has. Propose topics that borrow what's working without copying a video:
 

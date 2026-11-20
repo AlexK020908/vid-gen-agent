@@ -127,3 +127,71 @@ def show(data_dir: Path, words: list[str], name: str = "", top: int = 25, say=pr
     say("A lean, not a score: blind judges couldn't pick his winners from titles. Read what each promises in its first second, and never reuse his "
         "titles or wording.")
     return s
+
+
+# ---------------------------------------------------------------------------------------------------------------- the whole catalogue, by kind
+def _opens(*openings: str):
+    return lambda title: any(title == o or title.startswith(o + " ") for o in openings)
+
+
+def _has(*words: str):
+    patterns = [_pattern(w) for w in words]
+    return lambda title: any(p.search(title) for p in patterns)
+
+
+# The kinds of short he posts, told from a title alone: how it opens, or a word in it. A first map and not a careful sort: a title says only part
+# of what a short is, kinds overlap, and about half his titles open in none of these ways.
+KINDS = {
+    "explainers: how it works": lambda title: _opens("how", "inside")(title) and not _opens("how to")(title),
+    "explainers: why": _opens("why"),
+    "what ifs": _opens("what if", "what happens", "what would", "if you", "if a", "if the"),
+    "tests: can it, could you": _opens("can", "could", "would", "does", "do", "should", "is it possible"),
+    "advice: how to, what to do if": _opens("how to", "what to do", "never", "don t", "do not"),
+    "a person's story": _opens("he", "she", "they", "his", "her", "man", "woman", "a man", "a woman", "the man", "the woman", "the boy", "the girl", "the guy",
+                               "this man", "this woman", "this boy", "this girl", "this guy"),
+    "crime": _has("murder*", "kill*", "robb*", "heist*", "stole", "steal*", "thief", "thieves", "prison*", "jail*", "serial", "scam*", "fraud*", "fake*",
+                  "kidnap*", "police", "cop", "fbi", "criminal*", "smuggl*", "cartel*", "hitman", "assassin*", "poison*", "crime*", "arrest*", "bank"),      # not "escape": he escapes gorilla exhibits and sinking cars far more than prisons
+    "trapped and survival": _has("cave", "caver*", "trapped", "stuck", "drown*", "diver*", "rescue*", "surviv*", "lost", "strand*", "sank", "sink*", "crash*",
+                                 "buried", "avalanche*", "shipwreck*"),
+    "mystery": _has("myster*", "unsolved", "vanish*", "disappear*", "creepy", "haunted", "curse*", "secret*", "strange*", "weird*", "bizarre"),
+    "war and old history": _has("war", "wars", "ww2", "wwii", "soldier*", "army", "nazi*", "ancient", "medieval", "roman*", "viking*", "samurai*", "knight*",
+                                "sword*", "castle*", "pirate*", "egypt*", "pharaoh*", "titanic", "bomb*", "tank*", "sniper*"),
+    "the body and medicine": _has("body", "brain*", "heart*", "blood", "teeth", "tooth", "stomach*", "eye*", "skin", "bone*", "surgery", "surgeon*", "doctor*",
+                                  "disease*", "virus*", "lung*", "poop*", "pee", "sleep*", "die*", "death*", "dead", "pain*", "hair"),
+    "animals": _has("animal*", "dog*", "cat*", "shark*", "snake*", "bear*", "whale*", "spider*", "bird*", "fish*", "horse*", "cow*", "pig*", "elephant*", "lion*",
+                    "tiger*", "monkey*", "gorilla*", "ant*", "bee*", "crocodile*", "octopus*", "rat*", "mouse", "mice", "wolf", "wolves", "insect*", "bug*",
+                    "turtle*", "frog*", "chicken*", "dinosaur*"),
+    "machines and inventions": _has("invent*", "machine*", "engine*", "robot*", "phone*", "car", "cars", "plane*", "airplane*", "train*", "ship*", "submarine*",
+                                    "rocket*", "elevator*", "bridge*", "factory*", "tunnel*", "skyscraper*", "building*", "gun*", "bullet*", "lock*", "toilet*", "atm"),
+    "space": _has("space", "astronaut*", "moon", "mars", "planet*", "sun", "earth", "black hole*", "nasa", "asteroid*"),
+    "food": _has("food*", "eat*", "ate", "cook*", "mcdonald*", "candy", "chocolate", "meat", "egg*", "milk", "cheese", "pizza", "burger*", "sugar", "salt",
+                 "coffee", "gum"),
+}
+
+
+def kinds(judged: list[dict]) -> list[dict]:
+    """Each kind of short among his: how many, their middle against his median for their quarter, and how many reached that quarter's top tenth."""
+    rows = []
+    for name, is_one in KINDS.items():
+        found = [v for v in judged if is_one(plain(v["title"]))]
+        rows.append({"kind": name, "found": found, **summary(found, judged)})
+    return rows
+
+
+def catalogue(data_dir: Path, top: int = 25, say=print) -> list[dict]:
+    """Everything he posts, by kind, and his best shorts of all: what he makes most, and what does better or worse than his usual."""
+    judged = shorts(raw(data_dir))
+    rows = kinds(judged)
+    base = rows[0]["base"] if rows else 0.0
+    say(f"his {len(judged):,} shorts by kind (kinds overlap). Any short reaches his top tenth {base:.0%} of the time.")
+    for row in rows:
+        if not row["n"]:
+            continue
+        say(f"  {row['kind']:30s} {row['n']:5,} ({row['n'] / len(judged):4.0%} of all)   middle {row['median_x']:.2f}x   top tenth {row['top_share']:4.0%} "
+            f"(likely {row['low']:.0%} to {row['high']:.0%})")
+    say(f"  his {top} best, each against its own quarter:")
+    for v in sorted(judged, key=lambda v: -v["x_views"])[:top]:
+        say("  " + line(v))
+    say("A lean, not a score: a kind whose likely range sits wholly above or below the top-tenth rate for all his shorts is the only kind that "
+        "differs from his usual. These are his YouTube counts, sorted by title words alone.")
+    return rows

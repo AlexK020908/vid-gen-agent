@@ -79,6 +79,7 @@ render:
   limits:             # the most a render may take of this computer (render/limits.py); the owner's ask, Nov 12, 2026
     cores: 12         # processor cores Blender may run on, of this machine's 24 (the last ones); null = all of them
     processes: 2      # Blender processes side by side on a film rendered in parts (render/film_parts.py); each holds about 3 GB
+    memory_gb: 24     # the most memory the render processes may commit together, split between them (Windows job objects); Nov 19
     priority: below_normal   # anything else open is served first; normal = no yielding
 
 blender:              # machine shorts (SHORTS.md): Blender 5.2 LTS renders each shot with EEVEE on the GPU

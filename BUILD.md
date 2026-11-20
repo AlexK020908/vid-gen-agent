@@ -60,6 +60,15 @@ The spec is [../plan.md](../plan.md). This file tracks what is built, how it dev
 | 52. A ceiling on what a render takes | Renders are held to some of the processor's cores, a set number of Blender processes and a low priority, so the computer stays usable while one runs. Spec: [A ceiling on what a render takes](#a-ceiling-on-what-a-render-takes-phase-52) | **Built** (Nov 12, 2026): `render.limits` in `stickfleet.yaml`, `render/limits.py`, `render/film_parts.py` |
 | 53. Wartime | A category for the strange things soldiers really did in wars, the one place an idea needn't still exist today, with the hook of the Reel the owner showed taken apart. Spec: [Wartime](#wartime-phase-53) | **Built** (Nov 12, 2026): the brief `prompts/ideas/wartime.md` and the exception in `all.md`. Eleven checked ideas are in `ideas/backlog/wartime/` |
 | 54. Two more recordings: a faker caught, and a survival story | The reference's "She Faked Being Mute For 16 Years" taken apart in the crimes brief, and another creator's cave tragedy, told as a cut through the rock over 2 minutes 41 seconds, as a proposed category. Spec: [Two more recordings](#two-more-recordings-phase-54) | **Built** (Nov 12, 2026): `prompts/ideas/crimes.md`, `prompts/ideas/survival.md`. The owner said yes to survival stories the same day (long, in one video, real deaths shown in animated form); a first batch of six is checked and in `ideas/backlog/survival/`, waiting on the owner's yes or no to each. No renderer for the look yet |
+| 55. A map of what the reference posts | His whole catalogue sorted by kind from its titles, each kind against his median for its quarter, as one command and a section of the shared idea brief. Spec: [What the reference posts](#what-the-reference-posts-phase-55) | **Built** (Nov 12, 2026) |
+| 56. Short, and hooked all the way | Every short now runs 30 to 40 seconds with at most three rounds of problem and fix, something always left unsettled, and a reviewer who names the line where a viewer would swipe away; two more skills on short-form scripts and Reels, read in full before they went in. Spec: [Short, and hooked all the way](#short-and-hooked-all-the-way-phase-56) | **Built** (Nov 13, 2026) |
+| 57. A hook ladder, and a takeaway for true stories | A Reel the owner added on hooks, taken apart into five moves for sharpening a hook's words; and a true story now ends on one lesson the viewer can use. Spec: [A hook ladder and a takeaway](#a-hook-ladder-and-a-takeaway-phase-57) | **Built** (Nov 13, 2026) |
+| 58. A true story is about someone | The owner found the first wartime script abstract and told it back as a story about Mao. True stories are now written from a three-sentence telling, with the people the record names named from the hook on. Spec: [A true story is about someone](#a-true-story-is-about-someone-phase-58) | **Built** (Nov 13, 2026) |
+| 59. A map table that plays itself | The first wartime short's kit: a painted map of eastern China, blocks that wear and change sides, and dates and counters drawn over the picture (a new stamp mark, and a counter that takes a size). Spec: [A map table that plays itself](#a-map-table-that-plays-itself-phase-59) | **Built** (Nov 13, 2026) |
+| 60. Advice with no loophole: the microwave short | The owner's own idea ("why you can't leave silverware in microwave"), written straight in Blender: two microwaves in a dark kitchen, a fork that sparks, the oven's waves and the metal's loose electrons drawn once the view is inside, a twist tie that scorches its towel, the rack made for one oven, and the hand that lifts the fork out. And a rule for every short that gives advice: it leaves no loophole. Spec: [Advice with no loophole](#advice-with-no-loophole-the-microwave-short-phase-60) | **Built** (Nov 14 to 15, 2026): script through seven rounds of a fresh critic and joins checker, voice $0.097 (42.85 s), two full cuts; the owner turned the second down (phase 61) |
+| 61. One question, one fork, and nothing through anything | The owner's verdict on the microwave cut ("pretty bad"): the wrist went through the oven, it didn't open on the question, the rack example didn't make sense, the tie was a second subject, "sloshing" isn't a word people use. Why-shorts now open on the viewer's own question with a few plain words on how the thing works; one object all the way; every film written straight in Blender measures what passes through what on every frame before it renders. Spec: [One question, one fork](#one-question-one-fork-and-nothing-through-anything-phase-61) | **Built** (Nov 15, 2026): new script through three rounds of a fresh critic and joins checker, shown to the owner ("its good, go"), voice $0.088 (38.44 s); line 8 re-voiced on the owner's yes (37.77 s); cut 8 delivered Nov 16 (`microwave_fork_v2_cut8.mp4`, after cuts 3 to 7 and drafts 7 to 13, phase 62) |
+| 62. Draft first, a panel at once | The owner, Nov 16: "how come we have mistakes everytime, every render takes like a day... we want high accuracy first render if possible and faster renders". Reviewers judge a quick draft (every third frame, small and rough) before the real render, three focused frame reviewers at once instead of one a round, and the real film renders once. Spec: [Draft first](#draft-first-a-panel-at-once-phase-62) | **Built** (Nov 16, 2026): `film_parts --draft`, draft jumps, the panel, the denoiser on the graphics card. The microwave short went through drafts 7 to 13 and one full render, then had its final panel's serious findings re-rendered in place (cut 8) |
+| 64. Common sense, and real things beside a real person | The owner on the poop jet's cut 2 (Nov 19): no poop seen while he hovers or flies, toy houses, an empty bathroom, a plain wing: "most of the time ur videos just need to have common sense"; and "we need a lil research agent" that finds ready-made assets before anything is built. Spec: [Common sense](#common-sense-and-real-things-beside-a-real-person-phase-64) | **Built** (Nov 20, 2026): the `asset-scout` agent, the frames prompt's common-sense check, BlenderKit and NAIP assets, the streams, the wing, the memory cap, the library (`blender/library.py`, `library_previews.py`); the poop jet's cut 3 went to the owner |
 
 The code for plan.md's whole build order is complete (weeks 4–6 are running videos, not building); phase 10 is the YouTube tools plan.md lists that no phase has needed yet. What needs your accounts is under "Your turn" in How YouTube works, How Claude writes, How voice, pictures and clips work, and How topics and metrics work.
 
@@ -1334,11 +1343,387 @@ Only the followed request lit code, and lines were held after it. The dots and t
 - `retry_backoff` isn't a route yet;
 - a spec can't yet label a request ("SYN", a token) for handshakes like TLS or OAuth. That's the next thing a protocol topic would need.
 
+## Advice with no loophole: the microwave short (phase 60)
+
+The owner's own idea, Nov 14: "why you can't leave silverware in microwave i keep seeing ppl say dont". Researched and fact-checked as explainers card 18, shown with its changes and the voice's price; their answer: "go". Everything is in `data/benchmarks/batch_nov14/microwave_fork/` (`brief.py` one folder up renders the pipeline's own briefs and checks while the server is down).
+
+**The script, after seven rounds** (44.7 s by the count, 42.85 s voiced):
+1. A fork sparks in the microwave. The metal walls around it don't.
+2. The waves slosh loose electrons in both metals back and forth.
+3. In the big walls, the electrons spread thin.
+4. But in a fork, they crowd into its four points, and burst out as sparks.
+5. Worse, thin metal like a twist tie can't carry that much sloshing, so it heats, and can light the towel.
+6. So you keep metal out, and switch off the moment it sparks.
+7. But some microwaves come with a metal rack, built for that one microwave.
+8. The rack has no points.
+9. Your fork has points, and no other metal was built for your microwave.
+
+**What every critic round pushed on: permission.** The first ending ("It has no points. Your fork has points.") answered the hook neatly, and read as "so a smooth spoon is fine". Bloomfield himself says most spoons won't spark, but Frigidaire, LG and Sharp approve no metal but the rack that came with the oven. A fresh critic sent the ending back in every one of six rounds, each time from a new side (the rack "doesn't spark" is firmer than the makers say; "built for them alone" can be heard as any microwave; racks in combination ovens are for convection only; a viewer leaves thinking a smooth bowl is fine). What closed it: the rule said in words before the exception (line 6), the exception as narrow as the makers say it (line 7, and a badge: "only the rack it came with, only as its manual says"), and a last line that covers all other metal. Round seven: "fine", no problems. Now a rule in `prompts/character/script.md` and `critic.md`: advice someone could act on leaves no loophole.
+
+**What the joins checker caught, round by round:** "some ovens" heard as an ordinary oven's shelf (now "microwaves"); a twist tie that turned up in line 5 from nowhere (now on its towel by a bread roll from the first frame, named as "thin metal like a twist tie", and reached by one move across the tray); "points" where line 4 had said "tips"; "it" pointing at the wrong thing three times (the oven, the rack, the twist tie); a reason ("plastic feet hold it off the walls") that nothing had set up, so it came out.
+
+**The film** (`film.py`, one script, keyed to the voice's word times):
+- **Two microwaves** built from boxes and planes: a dark cavity of painted metal, a door on a hinge with a mesh window (a shader with round holes), a keypad with a counting display, START, STOP and DOOR OPEN, a glass turntable that turns while the oven runs and slows to a stop when STOP is pressed. The tray's start angle and speed are solved so the fork lies across the view in the first line and stops with its handle toward the door for the last.
+- **Drawn only inside an oven:** the waves as faint sheets sweeping between the side walls and fading at each wall, and the loose electrons as small glowing balls that slide together with each push: dim and spread out on the walls, crowding and brightening into the fork's points, rushing along the tie's wire, flowing evenly round the rack's closed loops. They light up where they already sit as they're named.
+- **Sparks** are made fresh each frame from the frame's own number, so the two render processes draw the same ones: a jagged thread, a soft halo (bigger seen from outside, where a spark reads as a flash), and a small light that flickers on the walls.
+- **Heat:** the tie's wire and paper glow from inside, the paper chars, the towel browns along the tie (a mask in the towel's shader), and smoke rises as a small volume, thinning slowly behind the shut door and gone before it opens.
+- **The hand** is Walt's, masked to the hand and forearm. It presses with the index pad (measured from the skin), and for the last shot a pinch was found by search (thumb angles until thumb and index tips close on the handle's thickness), the hand placed so the pinch lands on the handle, and the fork carried by a Child Of constraint set at the grasp. Hand and camera are keyed every frame from functions, so turning the wrist never swings the arm through the scene.
+
+**What the test frames taught, fixed before the full render:**
+- A concave outline can't be one face: triangulating the fork's outline bridged the gaps between its tines. It's now one grid of quads, each row split where the tines' edges are.
+- A point light is drawn as a ball in Cycles, and showed as a white disc through the window. The ovens' lights are now spots tucked behind the door frame's top edge.
+- A glowing STOP label reflected as a red streak in the glass tray. The keys' labels are now printed, with only the display lit.
+- A displaced (crumpled) towel buried the tie lying on it: a thing on a displaced surface sits above the displacement's height.
+- Food set near a plate's rim poked through it, and showed as a red glow under the plate.
+- A camera row in a turning tray's own space is already in that space: subtracting the tray's height again put the camera under it, and the frame was black.
+- A close shot taken from the food's side had the mash between the lens and the tines. Close shots go on the side away from what would block them.
+- Glow that fills a frame (the wave sheets face-on) hazes everything: keep it faint.
+
+**What the first full-quality frames taught** (the render was stopped at frame 700 of 1,287 and started again in `frames2`, since nearly every shot shows the plate):
+- The fork's head ran into the mash: the food was 3.5 cm off the fork's line, and the mash and the fork's head together are wider than that. Measure clearance against both things' widths, not their centres.
+- The move from the fork to the tie skimmed the plate (a white smear) and, for a frame, left the cavity (black): a smooth curve through far-apart rows swings past them. It now rises over the plate through a row of its own, and any camera inside an oven is held inside its walls in code.
+- A spark's halo and light, sized to read as a flash from outside, washed a close-up white. Close up they're smaller.
+- The hook was framed from too high: the oven's top filled the upper half. It's now lower and nearer, the plate and the sparking fork filling the window, the fingertip coming off START at the edge (below the captions, which sit just under the middle).
+
+**What the first full cut's reviewers caught** (a fresh frame reviewer and joins checker on `microwave_fork_cut1.mp4`, 16 findings; every one fixed or answered, the fixed moments checked in test frames, the film rendered again into `frames3`):
+- **Captions break between phrases, in every short** (`core/phrasing.py`, used by `scenes/direction.py captions` and `render/narration.py _phrases`). "So you keep metal" stood alone for a second, the opposite of the line; "The waves slosh loose" read as the waves sloshing loosely; "The metal walls around" left "it don't." on its own. A caption now breaks after punctuation or before a word that starts a phrase, never after one that leans on the next ("the", "into", "its", "can't") or inside a fixed pair ("back and forth"), into as few captions as read well, five words at most. The big caption balances its two lines (`Overlays.tsx`). Tests: `tests/test_character_format.py`, `tests/test_shorts.py`.
+- **A cut lands on its frame.** 37.2 + 0.1 is 37.300000000000004 in floating point, a hair after frame 1,120's 37.3 s, so that frame still belonged to the shot before and motion blur smeared it across the jump: the grey frame the joins checker caught (the cut at 13.27 s had the same fault, hidden because both shots were inside the same oven). `on_frame()` puts every cut, and every time measured from one, on its frame's own time. Any film script keyed in seconds needs it.
+- **What the words say is seen as they say it.** "Switch off the moment it sparks" played over a window with no spark in it: from where the camera stood, the fork's points were behind the door's frame. Where something must be seen through an opening, check it in numbers before rendering (project the point, and where the line to it crosses the door), as for the fingertip on START, which sat at the frame's edge under the captions.
+- **A press comes before what it starts.** The fork sparked in the first frame, before the finger was seen on START. Now the fingertip is on START in frame 1, above the captions, and the first spark comes on "sparks".
+- **A glow standing for something hidden must not edge or flip.** The waves were flat glowing sheets: where one cut through the roll it drew a straight line across it, and sweeping through the lens it changed the whole picture in a frame. They're now slabs of glowing air (an emission-only volume, three thicknesses nested), so whatever is behind brightens and fades smoothly, and each fades out as it nears the lens.
+- **A light sized for one shot is wrong in another.** The spark lights, sized to flash through the window, relit the close-up blue-white in a frame, which read as the camera lurching. Close up, a spark is a thin jagged thread with a tight glow and a small light.
+- **Heat starts somewhere.** The tie glowed end to end like a heater bar in a fifth of a second and the towel never marked. Now the paper browns at one hot spot, blackens and burns away outward behind a glowing edge, the bared wire glows red, a small flame catches on "light the towel", the towel scorches under it and stays scorched, and smoke rises from the spot. The smoke had been an even haze because its falloffs were written for a unit box while the box was in metres: a shader's numbers are in the units of its coordinates.
+- **Food reads as food.** A smooth glossy oval read as an egg (a microwave danger of its own, so viewers wait for it to burst). Bread is matte, browner on top, split, floured; mash is lumpy, with a fork's furrows.
+- **An ending keeps moving.** The hand snatched the fork in a tenth of a second, then everything froze for four seconds with the fork still in the oven. Now it reaches in at a hand's pace, lifts the fork and carries it out through the door and away (hand rows can be passed through rather than stopped at), the open oven's lit inside lights it on the way, and the camera eases in on an oven with no metal in it.
+- **A reflection can read as a thing.** The lamp's reflection in the glass tray was a crisp white disc sliding across the frame, taken for an electron flying off the tie. The lamp is wider and the glass a little rough: a soft glow.
+- **Kept:** the joins checker found that "no other metal" leaves "other" with nothing to be other than, and offered "it wasn't built for your microwave". That re-voices a line and narrows the last line to the fork, reopening what seven critic rounds closed, so the words stay and the owner is told.
+
+## One question, one fork, and nothing through anything (phase 61)
+
+The owner watched `microwave_fork_cut2.mp4` (phase 60) on Nov 15, 2026: "this is pretty bad for many reasons 1. when the hand goes into the microwave it overlaps with the microwave, the hand goes through it. (the wrist) 2. it doesnt start with a question, 'have you ever wondered why you can't put a fork into a microwave?' 3. the second example of the microwave doesnt reallym ake sense, what does 'points' mean and why does not have points not make it spark? its feels like its all over the palce", then "we only talk about a fork too, dont talk about eh thin metal tie", "dont use weird words like sloshing, use words the mass undersatnds" and "give a few [words] on how microwaves work, and then connect to why fork cant be put into microwave". The rebuild is in `data/benchmarks/batch_nov15/microwave_fork/` (the first version stays in `batch_nov14`).
+
+**The script** (104 words, 38.44 s voiced; three rounds of a fresh critic and joins checker, then shown to the owner with its price: "its good, go"):
+1. Have you ever wondered why you can't put a fork in the microwave?
+2. A microwave fills with invisible waves.
+3. They shake the water in your food, which heats it up.
+4. But a fork is metal, and metal is full of tiny loose bits called electrons.
+5. The waves push those back and forth too, into the tips of the fork's prongs.
+6. A tip is so tiny they pile up there, and can jump out as sparks.
+7. Those sparks can start a fire, so the moment you see one, you switch off.
+8. You can't always tell which metal will spark, so you keep all metal out.
+
+What the critic rounds changed: "can jump out" (Bloomfield: most forks' tines are dull enough not to spark), a last line that covers all metal with a true reason (a viewer whose fork never sparked, or who owns a smooth spoon, is answered), the fire shown as well as said (a spark jumps to a pea, which scorches and smokes), and the press, the door and the smoke made physically right (START pressed before the shot, since a microwave's tube warms up for about two seconds; the smoke drifts and thins before the door opens).
+
+**Rules for every short, from the owner's notes:**
+- **A why-short opens on the viewer's own question**, asked as they'd ask it, over the picture of it happening (`prompts/character/outline.md`, `script.md`, `critic.md`; `checks.short_outline` refuses a `why_it_happens` outline whose hook isn't a question, `ASKS_FIRST`; test: `tests/test_character_format.py`). The old "no 'have you ever'" line was mine, not theirs.
+- **A few plain words on how the everyday thing works come first**, and the reason is built on them.
+- **One thing all the way.** A second example of the same trouble (a twist tie) or of the way out (a rack in another oven) is a second short, even when the card has it; the turn happens to the same thing (`outline.md`, `critic.md`, `prompts/ideas/explainers.md`).
+- **Plain words for what things do** (push, pile up, jump), real names said with what they are (`script.md`, `critic.md`).
+- **A reason is said before a line leans on it** ("the rack has no points" leaned on a "why" never given: `script.md`, `critic.md`, `prompts/transitions.md`).
+
+**Nothing through anything, in films written straight in Blender** (`blender/film_bounds.py`, `render/film_parts.py`). The wrist went through the oven because the pinch was aimed by the curled index finger, so with the hand inside, the forearm lay sideways through the oven's right wall and keypad; nothing measured it, and the cut's frame reviewer missed it too. Now a film's FILM_CHECK run builds a `Crossings` of what moves (the hand, its sleeve, the fork) and what's solid (the oven's shell, door, keys, walls, tray, plate, food, counter), measures every frame, and prints a CHECKED line; `film_parts` runs that check before rendering and refuses a film whose check fails or doesn't measure (`--skip-check` is for test frames only, and says so). Tests: `tests/test_film_parts.py`. What the first runs taught:
+- **Open meshes:** a hand cut off at the forearm has no inside, so a solid's points can't be tested "inside the hand" by counting crossings (it put an oven wall 112 mm into the hand). Depth is measured as faces crossing plus the mover's points inside the solid, and the inside test only for solids that close (`closed()`): the oven's five walls, open at the front, made every point in the oven read as inside them.
+- **Aim a reach by the forearm.** Aimed by the hand's line, the wrist sat at the opening's sill; the thumb-on-top pinch hung the other three fingers into the glass tray and the oven floor. The pinch is index on top, thumb under the handle's end, the forearm coming down into the opening from above and in front.
+- **Masks keep what they're told to.** The arm mask kept any vertex with a 0.2 share of arm weight, so bits of the parka's hem and chest rode 36 cm under the arm, into the counter. A vertex now stays only when the arm moves most of it.
+- **Room for a thumb is geometry:** a 1.35 cm plate left the handle's end 16 mm over the glass, and the thumb touched it; a dinner plate is 2 cm at its rim.
+- **The order check** caught the longer last line pushing the fork's exit past the end of the film.
+
+**What the film draws now** (`film.py`): one oven. Inside it, the waves as glowing slabs; in line 3 the mash goes see-through and twenty water molecules (a blue ball, two white ones) twist with the push, the mash glowing warmer on "heats"; from line 4 the fork goes see-through, its electrons as small balls inside the steel (they had stood on the tines like pegs), pushed back and forth and piled into the tips; small sparks while the view first goes in, a lull while the fork's middle is shown, the odd spark as the tips come back, the one tip on "jump", all four on "sparks", then the pea. Outside: STOP, the smoke thinning, DOOR OPEN, the door swinging open on camera, the hand waiting by the keys, then in through the opening, pinch on "keep", lift on "all metal", out on "out". The camera for the last line stands left of the opening, so the arm comes in from the right and never between the view and the fork.
+
+**Cut 1's review** (a fresh frame reviewer and joins checker on the whole cut, Nov 15): eleven things in the picture, one in the words.
+- **The words.** The joins checker wanted line 8's reason said: why can't you tell which metal will spark? A first rewrite ("Even a thin metal edge can spark like a tip") went to a fresh critic and joins checker and failed. It brought in a thing never shown, against the owner's "only the fork", and reopened the gap the line closes (a smooth spoon is mostly fine, so a shape reason doesn't reach "all metal"). The approved line was kept for cut 2, and cut 2's joins checker flagged it again (below).
+- **The picture**, fixed in `film.py` and checked in test frames before the second full render:
+  - the mash was tan with even wave-texture ridges (read as burnt, a walnut, a brain): now pale cream in soft uneven peaks, see-through as cream, its heat a warm glow that comes and goes on "heats";
+  - the wave bands drew flat white hard-edged stripes over the mash and fork: now a bell of glow across each slab, plain in line 2's wide view and kept faint behind the close-ups;
+  - sparks came from tips with no electrons piled in them, and from 0.4 s, before a tube's two-second warm-up, with the hand still walking away: now START goes in as the shot opens and the first spark comes at 2.2 s, and once the electrons are drawn a tip sparks only as they pile into it, and not at all in line 6 until "jump";
+  - sparks hit the pea again and again and left no mark, then half of it went glossy black in one step: now no spark comes near it before the one that burns it, the burn is matte and patchy and spreads from where that spark lands, and the smoke starts at the burnt side;
+  - the door went from shut to gone in a quarter second with nothing pulling it, and DOOR OPEN was at the picture's edge: now the press is in the picture, and the door springs open a little as the key goes in, swings wide over about a second and settles on its stop;
+  - electrons showed as more rows than there are prongs: now four lanes, one to a prong, spread with the steel's width;
+  - the fork's handle near the lens was a pale blur that read as a wedge cut out of the plate: deep focus inside the oven in line 2;
+  - LOOSE ELECTRONS sat on the mash, where WATER had labelled it: now just under the fork's balls. WATER's second line, the only thing saying the push is slowed down, was too small to read on a phone: now two lines, nearly caption-sized.
+- **Shared.** `blender/film_bounds.Within` measures drawn things that live inside a solid, such as the fork's electrons and the water in the mash, on every frame. Each one's middle must be inside, and nothing may stick out by more than 0.3 mm. A film's FILM_CHECK fails on it as it does on a crossing, and prints "CHECKED: what stays inside what". A badge's second line can be sized (`subSize`, in `render/remotion/src/shorts/machine.ts` and `MachineTags.tsx`) when it has to read as well as the captions.
+- **What it taught, for any film written straight in Blender:**
+  - A glowing slab is seen as a band only where the view runs along it. Hard box edges show as hard stripes. Dimming it by how slantwise the view crosses it turns six slabs into one wash over the whole picture.
+  - Something drawn to show a cause (a spark) happens only while its cause is on screen (electrons piled in that tip).
+  - A spark never touches what it doesn't mark. A burn is matte and patchy, darkest where it landed. Smoke starts at the burn.
+  - A door let go by a key springs a little on the press and swings at a door's pace, with the press in the picture.
+  - A near thing out of focus can merge with what's behind it.
+  - A badge goes next to what it names, not where the last badge was.
+
+**Cut 2's review** (a fresh frame reviewer and joins checker, Nov 15): six things in the picture, and line 8 again.
+- **The last line.** Every version ending on "so you keep all metal out" failed review on the leap from this fork to all metal:
+  - "You can't always tell which metal will spark" never said why you can't tell, so a viewer thinks "it's the ones with tips";
+  - "Sparks depend on shape, and that's hard to judge" gave no reason it's hard to judge, while the fork's tips are plain to see;
+  - "Any fork can do this, even one that's never sparked" claimed more than the sources: most forks' tines are too dull to spark.
+  A fresh critic and a fresh joins checker then each wrote, separately, the same line: **"But you won't always be there to see one, so you keep forks out."** It answers line 7's own fix ("the moment you see one, you switch off"), which only works while someone is watching. It stays on the fork, as the owner first asked, and claims nothing the sources don't (Bloomfield: sparks "can ignite the food or its container"; Whirlpool: prolonged arcing damages the oven). The owner saw it with its price ("ye go"). Voiced for about 1 cent, the short is now 37.77 s, and the hand pinches the fork on "keep", lifts it on "forks" and is out on "out".
+- **The picture:**
+  - The turntable read as stopped. In the close-ups the view turns with the plate against bare, blurred walls. The oven's inside now has a pale waveguide cover and vent holes, which slide by behind the turning plate.
+  - Sparks passing in front of the pea, 1.2 mm clear of it, read as hitting it. A spark now keeps 1.5 mm off it in the room and off it in the picture. Where that leaves a prong no way out, the spark goes away from the pea as the picture shows it.
+  - The burn came at nearly full size in one step. It now grows from a small spot over a second while the sparks keep hitting it.
+  - The view grazed the mash on its way to the fork. It now backs off first.
+  - Line 4 held on the potato. It's now on the fork's head and prongs from "fork", and the fork goes see-through from "metal is full of".
+  - The electrons first showed as dark specks. They now grow in, already bright.
+- **Shared.** `blender/film_bounds.Lens`: the camera is never inside anything it films, nor within 6 mm of it, measured on every frame, with the nearest approach printed. A film's FILM_CHECK fails on it, printing "CHECKED: what the lens comes up against".
+- **What it taught:**
+  - A check in the room isn't a check in the picture. A spark that passes in front of the pea reads as a hit.
+  - A view that turns with a plate needs something on the walls behind it.
+  - "Away from" has to be worked out as the picture shows it, not in the thing's own space. Sparks sent away from the pea in the fork's space went toward it on screen, and the check dropped every one, including the spark on "jump".
+  - Two reviewers who agree, separately, on the same words are worth more than another round.
+
+**Cut 3's review** (a fresh frame reviewer and joins checker, Nov 16): the joins were clean, and the frame reviewer found five things.
+- **The electrons.** Each row drew itself into a clump in the middle of its prong, darted to the point and back, and spread out again, in three frames. They sat still before "push", and stayed parked in the points from "pile" while the waves went on. A push now moves them all the same way, so they crowd only against an end, packed one behind another and brighter as they pack. They sway a little from the moment they're drawn, fully from "push", and from "tip" each push piles them higher into the points. The push takes about a second, timed so a push peaks on "jump" and on the spark that burns the pea, and the points spark only at a push's peak.
+- **The move to the fork.** The view went from the mash to the fork's far side by passing over the mash in 0.4 s, and the fork flipped across the frame. It now goes round the plate past the fork's points, in 1.9 s, at the same height and distance all the way.
+- **Sparks by the pea.** Several ended at the pea's edge and left no mark. As the lens sees them, they now end at least 3.5 mm off its edge, or, from the prong beside it, only further away than the prong's own point. The spark that burns it lands on the side the lens can see and marks it at once. On the edge, the mark came 0.2 s late.
+- **The smoke** was a straight, even, grey rod. It's now a wisp that wanders as a whole, with small curls, leaning back from the way the tray carries the pea. It spreads, thins and is gone inside the close shot's few centimetres, lighter grey.
+- **The reach.** The reviewer couldn't tell from small frames whether the arm cleared the opening: where it crossed was the frame's edge. The check had measured it clear on every frame. The view now has the opening's right edge and part of the keypad in it, and the fork comes 6 cm further straight out before it swings aside.
+- **Checked.** The film check prints the nearest the lens came to anything. It went from 20 mm off the oven's walls to 41 mm. `FILM_CHECK_SPAN=a,b` checks a stretch of a film while trying a fix; the render's own check is always the whole film.
+- **What it taught:**
+  - Something that moves back and forth faster than about once a second jumps between the reviewer's frames, and reads as a jump on a phone.
+  - Drawn things keep moving while what moves them is on.
+  - To get from one side of a thing to its far side, go round it, never over it. A camera aimed at a point flips as it passes over it.
+  - A mark must show where it's made, from where the lens is.
+
+**Cut 4's review** (Nov 16): the joins checker found one slip. In "A tip is so tiny they pile up there", the last plural said was "the waves". The LOOSE ELECTRONS badge now comes back, high in the picture, from just before "they" until the sparks jump. It's drawn in Remotion, so this cost no voice and no new render. The frame reviewer found these:
+- **The spark's glow.** A spark's own small lamp, a few millimetres off a white plate, lit half the close-up white, and lit the whole smoke box with it. The lamp is now five times weaker close up and never lights the smoke. The thread stays bright and its halo tight.
+- **A spark back over its prong.** Sent "away from the pea", which past the points is back down the fork, one lay along the prong it came from. Each spark is now checked as the lens sees it, so it never runs within 60 degrees of back along its own prong. When straight out won't do, it tries other ways into the air above the plate that clear both the pea and the prong.
+- **The mash** snapped solid in three frames, half a second into "But a fork is metal". It now clears over the end of line 3, as slowly as it went see-through.
+- **The burn** covered the whole face the lens saw, an even dark grey. It now stays a patchy black and brown mark on the side the spark hits, with most of the pea green, and it grows over 1.2 s.
+- **The smoke** read as a dark column once no spark lit it. It's now pale and thin, and it scatters light without soaking it up.
+- **The reach.** Again, the reviewer couldn't tell from small frames. The check measures the hand and sleeve against the oven's top, sides, keypad, door and walls on every frame, and it found nothing. The next review gets a full-size sheet of the reach.
+- **Re-rendering only what changed.** `FILM_SPARK_LIST=1` with the check prints every frame a spark is drawn in. Cut 5 is cut 4's frames with only these made again: the 301 spark frames, the mash's fade, and everything from the pea's burn on. That's 545 of 1134.
+- **What it taught:**
+  - A light a few millimetres from a white surface outshines the room's own lamp across centimetres of it. In a close-up, that's half the picture.
+  - Smoke lit only by sparks looks pale while they flash and dark between flashes. Keep flashes out of the smoke.
+  - "Away from" something, as the picture shows it, can be straight back along where the spark came from. Check both.
+
+## Draft first, a panel at once (phase 62)
+
+The microwave short took five full renders (cuts 1 to 5), and each came back with new findings, a day in all. The owner asked why, and for an accurate first render and faster renders (Nov 16, 2026).
+
+**Why it happened:**
+- The code checks for what passes through what were clean from cut 3 on. What kept coming back only eyes catch: how a glow, smoke or a burn looks, and whether the picture says what the words do.
+- Those were looked at only after a full render: about 75 minutes for 1134 frames (two Blender processes on the RTX 5080, about 7.5 s a frame each), plus the 4-minute check and 15 minutes of reviewing.
+- One fresh reviewer finds a different handful each time. Line 8's picture contradicting its words, and the door's white window, were there from cut 1 and surfaced in round 5.
+
+**What changed:**
+- **A draft before the real render.** `render/film_parts.py --draft` makes only the frames the review sheets show (every `frame_sheets.EVERY`-th), at 12 samples and 360 wide. It still runs the full check first. The film's `assemble.py --every 3` holds each frame three frames long. `frame_sheets.jumps(video, cuts, step=3)` compares a draft's frames three apart, so its steady steps aren't taken for jumps. A film's review script takes `--draft` and tells the reviewers what they're looking at. Test: `tests/test_character_format.py`, a draft held three frames a frame.
+- **Three reviewers at once.** Fresh frame reviewers on the same sheets, each with its own focus, alongside the joins checker:
+  - physics and bodies;
+  - light and looks;
+  - the words against the picture.
+
+  Loop on drafts until the panel is clean. Then render the real film once, and review it once more, with full-size crops where a draft can't settle it.
+- **Only what changed is made again.** The check run with `FILM_SPARK_LIST=1` lists every frame a spark is drawn in. A fix's frames are removed from a copy of the last cut's folder, and `film_parts` makes only what's missing. Cut 5 made 545 frames and cut 6 made 484, instead of 1134.
+- **The plan says what the words say.** A line's `shows` pictures its own words, never the opposite (`prompts/character/script.md`, `direct.md`; `frames.md` asks the reviewer to look for it).
+- **Faster renders** (measured Nov 16 on the microwave film, the RTX 5080, 48 samples at 720 wide):
+  - All of a frame's time was in Blender's render call. Setting the frame and the film's own per-frame code took 0.01 s.
+  - At 1 sample a frame still took 5 to 7 s. The denoiser ran on the processor (`denoising_use_gpu` was off) and took 3 to 4 s of every frame.
+  - With the denoiser on the graphics card and the scene kept loaded between frames (`render.use_persistent_data`), the fixed cost fell to about half a second. Outside shots went from about 7 s a frame to 2 to 3 s, and the shot of the oven alone from 14 s to 3 s.
+  - The heavy close-ups (the see-through mash and fork, many transparent bounces) only went from about 15 s to 11 to 13 s: their time is the samples themselves.
+  - A film written straight in Blender sets both, as `film.py` here does.
+  - A draft of the whole film (378 frames at 12 samples, 360 wide) took about a minute after the 4-minute check.
+- **Captions** (`render/remotion/src/shorts/Overlays.tsx`): the big caption has a thin dark outline under its white, so it reads on a white plate. Over the plate it had washed out.
+- **How it went on the microwave short (cut 7, Nov 16).** Drafts 7 to 13 took 5 to 17 minutes each, against an hour or more for a full render.
+  - Each panel found most of a round's faults at once. Four of its findings were my own regressions, caught in the draft and never rendered in full:
+    - a wave sheet that fogged the frame;
+    - a fork that went black;
+    - a fork that went white;
+    - sparks lost under a glow.
+  - By draft 13 the physics and the words reviewers marked nothing serious. The light reviewer marked one thing serious (the fork going dark on "metal"), and it was fixed before the full render.
+- **Keeping the scene loaded between frames is off.** A draft rendered with `use_persistent_data` crashed on the graphics card ("illegal address"). Drafts rendered that way also showed black blots at the sparks, which a fresh render of the same frame didn't. Without it a draft takes about 17 minutes instead of 5. The denoiser on the graphics card stays.
+- **What the panel taught, as shared rules:**
+  - A sheet of glow in the air near a close-up's lens fogs the whole frame. A wave's push is drawn on the thing it pushes: a soft band along the see-through fork and across the mash, riding with the push.
+  - Steel needs something bright to mirror. A light card that only the fork sees, over the whole ceiling, keeps it reading as steel from every angle. Mirror-smooth it went black, rough it went white.
+  - A flash seen from a metre away needs a thread thick enough to show, and a light that lifts the plate, not the whole oven.
+  - A hard rule on sparks near the pea can leave no way out at all. Log the frames where every direction fails (`SPARKMISS`), and keep the rule to the close-ups.
+
+## Common sense, and real things beside a real person (phase 64)
+
+The owner watched the poop jet's cut 2 (Nov 19, 2026) and said, shot by shot: "dont see poop trail here, should be dramatic poop effect there"; "the houses look too stick figure like, they need to look as good as the characyer"; "the washroom during mid poop is also pretty bad, it needs to have hsower and sinks", "like any normal bathroom"; "the wings need to look better too"; "here it says it works but so heavy, but there is no poop trail"; and "most of the time ur vbideos just need top have common sense". Then: "we need a lil research agent that figures out for rednering if there are some of these existing artifacts like poly haven so it uses them instead of building something mediocure".
+
+**What changed, for every short:**
+- **The `asset-scout` agent** (`.claude/agents/asset-scout.md`). Given what a render needs (how near the camera comes, how many copies, the look to match), it searches Poly Haven, ambientCG, Sketchfab, BlenderKit's free library and the Smithsonian's scans, looks at each candidate's own pictures, checks its license on the asset's own record and its size, and says what to use, or "build it" with what makes the real thing read as real. It downloads only previews; the main session fetches its picks. CC0 and royalty-free first; CC-BY only when clearly better (the credit costs the owner something); never NC, ND, editorial, ripped or paid.
+- **A common-sense check for the frame reviewers** (`prompts/character/frames.md`, "Common sense: what's missing"): what a normal viewer expects to see from the words and the situation and doesn't. Whatever moves something is seen doing it every frame it acts; a real place is furnished as that place is; everything beside a realistic person is as real as the person. `direct.md` says the same where it asks for real places.
+- **BlenderKit downloads** (`render/assets.py`, `blenderkit`): a free asset's .blend, fetched once into `data/assets/blenderkit/<base id>/`, refused unless its record says royalty-free or CC0 and free. It needs the owner's free account key, `BLENDERKIT_API_KEY` in `.env`.
+- **Real ground from the air:** USDA NAIP aerial photos (public domain through 2019) through the Planetary Computer's crop service, 2048 px a request, stitched (`data/assets/naip/`). The poop jet flies over a 2019 quarter-quad of Iowa farm country laid at its true size.
+
+**In the poop jet** (`film.py`, rounds 4a to 4d):
+- The poop is a wet brown, not black.
+- **The hover** shows its push: a stream you can see, a volume of brown mist boiling up out of the bowl into the gap under him, flecks spraying in that gap, splats on the seat, the water turned brown.
+- **The flight** shows its push from every side: a wobbling jet, a 7 m cone of churning brown spray as a volume (a surface faded at its edges vanished when seen end-on, from in front of him), chunks flung back through it, and a trail of puffs shot back at the jet's own speed (44,000 PSI out of a hole is about 778 m/s), slowed by the air, spreading and fading.
+- **The ground:** the lawns in Poly Haven's grass scan; the fields the Iowa photo, mirrored past its edges and hazing far off; Poly Haven jacarandas for the garden's and the town's trees; a real board fence; his house's side in brick with its window's surround, gutter and downpipe.
+- **The wing:** panel seams along its ribs and spars with flush rivets down them, aileron and flap gaps, red tips on both ends with nav lights, fuel caps, a pitot tube.
+- **What the checks measure in place of a scanned tree** (`check_only`): the box round it, in a collection that's never rendered. A 3.9M-face tree is too heavy to measure every frame, and a box a little larger than the tree can only make the check stricter.
+- **Ready-made models in a film** (`blender/ready.py`): `append` brings a .blend's parts under one empty (its cameras and lights dropped); `fit` stands it at a place and size; `as_collection` and `copy` make one shared model that hundreds of copies instance (the town's houses); `shrink` holds a model's maps to what its nearest shot can show; `strip_hair` takes off hair it grows at render time. Look at each model's preview first: several came laid on their backs (the vanity, the towel rail) and needed standing up.
+- **Memory** (the owner, Nov 19: "whast using so much ram, i thought we capped blender ram usage?" and "dont just make it fail we need it to suceed"). The cap covered cores, processes and priority, not memory, and the first draft with the new models held 8 GB of RAM per process with 38 GB committed on a 31 GB machine. Now:
+  - `render.limits.memory_gb` (24) caps the render processes' committed memory together, split evenly between those running, through a Windows job object on each (`render/limits.py`), as a backstop. A heavy film runs `film_parts --processes 1` and gets the whole 24 GB rather than failing: a first cap of 10 GB a process crashed the poop jet with an access violation. On WDDM, CUDA memory on the card counts toward a process's commit, so a render that fits the card still commits most of what it holds there;
+  - the film fits well under it. Measured one model at a time: the towel rail's geometry-nodes hair took a render to 9 GB on its own (stripped), and the houses arrived with 8.5 GB of maps a process, an 8192 px roof seen from 30 m up (held to 512 px; the F-16 and vanity to 2048, the towel rail to 1024);
+  - `use_persistent_data` keeps the set on the graphics card between frames: without it every frame reloaded the town, a minute a frame before a sample.
+  - `FILM_MEM=1` prints the build's committed memory at checkpoints.
+- **What the draft-5 panel taught** (three frame reviewers and the joins checker on the first draft with the new set; all fixed in round 5):
+  - **The push is in the picture in every shot it pushes.** A close-up of his face while he hovers or flies shows nothing holding him up. Shots during a push are framed wide enough, or from the side, to take in the stream or its spray: the hover from low and wide, the flying close-ups from beside him under the wing with the spray trailing off behind.
+  - **A blink is shown as a blink.** "Empty in a blink" with the jet on and the counter at 44,000 for a second and a half contradicted itself. The blast lasts 0.12 s, the counter drops to 0 with it, and he coasts up and back down on one arc.
+  - **What's taken out is seen going down.** The hit jet flew on level, growing in the frame, its smoke left behind. It now noses over and falls away below him, pouring one continuous plume, a volume on the jet, not a trail of separate puffs, which read as balls.
+  - **Detail has to read at the shot's distance and in the draft's softness:** seams 3 mm wide and darker, gaps 11 mm, a gauge 24 cm across with ticks. A reveal is seen from where its shape reads, so the wing is shown from above, not edge-on.
+  - **Something heavy arrives by some means:** the tank is lowered on a hoist chain from a ceiling hook, and his harness goes on with it.
+  - **Captions move off the action** (`Caption.at`, new in `Overlays.tsx`). Line 5's sat on the spray under him.
+  - **Not every close-up can go closer.** Pushing in on his face for the salute put a gun's body between the lens and his face, and from in front the guns aim at the lens. The end stays at his length, a little nearer.
+- **A known gap in the inside test** (`blender/bounds.py` `_holds`). On the poop jet's final check, one frame read the tank 194.2 mm "into" the wing. That is deeper than the wing is thick, and it read the same with the tank lifted 3 mm. The tank and the wing ride one holder, so they are placed the same to the millimetre in every frame (FILM_WHERE), and the other 1,402 frames passed. So two of the three rays misfired there. The film allows that one pair, with the evidence in a comment. **Not fixed yet:** finding which rays misfire, and on what geometry, and making the vote robust to it.
+- **The end's labels** sit where the camera sees their part while each is up (film.py writes each part's place every 0.2 s through the end shot), whole inside the picture, two at a time, each up about 1.5 s.
+- **The final's own look, checked at full size before handing over** (round 6). The draft-sized panel had passed the hover, but cut 3's full frames still hid it. The spray boiled in the shadow under him, so it rendered as a dark patch, and the drops flew out as smooth tan ovals that read as beans: the owner's cut-2 note again. Now the hover has a boil of its own, out past his thighs into the light, and its drops are dark, wet and thin streaks along their arcs, landing as flat smears. The sharpener's mirror-silver took the white haze under the wing and read as a plastic box: it's duller, darker steel with knurled grooves down the sides the camera sees. Only the changed frames were made again (moved aside to `frames1_round5/`), after the whole-film check. **The lesson for every film:** look at the final's frames at full size, at the moments the owner flagged before. Something too small to judge at draft size, or that the draft's softness blurs into the right look, can still be wrong.
+- **Everything kept for reuse** (the owner, Nov 19: "for everytuhg we redner, keep it in blender or somewhere or on disk so we can reuse"). `blender/library.py` `keep()` writes each piece a film made to `data/library/<kind>/<name>/<name>.blend`, standing at the origin, parent-free and unkeyed, with `info.json` (size, faces, source, license, credit). `note()` lists downloads that stay under `data/assets/`, and `bring()` appends a kept piece into a new scene. The film's `FILM_LIBRARY=1` pass kept 10 pieces from the poop jet: the bathroom, the wing, the tank, the sharpener, the guns, the grey F-16, the streams, the garden, the town (777 MB, its houses inside as instanced collections) and the ground materials. `blender/library_previews.py` draws a `preview.png` for each: props from a front corner on a grey floor, a set from inside a corner at eye height, materials on squares. The asset scout reads `data/library/index.json` before the web.
+
+## A joke played, and its hooks checked (phase 63)
+
+The owner wrote the poop fighter jet's structure (Nov 17, 2026). Reading the wings version, they said: "its good, but animations need to be funny, add face expression when he flies, and then for the shape of his head, put his head in a pencil sharpener and sharpen it. in the end scene, have him take out a real jet, and fly away as it takes down the jet -> congrats you are now a fighter jet". They added: "review the script after that to make sure the hooks are good".
+
+**What changed:**
+- **A joke is played, not only told** (`prompts/character/script.md`). In a short told as a joke, the person's face plays every step in `shows`: straining, shocked, cheeks flapping, grinning, wincing. A change to the body is made by an everyday thing doing it in the silliest way the step allows, like a pencil sharpener for a pointed head, never a plain morph. It stays true in every frame: a shocked face at the top of a jump is a slow-motion close-up, never a cartoon hang. `direct.md` says the face changes with every step.
+- **The built thing can prove itself** (`prompts/character/outline.md`, `ending`). Just before a `you_invent` short's congratulations, the thing built can do its job against the real one. The jet takes out a real fighter, whose pilot ejects safely.
+- **A hook reviewer** (`prompts/character/hooks.md`).
+  - A fresh agent, beside the critic and the joins checker.
+  - It reads the four tests, the hook ladder, the script's "always unsettled" rules and the viral-hooks skill's checklist and anti-patterns.
+  - It judges the opening layer by layer: first frame, words, on-screen text. It writes six to eight alternatives across at least three archetypes, inside the shape's limits and the 45 s cap, and picks one.
+  - It judges every re-hook after it.
+  - While the server's down, a short's `briefs_now.py` renders it to `brief_hooks.md`; the poop jet's does.
+  - **Not built yet:** a pipeline stage for it, a `hooks` job beside `critic` and `transitions`.
+
+**What the film taught, for every check after it (Nov 18).**
+- **What says what's inside something holds far from the middle of the world** (`blender/bounds.py`, `past`; `blender/liquid.py`). The poop jet flies 1.4 km out. Blender's numbers are single-precision, so the inside test's fixed 0.01 mm step past each surface was lost there. The ray then found the same face again, and the count of surfaces it crossed came out odd. The check reported his tank 194 mm into the wing it sat 45 mm above, and him 212 mm into it from 187 mm below. Measured on the frame's own mesh, with no face crossing at all. The step now grows by 0.4 µm a metre from the middle. Test: `tests/test_precision.py` (`far_step`): with the old step, 1 ray in 10 found the same face again 1.4 km out; with the new one, none.
+- **Motion blur is off in a fast-flying film.** The camera and the rig are keyed every frame at up to 180 m/s, and Cycles' blur smeared him right out of the picture: the frame showed only the fields. `FILM_BLUR=1` turns it back on.
+- **The lens check also watches the town's houses and trees,** since a test frame filled up with a pink roof.
+- **What the first panel found on the draft** (three frame reviewers and the joins checker at once, about 50 findings, most of them in all four). Each is fixed in the film, and the general ones are rules now:
+  - **The joke's prop has to read as the thing it is the moment it's seen.** A plain box over his head, in from nowhere, was a box, not a pencil sharpener. It now comes from 6 m ahead over a second, silver, with its blade across its top facing the lens.
+  - **The punchline lands on the hero.** "Congratulations" was said over the enemy pilot under his parachute. He ejects in the firing shot now, and the line plays on the man.
+  - **The force the joke runs on is seen every time it pushes:** a stream that reads as fluid (ragged, flickering, splashing), never a hard rod that looks like a pole lifting him.
+  - **A body reacts to what hits it.** He rose in the blast frozen in his sitting pose, and a 470 kg tank landed on him with no jolt.
+  - **Marks never sit on a face**, stay up at least 1.5 s and are never more than two at once (`direct.md`). A counter is one `count` mark: a stamp a tick blinked.
+  - **The thing the words turn on is shown:** the drop back onto the seat before the x-ray, the lumps in the colon before the blast, the tank and hose from the side.
+- **What the panel found on the full render** (one round, as the owner asked Nov 17), all fixed by re-rendering only the frames each touched:
+  - The guns never visibly fired at the jet. A tracer is drawn as a 10 m glowing streak: a 1.4 m one moved 20 m a frame and was never seen. Muzzle flashes and hit sparks were added.
+  - A gun pointed at the lens is a dot, so the guns seemed to vanish.
+  - The check didn't measure the guns. Measuring them found the dropped sharpener clipping a barrel. **Everything that moves near him is a solid in the check**, not only what was thought likely to touch.
+  - A falling weight speeds up (keys follow the fall, not a straight line), and he buckles under it over a few frames, not one.
+- **A film's `key()` sets its interpolation only on the keys it made** (`poop_jet/film.py`; copy this one, not the fork's or the touch screen's). The old helper gave `how` to every key on every curve of the owner's datablock. So one constant key, the cone head's, froze every face key before it. And Blender gives a key added after a constant one the constant too, so the tank's rise held still while it swelled, then jumped (the check had it 61 mm into the wing). Neither earlier film used a constant key, so their renders weren't touched.
+
+## A map table that plays itself (phase 59)
+
+The first wartime short, on Mao, Chiang Kai-shek and Japan (1937 to 1949), is a strategy told on a war-room map table, written straight in Blender like the touch screen short. What it needed that the kit didn't have:
+
+- **A stamp, and a counter that fits beside one** (`render/remotion/src/shorts/MachineTags.tsx`, `machine.ts`). A `stamp` mark is a date or a few words in a box, landing a little askew, with a smaller `sub` line under it. A `count` takes `size` (its number's height: the default 236 px fills the picture), `step` (1, so a year ticks year by year) and `grouping: false` (so 1937 isn't written 1,937), and its label can break over two lines. `scenes/direction.py` gives a stamp its place (`MARK_AT`); it isn't offered to the scene language yet (`MARK_KINDS` is unchanged), so only a film's own `assemble.py` uses it. Test: `tests/test_precision.py`.
+- **The map** (`data/benchmarks/batch_nov13/china_armies/map_paint.py`): eastern China painted as a paper sheet from Natural Earth's public-domain outlines (coast, the Yellow River and the Yangtze), with the trunk railways of 1937 drawn as runs between the cities they joined, and two masks: how far each point of the mainland is from Yan'an (the red that spreads from Mao's block) and the countryside away from the railways (what glows when Japan holds only the lines).
+- **The film** (`film.py` there, rendered through `render/film_parts.py`): one block to about 40,000 soldiers; a blue block's state (worn pale and cracked, or gone over to the red) is kept in its object colour, so one material serves every block and each is keyed on its own; the hunting arrows are drawn fresh each frame, so they can grow, stop short and let go; every key goes through an order check before a frame is rendered.
+- **A key beside a cut no longer bends the move next to it.** Two camera keys a frame apart are a cut. Blender's automatic handles let the jump on one side pull the curve on the other, so a shot drifted off its framing on its way out of a cut. Keys on both sides of a cut now get straight handles (`hold_cuts`).
+- **What goes over the picture stays out of it.** Dates, counters and the "still argued" note are drawn in Remotion, where they stay sharp on a phone and can change without a render; only the name tags are in the scene. A `count` can also `hold` its first value for some seconds before it runs (the year standing on 1949 over the red map, then running back from the cut).
+
+**What three rounds of reviewers taught, for the next map-table film.** Each cut went to a fresh frame reviewer and a fresh joins checker (briefs from `review_now.py`); the words passed every time, and every finding was in the picture or in what's drawn over it.
+
+- **One piece is one unit, and nothing else of that colour is on the table.** Two fallen blocks beside Mao's one made "40,000" read as 120,000.
+- **A side's pieces come onto the table when it's first named,** from the side it would come from (Chiang's from inland, Japan's from the sea). A look ahead (the red of 1949) is shown on a table that doesn't contradict it: only Mao's block.
+- **Nothing comes from nothing and nothing changes where it stands.** New blocks come up through slots in the table and are seen travelling to the pile; a block wears (pale, cracked), slides or hops, and never swells, fades, or changes colour to the other side's.
+- **Fighting is a small burst between two pieces that are both in the picture,** and a block cracks on the side that faces the enemy. A burst that washes a block to white makes it the wrong army's.
+- **A number over the picture lands on the words it measures.** The losses figure on "still bigger" read as the size of the army; on "wounded", running on from where the first counter stopped, it reads as losses.
+- **One continuous camera move, and a cut only to go back in time,** with the year running back over it both times. A cut that crossed to the far side of the table read as a jolt.
+- **The win is seen.** The winning side's blocks leave its pile and close on the worn ones before they fall back, and only then does the paint spread.
+- **A device nobody sees made reads as a mistake.** A cord between the two Chinese armies stood for their alliance through four cuts; it was made at the frame's edge, lay on the map like a railway, and re-bent as Mao's block moved, so a fresh eye took it for a line redrawing itself. It came out, and the date over the picture says they became allies.
+- **A name tag stands with its own pieces and leaves with them.** Chiang's tag standing where the red spread from labelled the red as his.
+- **A value that makes an edge is worked out in the shader, not read off an 8-bit image:** the red paint's rim was stair-stepped close to the lens until its distance from Yan'an was computed from the point itself.
+- **Reviewers need frames they can settle things on.** The film is one move, so the stock cut sheets showed almost no line joins (`join_sheets.py` makes one sheet a join), and a frame reviewer working from small sheets reported readings; given the full-size frames to open, the third one reported only what held up.
+
+## A true story is about someone (phase 58)
+
+The owner, Nov 13, 2026, on hearing the voiced tenth script of the wartime short on China, 1937 to 1949: "ummm but this seems really abstract no? if the script is what u gave me. Also im talking about when MAo and another party had civil war, when japan invaded mao had the other party fight while he healed, and after rhe war mao killed the wounded tiger (the other party, because they were weak), so sometimes u life u need to let the strong parties fight each other while u come up and take the wfinal W".
+
+**What was wrong.** That script had passed three fact-checks and seven joins checks, and each round had made it more careful and less of a story. Nobody in it had a name: it said "China's Communists", "the Communists' rival, China's government" and "the gaps". Its lesson came from the mechanism ("no one can hold it all. Grow in the gaps"), not from what happened to anyone. The idea brief allows names ("A unit or a person can be named where the record names them"); the writer left them out. The owner's own telling has a person in trouble, a turn, an image and a lesson, in three sentences.
+
+**What changed, for every channel that makes shorts**
+
+- **`prompts/character/outline.md`** (the `true_story` shape): "It's about someone, never about forces". Before the beats, the story is written as you'd tell it to a friend, in three plain sentences (who's in trouble, the turn, how it ends), and the beats are built on those. The people the record names are named from the hook on, each beat is something one of them does or loses, and one image the story earns is worth more than three careful clauses. It stays no firmer than true: what each did is said, and a why that's argued is said to be argued in the picture. The closing rule now says a true story names the real people its record names, in the words and on tags, and never draws them.
+- **`prompts/character/script.md`**: "A true story is told about its people": a line whose subject is "the government", "their rival" or "the gaps", where the record has a name, is the abstract telling.
+- **`prompts/character/critic.md`**: "Is a true story told about people?": the reviewer tells it back in three sentences, and if that telling has a named person, a turn or an image the script hasn't, the script goes back with those sentences.
+- **Tests:** `tests/test_ideas.py`, the brief test checks the three rules are there.
+
+**Not changed:** the lines on real people (named, never drawn), on nothing graphic, and on telling a disputed story level. The owner's telling gives Mao a motive (he let the other party fight). What both governments' records agree on is what each army did; why is argued between Taipei, Beijing and historians. So the script says what was done and what Mao's written order was, uses the owner's "wounded tiger" for an army that was bigger but worn out, and keeps "still argued" on screen.
+
+## A hook ladder and a takeaway (phase 57)
+
+Two asks from the owner on Nov 13, 2026.
+
+**The hook Reel.** They added `235ec27a5629477c8e94cc9589e6cea0.mov` to the workspace root (25 s, by @martinwang.mp4): "a nice reel on how to get hooks... maybe we can study what he did here and apply to our other reels". It was transcribed with local Whisper and read frame by frame. He says one opening five ways, each labelled on screen with a move and a view count:
+
+| On screen | What he says | His count |
+|---|---|---|
+| Basic value hook | How to get straight A's | 100 |
+| Adding timeframe | How to get straight A's in 60 seconds | 1,006 |
+| Condense expertise timeframe | 4 years of how to get straight A's in 60 seconds | 10.7K |
+| Exclusivity + relatability | Most people study 8 hours a day for B's, but here's three things I do to get straight A's studying just 3 hours a day | 114K |
+| Turns the hook into a story | Is it possible to get straight A's in pre-med studying just 3 hours a day? | 1M |
+
+A sixth step ("turns you into a follower", 10.5M) is a joke that asks for a follow. The counts are his own telling and rise exactly tenfold each time, so they are not evidence; and his is advice said to camera. What was taken is the order of the moves, as a pass over a hook that already passes the four tests: the thing said plainly, a number or limit, a lot squeezed into a little, a contrast with what most people expect, an outcome left open under a hard limit. Also from how his Reel is built: a number that changes stays on screen as it changes.
+
+- **`prompts/ideas/all.md`**: "Sharpening the hook's words: the ladder", after the four tests, with two cautions: the short has to answer the hook near its end, and no rung may say more than is true.
+- **`prompts/character/outline.md`** (the `hook`) and **`critic.md`** ("Could the hook's words be sharper and still true?").
+- **Not changed:** a bare question still only opens a `why_it_happens` short (`checks.short_hook`). His top rung is a question; whether "Can...?" questions should open other shapes is the owner's to say.
+
+**The takeaway.** Reading the script of the wartime short on China's two armies: "for stories like these... we can connect it to irl lessons, so in moment of .,.... think fo this ,,,,,, bascially a take away. ofc keeping all the hooks. otherowise looks good".
+
+- **`prompts/character/outline.md`** (the `ending`): a true story ends on one plain lesson the story itself showed, said to the viewer as "So when you're..., think of this: ...", in the story's own words; never a moral it didn't show, never a second ending; where the story is still argued over, the lesson comes from what both sides agree happened and the last picture says it's argued.
+- **`prompts/character/script.md`** and **`critic.md`** ("Does a true story leave the viewer something to use?").
+- Taken to mean true stories (history, wartime, survival). A `you_invent` short still ends on its congratulations.
+- **Tests:** `tests/test_ideas.py`, the brief test also checks for the ladder and the takeaway rule.
+
+## Short, and hooked all the way (phase 56)
+
+The owner, Nov 13, 2026, after the touch screen Reel went up: "make sure we have good hook throughout the video and dont make it too long. Needs to be short and engaging", "most ppl stop wathcing in the first 30 seconds", "animation and script needs to be egaging", and to look for skills on hooks, reading their files first to be sure they're safe.
+
+**What was looked at**
+
+- **Instagram's numbers.** The API gave only likes and comments (14 likes on the touch screen Reel, 6 on the woodpecker). Every watch-time measure was refused with "Application does not have permission for this action" (code 10): the Meta app has no insights permission. Even with it, the API gives an average watch time and a skip rate, not the second-by-second curve, which only the app shows.
+- **How long the reference's shorts run** (his 4,002 shorts, each against his median for its quarter):
+
+  | Length | Shorts | Share | In his top tenth (90% range) |
+  |---|---|---|---|
+  | under 30 s | 1,474 | 37% | 9% (7 to 10) |
+  | 30 to 40 s | 1,888 | 47% | 10% (9 to 12) |
+  | 40 to 50 s | 487 | 12% | 12% (10 to 15) |
+  | 50 to 60 s | 106 | 3% | 15% (10 to 22) |
+  | 60 to 75 s | 23 | 1% | 39% (24 to 56) |
+  | over 75 s | 24 | 1% | 17% (8 to 32) |
+
+  His median is 31 s and nine in ten run under 43 s. Ours ran 60 s and 85 s. His few long ones did well, but he chooses which subjects get the extra length, so that says nothing about making an ordinary short longer.
+- **Two skills**, `viral-short-form` and `viral-instagram-reels`, from the same public repository as `viral-hooks` (github.com/vyralcontent/content-skills, MIT, commit 349e495). Every file was read before it went in: 22 markdown files, no scripts, no commands, no hidden text. They went into `.claude/skills/` without the maker's banner and the sections telling the assistant to recommend its paid product. They are one company's summary of what tends to work, not measurements, so nothing in them is quoted to the owner as fact.
+
+**What changed, for every channel that makes shorts**
+
+- **`providers/checks.py`**: `SHORT_WORDS` 60 to 110 (passes 50 to 120, was 60 to 150 and 50 to 165), `SHORT_SECONDS_MOST` 45 (was 66).
+- **The count of seconds was wrong for this voice, and is fixed** (`checks.short_seconds`, `short_spoken`). The first short written to the new limit counted 41.6 s and voiced at 48.5: the count read 16 letters a second, took "40,000" as six letters, and ignored a sentence ending inside a line. Measured on the 23 lines voiced so far, the owner's clone reads about 14 letters a second. Now numbers are counted as they're said, a stop inside a line adds 0.3 s, and the limit is 45 real seconds. On the China short's lines it gives 48.1 s against 48.48 voiced; on the touch screen's longer lines it runs about a tenth over, which errs the safe way.
+- **`prompts/character/outline.md`**: 30 to 40 seconds, never over 45; at most three rounds of problem and fix, or three clues; every beat ends with something unsettled; the best picture after the hook's comes inside ten seconds; the answer has begun to work by the middle; the ending hands back to the first picture where that's honest.
+- **`prompts/character/script.md`**: 60 to 110 words; "Something is always unsettled" (a problem or question open by the end of line two, no two lines in a row without a new "But", a question or an awaited result, and one line about halfway that raises the stakes again); "No runway and no outro"; "A new picture every two to four seconds".
+- **`prompts/character/critic.md`**: "Where would they swipe away?" (the reviewer names the first line where nothing is unsettled) and "Is it short enough?".
+- **`prompts/character/topic.md`, `prompts/ideas/all.md`**: a short runs 30 to 40 seconds.
+- **Tests:** `tests/test_character_format.py`, two tests brought to the new limits (sixteen lines of six words still pass; 110 short words pass and 110 long ones are refused for their seconds).
+
+**What it doesn't do yet**
+
+- A film written straight in Blender (the touch screen's way) doesn't pass through `checks.short_script`. Run it on the draft's `scenes` by hand before any voice: `checks.short_seconds(scenes)` has to come in under 42.
+- Nothing measures retention. **Your turn:** either send a screenshot of each Reel's insights from the app, or add the `instagram_manage_insights` permission to the "Reel Publisher" app's configuration and make a new token.
+- The skills' one idea not built: three to five big words on the first frame that say what the short is about, for viewers on mute. Our captions show the spoken words, which on the touch screen short began "Press a button." It needs the owner's eye before it becomes a rule.
+
+## What the reference posts (phase 55)
+
+The owner asked (Nov 12, 2026) whether we'd studied a pattern in what the reference posts: hooks built on a hypothesis, crime, real events like a cave dive, "theres also the education part as well". Until then each brief had looked only at its own kind.
+
+- **`ideas/reference.py`**: `KINDS` tells a kind from a title alone (how it opens: how, why, what if, can or could, how to, he or she; or a word in it: crime, trapped, mystery, war, the body, animals, machines, space, food). `kinds()` gives each kind's count, its middle against his median for its quarter, and its share in that quarter's top tenth with the range round it. `catalogue()` prints them with his best shorts of all.
+- **`uv run python run.py ideas reference --map`** (`--top N` for how many of his best to list). $0, from the titles already in `data/`.
+- **`prompts/ideas/all.md`**, "What the reference posts, taken as a whole": what the map showed, for every researcher. About a third of his shorts are how or why explainers; no kind's middle is far from his median; war and old history is the one kind clearly above his usual (18% in his top tenth against 10%), with advice on a danger and "Can...?" tests leaning the same way and space clearly below; his best are small, known, odd things.
+- **What it can't say:** it sorts by title words, so kinds overlap and about half his titles open in none of the six ways; the counts are YouTube's, not Instagram's; and a kind's lean is no forecast for one idea (phase 42: blind judges couldn't pick his winners).
+- **Tests:** `tests/test_ideas.py` gained 1 (a title sorted into its kinds, a short that's two kinds, one that's none, and the printed map).
+
 ## How a character short runs (phases 28 and 36)
 
 A channel with `format: character` in its YAML makes vertical 3D shorts. `core/formats.py` says which stages run for which format, and `core/stage.py` keeps each stage to its channels. With only story channels, every query is the same as before. A short's whole flow:
 
-1. **Outline and script:** the same stages and gates, with prompts from `prompts/character/` and their own checks (`checks.short_outline`, `short_script`). 60 to 150 words, 4 to 16 lines (phase 45). The shapes come back as the story ones, so cards and `start_generating` didn't change.
+1. **Outline and script:** the same stages and gates, with prompts from `prompts/character/` and their own checks (`checks.short_outline`, `short_script`). 60 to 110 words, 4 to 16 lines, 30 to 40 seconds (phases 45 and 56). The shapes come back as the story ones, so cards and `start_generating` didn't change.
 2. **Voice:** the same stage. `voice_model` in the channel's YAML sets its ElevenLabs model, as the owner's clone needs `eleven_v4`.
 3. **Titles:** the `thumbs` stage writes titles and a description, and no thumbnails. YouTube takes a frame.
 4. **`stages/direct.py`:**

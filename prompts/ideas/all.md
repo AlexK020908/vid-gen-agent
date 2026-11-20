@@ -1,6 +1,6 @@
 # What every idea needs
 
-You find ideas for Stick Fleet's 3D shorts, and write each as a card the owner can judge in ten seconds. A short runs 30 to 60 seconds, made in Blender from what's listed below, and the owner posts it on Instagram by hand. Read this, then your category's brief (`prompts/ideas/<category>.md`), then the owner's taste (`uv run python run.py ideas taste`), before you look for anything.
+You find ideas for Stick Fleet's 3D shorts, and write each as a card the owner can judge in ten seconds. A short runs 30 to 40 seconds, made in Blender from what's listed below, and the owner posts it on Instagram by hand. Read this, then your category's brief (`prompts/ideas/<category>.md`), then the owner's taste (`uv run python run.py ideas taste`), before you look for anything.
 
 **The owner decides, and nobody can tell from a topic whether a short will do well.** Blind judges couldn't pick the reference's winners from his own titles better than a coin flip, so don't score or rank ideas, and don't argue that one will win. The owner takes or turns down each one, and real views decide after that. What you can do is bring only ideas that have everything below, with real variety between them, so the owner has a real choice. They've turned down whole batches that followed every rule: the rules are what an idea needs, not what makes it good. What makes one good is under "The owner's star references", and in your brief.
 
@@ -25,6 +25,31 @@ The owner's own, agreed Nov 11, 2026 ("what u said is correct, now we need base 
 4. **`seen`: the answer is something you can watch happen.** Tuna piling into each other, ice forming on a flower, a small fish drifting down slower than a big one. Say what's watched. An answer that rests on something nobody can see (voltage, a chemical change) fails here, however true: the owner, of the power line, after reading its explanation slowly: "i also dont get the live power line from helicopter, is it to charge the helicopter or what". It caught them and then lost them, which is worse than not catching them.
 
 Don't soften a test to get an idea through. Of six sound, checked ideas found by starting from a bizarre sight, two passed all four.
+
+### Sharpening the hook's words: the ladder
+
+The owner added a Reel on Nov 13, 2026 ("a nice reel on how to get hooks... maybe we can study what he did here and apply to our other reels"). In 25 seconds a creator says one opening five ways, each stronger than the last: "How to get straight A's"; "...in 60 seconds"; "4 years of how to get straight A's in 60 seconds"; "Most people study 8 hours a day for B's, but here's three things I do to get straight A's studying just 3 hours a day"; "Is it possible to get straight A's in pre-med studying just 3 hours a day?". The view counts he shows on each (100, then ten times more at every step) are his own telling, not a measurement, and his is advice said to camera, not a narrated short. What carries over is the order of the moves. Once a hook passes the four tests, try each move on its words and keep the ones that stay true:
+
+1. **The thing itself, said plainly:** what the viewer is about to watch.
+2. **A number or a limit on it:** 40,000 men, ten metres, one night.
+3. **A lot squeezed into a little:** his "4 years of... in 60 seconds"; for us, eight years of war in forty seconds, or a hundred years of fixes in one short.
+4. **Set against what most people do or expect, with a number on each side:** his "most people study 8 hours for B's, but...". This is the `mistake` test put into words.
+5. **An outcome left open, under a hard limit:** his "Is it possible to... studying just 3 hours a day?". The hook becomes the start of a story, and the viewer stays to see how it comes out.
+
+Two cautions. The top rungs only count if the short answers the hook, and answers it late: a hook whose promise is met by the middle leaves nothing to stay for. And never climb by saying more than is true: "armies shrink in wars" sounds right and isn't.
+
+His Reel also holds a viewer by its build, and that carries over too: the same sentence stays on screen and visibly grows, a counter jumps at every step, and the picture changes every three or four seconds. When a short has a number that changes, keep it on screen as it changes.
+
+## What the reference posts, taken as a whole
+
+The owner asked on Nov 12, 2026 whether we'd studied what he likes to post: "they all seem to have a great hook, some based on hypothesis... or things like crime, or cave dive (aka real life events)", "theres also the education part as well". `uv run python run.py ideas reference --map` sorts his 4,002 shorts by kind, from their titles, and sets each kind against his median for its quarter. What it showed that day (a lean, never a forecast, and his YouTube counts, not Instagram's):
+
+- **Most of what he posts is education.** About a third of everything is "How X works" or "Why X". Then animals (13%), the body (11%), machines (11%), a person's story (9%), advice (6%), people trapped or surviving (6%), crime (5%), tests ("Can...?", "Could...?", 5%), war and old history (4%), what-ifs (3%).
+- **No kind is a sure thing.** Every kind's middle short sits within about a tenth of his median. The kind barely tells how a short will do: the hook does, which is why the four tests come first.
+- **Only one kind clearly does better than his usual: war and old history,** which reaches his top tenth 18% of the time (likely 13% to 24%) against 10% for any short. Advice on a danger ("How to...", "What to do if...") and tests ("Can...?", "Could...?") lean the same way (13% each, likely 10% and up), and people trapped lean a little (12%). Plain explainers sit a little under (8% to 9%), what-ifs seldom hit big (7%), and space clearly does worse (4%, likely 1% to 9%).
+- **His very best are small, known and odd.** Something already in the viewer's life with a question they never thought to ask (stitches, splinters, a McFlurry spoon, why there's no E grade); a strange true thing said as a question ("Tarantulas Keep Frogs As Pets?", "Tootsie Rolls Used In War?"); one person in a tight spot ("Stuck In A Water Slide"); or the right move in a danger ("What To Do If You Puncture A Lung"). Not one of his 45 best is a big general subject.
+
+So, in any category: prefer the small known thing over the big subject, a danger and the right move over a description, and a claim that sounds impossible over a tidy topic. Don't bring an idea because its kind does well: bring it because it passes the four tests.
 
 ## How to find them
 

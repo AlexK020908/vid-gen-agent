@@ -18,7 +18,7 @@ export type Label = {label: string; anchor: string; tone: Tone; from: number; to
 
 export type MTag = {
   kind: 'fail' | 'ok' | 'warn' | 'question' | 'multiplier' | 'section' | 'mode' | 'stat' | 'title' | 'dimension' | 'deeper' |
-    'footage' | 'credit' | 'count';
+    'footage' | 'credit' | 'count' | 'stamp';
   text: string;
   from: number;
   to: number;
@@ -26,12 +26,18 @@ export type MTag = {
   icon?: 'x' | 'clock' | 'warn' | 'up' | 'down' | 'updown' | 'thermo' | 'arrows';
   tone?: Tone;
   sub?: string;                 // a smaller second line
+  subSize?: number;             // stamp: the second line's letters' height, when it must read as well as the captions
   steps?: [number, number][];   // a multiplier's values: [second, value]
   start?: number;               // a count's first value...
   end?: number;                 // ...and its last, reached a little before it goes
+  step?: number;                // a count's tick as it runs (1 for years); left out, about three figures
+  grouping?: boolean;           // a count: false drops the commas, for a year
+  box?: boolean;                // a count: in a dark box with a colored rim, like a stamp's, so it reads on a bright picture
+  hold?: number;                // a count: seconds it stands on its first value before it runs
+  run?: number;                 // a count: seconds the run takes; left out, seven tenths of the time it's up
   anchor?: string;              // dimension and deeper: from this anchor's point...
   anchor2?: string;             // ...to this one's
-  size?: number;                // fail and warn: their letters' height, bigger in the character shorts
+  size?: number;                // fail, warn and stamp: their letters' height; count: its number's height
 };
 
 export type Sound = {src: string; from: number; volume?: number};

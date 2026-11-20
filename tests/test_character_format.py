@@ -134,6 +134,28 @@ def test_captions_come_from_the_voice_a_few_words_at_a_time():
     assert all(a["to"] <= b["from"] for a, b in zip(said, said[1:]))
 
 
+def _said(*sentences):
+    """A voice's clock for whole lines, each word 0.3 s."""
+    return short.lines([{"idx": n, "narration": text, "duration_ms": 300 * len(text.split()),
+                         "words": [{"word": w, "start_ms": 300 * i, "end_ms": 300 * i + 250} for i, w in enumerate(text.split())]}
+                        for n, text in enumerate(sentences, 1)], [500] * len(sentences))
+
+
+def test_captions_break_between_phrases_never_inside_one():
+    # the microwave short, Nov 15, 2026: "So you keep metal" read alone is the opposite of the line, "The waves slosh loose"
+    # reads as the waves sloshing loosely, and "The metal walls around" left "it don't." on its own
+    said = [c["text"] for c in short.captions(_said(
+        "So you keep metal out, and switch off the moment it sparks.",
+        "The waves slosh loose electrons in both metals back and forth.",
+        "A fork sparks in the microwave. The metal walls around it don't.",
+        "Worse, thin metal like a twist tie can't carry that much sloshing, so it heats."))]
+    assert said == ["So you keep metal out,", "and switch off", "the moment it sparks.",
+                    "The waves slosh loose electrons", "in both metals", "back and forth.",
+                    "A fork sparks", "in the microwave.", "The metal walls", "around it don't.",
+                    "Worse,", "thin metal", "like a twist tie", "can't carry that much sloshing,", "so it heats."]
+    assert all(len(c.split()) <= short.CAPTION_WORDS for c in said)
+
+
 def test_a_scene_comes_into_its_own_time():
     scene = _scene(2.5, 4.0, happens=[{"do": "expression", "t": 3.0, "who": "walt", "name": "happy"},
                                       {"do": "glow", "t": 2.5, "to": 3.5, "who": "walt", "on": "jaw", "color": "red"}])
@@ -393,8 +415,19 @@ def test_only_a_why_short_can_open_on_a_bare_question():
 
 def test_a_setup_can_run_long_but_a_hook_cant_run_on_forever():
     from providers import checks
-    assert checks.short_outline({**OUTLINE, "hook": " ".join(["word"] * checks.SHORT_HOOK_WORDS)}) == []
-    assert "words at most" in " ".join(checks.short_outline({**OUTLINE, "hook": " ".join(["word"] * (checks.SHORT_HOOK_WORDS + 1))}))
+    story = {**OUTLINE, "shape": "true_story"}
+    assert checks.short_outline({**story, "hook": " ".join(["word"] * checks.SHORT_HOOK_WORDS)}) == []
+    assert "words at most" in " ".join(checks.short_outline({**story, "hook": " ".join(["word"] * (checks.SHORT_HOOK_WORDS + 1))}))
+
+
+def test_a_why_short_opens_on_the_viewers_own_question():
+    """The owner, Nov 15, 2026, of a fork short that opened on a statement: "it doesnt start with a question, 'have you ever wondered
+    why you can't put a fork into a microwave?'"."""
+    from providers import checks
+    said = {**OUTLINE, "hook": "A fork sparks in the microwave. The metal walls around it don't."}
+    assert "own question" in " ".join(checks.short_outline(said))
+    assert checks.short_outline({**OUTLINE, "hook": "Have you ever wondered why you can't put a fork in the microwave?"}) == []
+    assert checks.short_outline({**said, "shape": "true_story"}) == []          # only a why short has to ask
 
 
 def test_every_shape_is_described_to_whoever_writes_the_outline():
@@ -421,7 +454,7 @@ def test_a_line_is_one_step_as_long_as_the_owners_star_shorts_run():
     line = lambda beat, count: {"beat": beat, "narration": " ".join(["word"] * count) + ".", "shows": "a beak"}
     assert checks.short_script([line(1, 22), line(2, 20), line(3, 10), line(3, 10)], built) == []
     assert "line 1 is 24 words" in " ".join(checks.short_script([line(1, 24), line(2, 20), line(3, 10), line(3, 10)], built))
-    sixteen = [line(1, 8)] * 6 + [line(2, 8)] * 5 + [line(3, 8)] * 5
+    sixteen = [line(1, 6)] * 6 + [line(2, 6)] * 5 + [line(3, 6)] * 5      # 96 words: sixteen lines still fit a 30 to 40 second short
     assert checks.short_script(sixteen, built) == []
 
 
@@ -429,11 +462,28 @@ def test_a_short_inside_its_word_limit_is_still_refused_when_long_words_would_ru
     from providers import checks
     built = Answers([OUTLINE]).outline(SHORTS, "Woodpeckers", [], None, NoMeter())
     line = lambda beat, word: {"beat": beat, "narration": " ".join([word] * 11) + ".", "shows": "a beak"}
-    short_words = [line(1, "word")] * 5 + [line(2, "word")] * 5 + [line(3, "word")] * 4         # 154 words of four letters
-    long_words = [line(1, "counterweight")] * 5 + [line(2, "counterweight")] * 5 + [line(3, "counterweight")] * 4
+    short_words = [line(1, "word")] * 4 + [line(2, "word")] * 3 + [line(3, "word")] * 3         # 110 words of four letters
+    long_words = [line(1, "counterweight")] * 4 + [line(2, "counterweight")] * 3 + [line(3, "counterweight")] * 3
     assert checks.short_script(short_words, built) == []
     assert checks.short_seconds(long_words) > checks.SHORT_SECONDS_MOST
     assert "read at the channel's pace" in " ".join(checks.short_script(long_words, built))
+
+
+def test_a_shorts_seconds_are_counted_as_the_voice_says_them():
+    from providers import checks
+    assert checks.short_spoken("They count 40,000 men, and 3.2 million.") == "They count forty thousand men, and three point two million."
+    one = lambda text: checks.short_seconds([{"narration": text}])
+    assert one("They count 40,000 men.") > one("They count 40 men.") + 0.4                 # the digits are six letters, the words fourteen
+    assert one("Japan surrenders. It is over.") == pytest.approx(one("Japan surrenders, it is over.") + checks.SHORT_STOP_S)
+    china = ["China's Communists count 40,000 men. In twelve years they'll rule mainland China.",
+             "Japan invades. The Communists' rival, China's government, fights the big battles.",
+             "Japan wins ground, but has men to hold only cities and railways.", "So the Communists slip into the gaps.",
+             "They raid railways and recruit villagers.", "Japan hits back.",
+             "Then it strikes the government, while the Communists count a million.",
+             "Japan surrenders. China's government army is still far bigger, but worn down.",
+             "A civil war later, the Communists rule the mainland.",
+             "So when you're outnumbered, think of this: no one can hold it all. Grow in the gaps."]
+    assert checks.short_seconds([{"narration": line} for line in china]) == pytest.approx(48.5, abs=2)      # voiced, it ran 48.48 s
 
 
 def test_a_short_gets_its_own_prompts_and_the_cards_shape():
@@ -819,3 +869,14 @@ def test_what_the_frame_reviewer_finds_goes_back_to_the_director_and_then_the_ow
     assert film.MOST_FRAME_REVIEWS == 3
     source = Path(film.__file__).read_text(encoding="utf-8")
     assert "_review(ctx, conn, video, channel, out, direction, clock)" in source and '"reviewed": draft.get("reviewed", 0) + 1' in source
+
+
+def test_a_draft_held_three_frames_a_frame_is_compared_three_frames_apart(tmp_path):
+    """A draft (render/film_parts.py --draft) holds every third frame three frames long: its steady steps aren't jumps, a pop still is."""
+    from render import ffmpeg, frame_sheets
+    video = tmp_path / "draft.mp4"
+    ffmpeg.run(["-f", "lavfi", "-i", "testsrc=size=108x192:rate=10:duration=2", "-f", "lavfi", "-i", "color=c=white:size=108x192:rate=10:duration=1",
+                "-filter_complex", "[0][1]concat=n=2:v=1,fps=30", "-pix_fmt", "yuv420p", video])
+    held = frame_sheets.jumps(video, [], step=3)
+    assert held == [2.0]                                                          # only the pop to white
+    assert frame_sheets.jumps(video, [2.0], step=3) == []

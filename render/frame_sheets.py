@@ -49,18 +49,19 @@ def sheets(video: Path, folder: Path, every: int = EVERY) -> list[dict]:
     return made
 
 
-def jumps(video: Path, cuts: list[float]) -> list[float]:
-    """When the picture jumps from one frame to the next with no cut planned there, which nobody should have to spot: a pop, a thing teleporting. In seconds."""
+def jumps(video: Path, cuts: list[float], step: int = 1) -> list[float]:
+    """When the picture jumps from one frame to the next with no cut planned there, which nobody should have to spot: a pop, a thing teleporting. In seconds.
+    A draft holds each frame it made `step` frames long (render/film_parts.py --draft): its frames are compared `step` apart."""
     w, h = JUMP_SIZE
     raw = subprocess.run([ffmpeg.exe(), "-v", "error", "-i", str(video), "-vf", f"scale={w}:{h},format=gray", "-f", "rawvideo", "-"], capture_output=True, check=True).stdout
     size = w * h
-    frames = [raw[i:i + size] for i in range(0, len(raw) - size + 1, size)]
+    frames = [raw[i:i + size] for i in range(0, len(raw) - size + 1, size)][::step]
     changes = [sum(abs(a - b) for a, b in zip(one[::7], two[::7])) / (len(one[::7]) or 1) for one, two in zip(frames, frames[1:])]
-    planned = {round(t * FPS) for t in cuts}
+    planned = {round(t * FPS / step) for t in cuts}
     found = []
     for i in range(2, len(changes) - 2):
         around = sorted(changes[max(0, i - 5):i] + changes[i + 1:i + 6])
         usual = around[len(around) // 2] if around else 0.0
         if changes[i] > max(JUMP_AT_LEAST, usual * JUMP_TIMES) and not any(abs(i + 1 - c) <= 1 for c in planned):
-            found.append(round((i + 1) / FPS, 2))
+            found.append(round((i + 1) * step / FPS, 2))
     return found

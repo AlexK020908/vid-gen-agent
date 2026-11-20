@@ -15,6 +15,14 @@ ALL_WAYS = tuple(Vector((x + 0.013, y - 0.017, z + 0.011)).normalized() for x in
 LINES = ALL_WAYS[:13]  # the same, one way along each line through a point
 ENCLOSED = 0.55        # how many of those lines have to meet something on both sides of a point, for it to be surrounded: from outside something, a line meets it on one side only, however many rays hit it
 OUT_WAYS = tuple(Vector(v).normalized() for v in ((0.0123, 0.0177, 1.0), (0.81, -0.0211, 0.0173), (-0.0307, 0.87, -0.0191)))     # not along any face: straight up can run along a wall
+PAST = 1e-5            # how far a ray is moved on past a surface it hit, before it looks for the next
+PAST_PER_METER = 4e-7  # and more, the further from the world's middle: Blender's numbers are single-precision, so 1.4 km out 0.01 mm is lost,
+                       # the ray finds the same surface again, and a point 45 mm above a wing counted as inside it (the poop jet, Nov 18, 2026)
+
+
+def past(hit: Vector, way: Vector) -> Vector:
+    """Where a ray goes on from, after hitting a surface at `hit`: just past it, however far out in the world it is."""
+    return hit + way * (PAST + PAST_PER_METER * max(abs(c) for c in hit))
 
 
 CARRIED = "carried"    # marks what rides inside something: it goes where that goes, and it's a thing of its own
@@ -111,7 +119,7 @@ class Solid:
                 if hit[0] is None:
                     break
                 crossed += 1
-                at = hit[0] + way * 1e-5
+                at = past(hit[0], way)
             votes += crossed % 2
         return votes >= 2
 

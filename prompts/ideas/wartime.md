@@ -14,6 +14,13 @@ An idea here is one strange thing soldiers really did in a war, which looks wron
 
 **Strategies first.** The same day, after hearing the first six ideas (a smokeless field kitchen, markers left on traps, a fake head raised for a sniper, fire along a foggy runway, a bridge dropped by parachute, a river dammed to free gunboats), the owner said: "I think people would be more interested in strategies used in war times like in WW2, there was chemical warfare right? there must be a lot of strategies in that area, or in the Japan China war, how Mao was hiding while the other party fought Japan and came to finish up the fight because the other side was wounded, or the booby traps used in Vietnam war, or how Japan used to fly planes into ships etc, idk". So the heart of this category is a strategy, in a war people have heard of: what one side was up against, the move it made, and why that worked or how it was beaten. A clever object, like the glass on the door, is one kind of idea here. The plan behind a campaign is the kind the owner asks for most.
 
+**A person, and what their move teaches.** On Nov 14, 2026 the owner called the finished short on Mao and Chiang Kai-shek "actually pretty good", and for its caption wanted "how someone weak can become strong", then "Why sometimes strategy matters more than strength ?" and "in chinese theres a saying like before you are yeye, you are sun zi" (先当孙子，后当爷: first the grandson, then the grandfather). The agent's reading, not their words: the strategy ideas they like best have a named person on the weaker side, who makes a move that looks like giving in or running away, and wins by it; and each leaves the viewer one lesson they can use in their own life. So a strategy card:
+- names the people its record names (`people`: who, on which side, and what each wanted), since a true story is about someone, never about forces;
+- says what the move teaches, in one line said to the viewer (`lesson`), true to what happened and no firmer than the record;
+- carries a saying that fits, in any language, where one exists, tested at its source like any other claim: who said it, where it's first written, and whether it's really about this.
+
+Any century's war can be a card this way, if a viewer knows the name (Napoleon, Hannibal) or the story can be told so they don't need to. Ancient stories are often known only from a historian writing centuries later: say so in `how_known`, and tell them as "as ... tells it".
+
 ## The hook the owner showed, taken apart
 
 The Reel runs 27 seconds, about 70 words, and loops. It had 13.3K likes when the owner recorded it. Never reuse its title, its wording or its subject: this is how it's built, not something to remake.

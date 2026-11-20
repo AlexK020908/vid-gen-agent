@@ -121,7 +121,7 @@ The video states don't change: `new` → `outlined` (outline card) → `outline_
    - one real number;
    - a footage search.
 
-   The checks in code: each failure has its tag; each fix adds a part or changes one; the last fix is the real mechanism; the reveal names the topic; the words fit 60 to 120 s.
+   The checks in code: each failure has its tag; each fix adds a part or changes one; the last fix is the real mechanism; the reveal names the topic; the words fit 60 to 120 s. (Since phase 56 every short runs 30 to 40 s, with at most three rounds of problem and fix: BUILD.md, Short, and hooked all the way.)
 
    Shape B ("why your house has a P-trap", problem then fix with no invention) is the same fields without the start and scale-up.
 3. **Script** (one job). Each problem hands over to its fix with a word that says so ("But...", "So...", "Then..."), and a question is written and read as one (the owner's note on A's rebuild, which reads as a list without them). Each line is a scene: at most about 15 words (a two-line caption box), with what the shot should show and its tags. Its length is checked at 155 words a minute.

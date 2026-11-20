@@ -15,7 +15,8 @@ An idea here is one surprising true thing, shown happening in front of you, and 
 - **Something strange happens first.** The hook is a moment already under way that makes no sense yet, or an "If you..." setup that puts the viewer in it.
 - **Nearly everyone would guess wrong.** `people_think` is what they'd say, and it has to be what a sensible person would really say. `truth` is what's really going on. If people would shrug and say "I knew that", it's out.
 - **A small child could follow why.** `steps` are 3 to 6 links in a chain, each saying what causes the next, using the real names of things. If you can't write the chain, you don't understand it yet, or it's only a fact and not an explanation.
-- **It goes somewhere after the answer.** `turn` is one more true thing, stranger or worse, that comes after. A trivia fact with nothing after it is out.
+- **It goes somewhere after the answer.** `turn` is one more true thing, stranger or worse, that comes after, and it happens to the same thing: what the fork's sparks can do next, never a twist tie beside it. A trivia fact with nothing after it is out.
+- **One thing, asked about.** The short opens on the viewer's own question about that one thing ("Have you ever wondered why you can't put a fork in the microwave?"), gives a few plain words on how the everyday thing works, and builds the reason on those, so `steps` start there. A second example of the same trouble, or of the way out (a rack in another oven), is a second card. The owner, Nov 15, 2026: "we only talk about a fork too", and of the cut that had more: "its feels like its all over the place".
 - **You can see it, and go inside it.** `inside` is how the explanation is shown: an x-ray of a body, a cut through a thing, air as moving balls.
 - **Where it leads to something people built, it's an invention instead** (`prompts/ideas/inventions.md`): the owner wants a short to land on a real invention wherever one exists.
 

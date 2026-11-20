@@ -6,10 +6,11 @@ from __future__ import annotations
 
 import math
 
+from core import phrasing
 from scenes import spec as scene_spec
 
 MEET = 0.05      # how far apart two scenes can be and still count as one starting where the last ended (s)
-CAPTION_WORDS = 4
+CAPTION_WORDS = 5      # most words a big caption holds; four or fewer unless a phrase needs the fifth (core/phrasing.py)
 MOST_IDLE = 4.5      # how long a person can be in a scene with nothing to do: time for a reaction, and no more (s)
 PERSON_ACTS = ("hold", "bite", "wear", "strike", "knock", "move", "act", "walk")     # an expression, a look or a glow alone is standing there
 MOST_STILL = 2.5     # how long a shot can hold with neither the camera nor anything in it moving (s)
@@ -78,7 +79,8 @@ def _times(scene: dict) -> bool:
 
 MARK_KINDS = ("count", "label", "fail", "ok", "warn", "question", "title")
 LABEL_WORDS = 3          # a label names a thing: a word or two
-MARK_AT = {"count": [0.5, 0.36], "fail": [0.5, 0.3], "ok": [0.5, 0.3], "warn": [0.5, 0.3], "question": [0.5, 0.3], "title": [0.5, 0.17]}
+MARK_AT = {"count": [0.5, 0.36], "fail": [0.5, 0.3], "ok": [0.5, 0.3], "warn": [0.5, 0.3], "question": [0.5, 0.3], "title": [0.5, 0.17],
+           "stamp": [0.5, 0.11]}     # a stamp (a date, a few words in a box) is only used by films written straight in Blender, so far
 TITLE_LINE = 12          # letters a title's line holds, big, across the picture: a longer one breaks between words
 MARK_TONES = ("yellow", "white", "blue", "red", "green")      # render/remotion/src/shorts/types.ts TONES
 LABEL_SIZE, TAG_SIZE = 54, 74    # px on the 1080-wide picture: reference A's are 32 and 38, too small to read beside these shorts' big captions
@@ -376,17 +378,20 @@ def check(direction: dict, total: float, people: list[str], stances: list[str], 
 
 
 def captions(timeline: dict) -> list[dict]:
-    """The big captions, from the voice: a few words at a time, breaking after punctuation, each up until the next starts.
-    In seconds of the short."""
+    """The big captions, from the voice: a few words at a time, breaking after punctuation and between phrases, never
+    inside one (core/phrasing.py), each up until the next starts. In seconds of the short."""
     out = []
     for line in timeline["lines"]:
-        group: list[dict] = []
+        clause: list[dict] = []
         for i, word in enumerate(line["words"]):
-            group.append(word)
-            ends = word["word"].rstrip()[-1:] in ".,?!;:"
-            if ends or len(group) == CAPTION_WORDS or i == len(line["words"]) - 1:
-                out.append({"text": " ".join(w["word"] for w in group), "from": group[0]["t"], "to": word["to"]})
-                group = []
+            clause.append(word)
+            if phrasing.ends(word["word"]) or i == len(line["words"]) - 1:
+                at = 0
+                for piece in phrasing.split([w["word"] for w in clause], CAPTION_WORDS):
+                    group = clause[at:at + len(piece)]
+                    out.append({"text": " ".join(w["word"] for w in group), "from": group[0]["t"], "to": group[-1]["to"]})
+                    at += len(piece)
+                clause = []
     for a, b in zip(out, out[1:]):
         a["to"] = min(b["from"], a["to"] + 0.25)     # a moment to read it, but never over the next
     return out

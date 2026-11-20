@@ -167,6 +167,9 @@ def test_captions_come_from_the_read():
     assert all(len(c["text"]) <= narration.CAPTION_MAX for c in captions)
     assert " ".join(c["text"] for c in captions[3:]) == no_comma and len(captions) == 5
     assert captions[-1]["to"] == 12.5                                    # half a second past the read's end
+    spins = "the drum spins the clothes round and round inside a tub full of hot soapy water"   # no comma: split between phrases
+    assert [" ".join(p) for p in narration._phrases(spins.split())] == ["the drum spins the clothes round and round",
+                                                                      "inside a tub full of hot soapy water"]
 
 
 def test_the_picture_follows_the_new_read_and_only_ever_slows():

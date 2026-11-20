@@ -1,7 +1,7 @@
 # How one Chinese army grew from 40,000 men to a million while the other fought Japan's big battles
 
 - **Kind:** wartime, built as `true_story`
-- **Your answer so far:** not shown to you yet
+- **Your answer so far:** "the chinese 40k into 1 million one" (2026-11-13)
 
 ## The first second
 

@@ -112,18 +112,44 @@ export const MachineTag: React.FC<{t: MTag; tracks: Record<string, Track>}> = ({
   if (t.kind === 'count') {
     // a big number running up and settling, white-hot with a colored halo, and what it counts under it
     const halo = (size: number): string => [0.12, 0.3, 0.7].map((k) => `0 0 ${Math.round(size * k)}px ${color}`).join(', ');
-    const share = interpolate(frame, [a, a + (b - a) * 0.7], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+    const held = Math.round((t.hold ?? 0) * fps);      // it stands on its first value this long before it runs
+    const runs = t.run !== undefined ? Math.max(1, Math.round(t.run * fps)) : (b - a - held) * 0.7;      // how long it takes to run, then it stands on its last value
+    const share = interpolate(frame, [a + held, a + held + runs], [0, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
     const value = (t.start ?? 0) + ((t.end ?? 0) - (t.start ?? 0)) * (1 - (1 - share) * (1 - share));
-    // to about three figures as it runs, so 40,000 ticks by hundreds and 20 by ones, and exactly what it says at the end
-    const step = Math.max(1, 10 ** (Math.floor(Math.log10(Math.max(1, Math.abs(t.end ?? 0)))) - 2));
+    // to about three figures as it runs, so 40,000 ticks by hundreds and 20 by ones, and exactly what it says at the end;
+    // `step` sets the tick (1 for years), `grouping: false` drops the commas (a year), and `size` is the number's height
+    const step = t.step ?? Math.max(1, 10 ** (Math.floor(Math.log10(Math.max(1, Math.abs(t.end ?? 0)))) - 2));
     const shown = share >= 1 ? (t.end ?? 0) : Math.round(value / step) * step;
     const s = interpolate(frame, [a, a + 5], [0.86, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+    const big = t.size ?? 236;
+    const small = Math.round(big * 0.2966);
+    // `box`: in a dark box with a rim of its color, its digits in that color, for a bright picture (white-hot digits vanish on white tiles)
+    const boxed = t.box ? {padding: `${Math.round(big * 0.12)}px ${Math.round(big * 0.3)}px`, background: 'rgba(18, 11, 6, 0.62)',
+      border: `${Math.max(3, Math.round(big * 0.05))}px solid ${color}`, borderRadius: Math.round(big * 0.1), color} : {};
+    const glowOf = (size: number): string => (t.box ? '0 2px 8px rgba(0,0,0,0.6)' : halo(size));
     return (
       <div style={{position: 'absolute', left: ax * SHORT_W, top: ay * SHORT_H, transform: `translate(-50%,-50%) scale(${s})`,
-        opacity, textAlign: 'center', fontFamily: FONT, color: '#FFF3DC', whiteSpace: 'nowrap'}}>
-        <div style={{fontWeight: 900, fontSize: 236, lineHeight: 1, letterSpacing: 2, fontVariantNumeric: 'tabular-nums',
-          textShadow: halo(170)}}>{shown.toLocaleString('en-US')}</div>
-        <div style={{fontWeight: 800, fontSize: 70, letterSpacing: 4, marginTop: 10, textShadow: halo(70)}}>{t.text}</div>
+        opacity, textAlign: 'center', fontFamily: FONT, color: '#FFF3DC', whiteSpace: 'pre', ...boxed}}>
+        <div style={{fontWeight: 900, fontSize: big, lineHeight: 1, letterSpacing: 2, fontVariantNumeric: 'tabular-nums',
+          textShadow: glowOf(Math.round(big * 0.72))}}>{shown.toLocaleString('en-US', {useGrouping: t.grouping !== false})}</div>
+        {t.text ? <div style={{fontWeight: 800, fontSize: small, lineHeight: 1.15, letterSpacing: Math.max(1, small * 0.057),
+          marginTop: Math.round(big * 0.042), textShadow: glowOf(small)}}>{t.text}</div> : null}
+      </div>
+    );
+  }
+  if (t.kind === 'stamp') {
+    // a date or a few words stamped on the picture: boxed, a little askew, landing with a thump; `sub` is a smaller line under it
+    const size = t.size ?? 60;
+    const s = interpolate(frame, [a, a + 4], [1.3, 1], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+    return (
+      <div style={{position: 'absolute', left: ax * SHORT_W, top: ay * SHORT_H, width: 'max-content', maxWidth: SHORT_W * 0.88,
+        transform: `translate(-50%,-50%) rotate(-2.5deg) scale(${s})`, opacity, padding: `${size * 0.2}px ${size * 0.42}px`,
+        border: `${Math.max(3, Math.round(size * 0.07))}px solid ${color}`, borderRadius: size * 0.12,
+        background: 'rgba(18, 11, 6, 0.6)', textAlign: 'center', fontFamily: FONT, color}}>
+        <div style={{fontWeight: 900, fontSize: size, lineHeight: 1.08, letterSpacing: 1.5, textTransform: 'uppercase',
+          whiteSpace: 'pre-line', textShadow: '0 2px 8px rgba(0,0,0,0.6)'}}>{t.text}</div>
+        {t.sub ? <div style={{fontWeight: 700, fontSize: t.subSize ?? Math.round(size * 0.58), lineHeight: 1.18, marginTop: size * 0.12,
+          whiteSpace: 'pre-line', textShadow: '0 2px 8px rgba(0,0,0,0.6)'}}>{t.sub}</div> : null}
       </div>
     );
   }

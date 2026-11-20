@@ -20,7 +20,7 @@ import bpy
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 
-from blender import look
+from blender import bounds, look
 
 GRAVITY = 9.81
 UP = Vector((0, 0, 1))
@@ -173,7 +173,7 @@ def holds(tree: BVHTree, point: Vector) -> bool:
             if hit[0] is None:
                 break
             crossed += 1
-            at = hit[0] + way * 1e-5
+            at = bounds.past(hit[0], way)
         votes += crossed % 2
     return votes >= 2
 

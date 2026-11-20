@@ -351,6 +351,35 @@ bpy.context.view_layer.update()
 solid = bounds.Solid([shell])
 out["open_shell"] = {"inside": solid._holds(Vector((0.2, 0.3, -0.5))), "beside": solid._holds(Vector((1.5, 0.2, -0.5))), "under": solid._holds(Vector((0.2, 0.3, -1.5)))}
 
+# a wing 1.4 km out (the poop jet flew there): single-precision numbers lose a 0.01 mm step past a surface, so a ray looking on from
+# just past where it hit finds the same face again, and a point 45 mm over a wing counted as 194 mm inside it. A sheet tipped like a
+# wing in flight, many rays at it, far out and near the middle; and whether the step past each hit finds that same face again
+from mathutils.bvhtree import BVHTree  # noqa: E402
+far_step = {}
+for label, centre in (("far", Vector((1391.8, 1.5, 117.6))), ("near", Vector((0.0, 0.0, 1.0)))):
+    sheet_verts, sheet_polys, n = [], [], 40
+    for i in range(n + 1):
+        for j in range(n + 1):
+            x, y = -0.65 + 1.3 * i / n, -5.5 + 11.0 * j / n
+            sheet_verts.append(centre + Vector((x, y, y * math.tan(math.radians(4)) + x * 0.14)))
+    for i in range(n):
+        for j in range(n):
+            a = i * (n + 1) + j
+            sheet_polys.append((a, a + 1, a + n + 2, a + n + 1))
+    sheet = BVHTree.FromPolygons(sheet_verts, sheet_polys, epsilon=0.0)
+    rays = again = 0
+    for k in range(2000):
+        ray_from = centre + Vector((-0.6 + 1.2 * ((k * 0.6180339) % 1.0), -5.0 + 10.0 * ((k * 0.4142135) % 1.0), 0.6))
+        for way in bounds.OUT_WAYS + (Vector((0.0123, 0.0177, -1.0)).normalized(),):
+            hit = sheet.ray_cast(ray_from, way)
+            if hit[0] is None:
+                continue
+            rays += 1
+            second = sheet.ray_cast(bounds.past(hit[0], way), way)
+            again += second[0] is not None and (second[0] - hit[0]).length < 1e-3
+    far_step[label] = {"rays": rays, "found_again": again}
+out["far_step"] = far_step
+
 # what's inside a thing goes where it goes, and isn't part of it
 INNER = {"type": "prop", "prop": "orb", "inside": "outer", "room": 0.5}
 BOX = {"type": "prop", "prop": "shell", "at": [0, 0, 0.5], "floats": True}

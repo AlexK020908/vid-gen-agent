@@ -22,6 +22,7 @@ import wave
 from dataclasses import replace
 from pathlib import Path
 
+from core import phrasing
 from providers.elevenlabs import ElevenLabsTTS
 from render import ffmpeg
 
@@ -203,14 +204,15 @@ def track(read_lines: list[dict], starts: list[float], out: Path) -> Path:
 
 def _phrases(words: list[str]) -> list[list[str]]:
     """A sentence as captions: one if it fits, else split where a comma falls nearest its middle (or, with no comma,
-    at the word nearest it), and those split again if they must be."""
+    between two phrases near it, never inside one: core/phrasing.py), and those split again if they must be."""
     text = " ".join(words)
     if len(text) <= CAPTION_MAX or len(words) < 2:
         return [words]
+    breaks = phrasing.costs(words)
     ends, at = [], 0
     for i, word in enumerate(words[:-1], 1):
         at += len(word) + 1
-        ends.append((not word.endswith((",", ".", ";", ":", "?", "!")), abs(at - len(text) / 2), i))
+        ends.append((not phrasing.ends(word), abs(at - len(text) / 2) + 4 * breaks[i], i))   # a phrase's edge, a little off the middle
     _no_comma, _off_middle, i = min(ends)
     return _phrases(words[:i]) + _phrases(words[i:])
 

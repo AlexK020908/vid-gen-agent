@@ -142,6 +142,9 @@ def test_a_mark_is_checked_and_drawn():
     assert "text" in short.mark_problems([{"kind": "count", "from": 1, "to": 2, "start": 0, "end": 9}], 5)[0]
     assert "kind" in short.mark_problems([{"kind": "ball"}], 5)[0]
     assert short.tags([{"kind": "count", "from": 1, "to": 2}])[0]["at"] == [0.5, 0.36]
+    # a stamp (a date in a box) is drawn for films written straight in Blender, and isn't offered to the scene language yet
+    assert short.tags([{"kind": "stamp", "from": 1, "to": 2, "text": "1949"}])[0]["at"] == [0.5, 0.11]
+    assert "kind" in short.mark_problems([{"kind": "stamp", "from": 1, "to": 2, "text": "1949"}], 5)[0]
 
 
 TWO_SCENES = [{"from": 0, "to": 3, "cast": {"tank": {"type": "prop", "prop": "water_tank"}}},
@@ -588,6 +591,16 @@ def test_a_hole_in_a_scan_doesnt_fool_what_says_whats_inside_it(measured):
     assert shell["inside"] is True             # though the ray straight up goes out through the hole
     assert shell["beside"] is False
     assert shell["under"] is False             # though the ray straight up goes in through its floor and out through the hole
+
+
+@needs_blender
+def test_what_says_whats_inside_something_holds_a_kilometer_from_the_middle_of_the_world(measured):
+    """1.4 km out, a 0.01 mm step past a surface is lost in Blender's single-precision numbers: the poop jet's tank, 45 mm over its wing,
+    was counted 194 mm inside it."""
+    step = measured["far_step"]
+    assert step["far"]["rays"] > 1000 and step["near"]["rays"] > 1000          # the rays did hit the sheet
+    assert step["far"]["found_again"] == 0, step                                # with a fixed 0.01 mm step, 1 ray in 10 found the same face again
+    assert step["near"]["found_again"] == 0, step
 
 
 @needs_blender

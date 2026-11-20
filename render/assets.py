@@ -52,6 +52,37 @@ def model(data_dir: Path, asset: str, res: str = "2k") -> str:
     return str(_fetch(entry["url"], folder / res / Path(entry["url"]).name))
 
 
+BLENDERKIT = "https://www.blenderkit.com/api/v1"
+
+
+def blenderkit(data_dir: Path, base_id: str, key: str | None = None) -> str:
+    """A BlenderKit asset's .blend, fetched once into data/assets/blenderkit/<base id>/ and kept. Free assets are royalty-free (or
+    CC0): commercial use with no credit owed, and BlenderKit gives them with no login (its GitHub page, read Nov 19, 2026). A paid
+    asset would need an account key, sent only to BlenderKit; none is used now. Opened in Blender without -y, so a file's own scripts
+    never run."""
+    import uuid
+    folder = Path(data_dir) / "assets" / "blenderkit" / base_id
+    record = folder / "asset.json"
+    if not record.exists():
+        folder.mkdir(parents=True, exist_ok=True)
+        found = json.loads(_get(f"{BLENDERKIT}/search/?query=asset_base_id:{base_id}"))["results"]
+        if not found:
+            raise RuntimeError(f"BlenderKit has no asset {base_id}")
+        record.write_text(json.dumps(found[0], indent=1), encoding="utf-8")
+    info = json.loads(record.read_text(encoding="utf-8"))
+    if info.get("license") not in ("royalty_free", "cc_zero") or not info.get("isFree", True):
+        raise RuntimeError(f"BlenderKit {base_id} is {info.get('license')}, free: {info.get('isFree')}: not taken")
+    done = folder / f"{base_id}.blend"
+    if done.exists():
+        return str(done)
+    blend = next(f for f in info["files"] if f.get("fileType") == "blend")
+    ask = urllib.request.Request(f"{blend['downloadUrl']}?scene_uuid={uuid.uuid4()}",
+                                 headers={**AGENT, **({"Authorization": f"Bearer {key}"} if key else {})})
+    with urllib.request.urlopen(ask, timeout=120) as resp:
+        signed = json.loads(resp.read())["filePath"]
+    return str(_fetch(signed, done))
+
+
 def texture(data_dir: Path, asset: str, res: str = "2k") -> dict[str, str]:
     """The colour, roughness and normal maps of one texture, as Blender's materials.ASSETS wants them."""
     folder = Path(data_dir) / "assets" / "polyhaven" / asset

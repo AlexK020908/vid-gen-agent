@@ -21,19 +21,24 @@ SCENE_WORDS_OK = (25, 45)       # what passes: a line a few words off isn't wort
 TOTAL_WORDS = 1750              # asked for: about 12 minutes at 150 words a minute, with the pauses between scenes
 TOTAL_WORDS_OK = (1500, 2000)   # passes: about 10 to 14 minutes
 WPM = 150                       # elevenlabs.speed slows the voices to about this; their own pace is 160 to 170
-# A character short: 30 to 60 seconds, read slowly (prompts/character/)
+# A character short: 30 to 40 seconds, read slowly (prompts/character/). The reference's median short runs 31 s and nine in ten of his
+# run under 43; the owner's two Reels ran 60 and 85 s, and most viewers had left by 30 (BUILD.md, phase 56)
 SHORT_BEATS = (3, 6)
 SHORT_LINES = (4, 16)
 SHORT_LINE_WORDS = (3, 22)      # one step a line: the owner's two star shorts run 10 to 15 words, none over 22 (BUILD.md, phase 45)
-SHORT_WORDS = (60, 150)         # what the prompt asks for
-SHORT_WORDS_OK = (50, 165)      # what passes
-SHORT_CHARS_A_SECOND = 16       # the pace of the read the owner approved (Nov 3, 2026): words differ in length, so seconds are counted in letters
+SHORT_WORDS = (60, 110)         # what the prompt asks for
+SHORT_WORDS_OK = (50, 120)      # what passes
+SHORT_CHARS_A_SECOND = 14       # the owner's cloned voice on eleven_v4, measured on its first 23 voiced lines (Nov 13, 2026): the China short's
+                                # ten lines came to 48.5 s where 16 a second had promised 45. Numbers are counted as they're said (short_spoken)
+SHORT_STOP_S = 0.3              # a sentence ending inside a line: the voice stops there too
 SHORT_PAUSE_S = 0.4             # about the silence after a line (channels' pauses_ms)
-SHORT_SECONDS_MOST = 66         # the approved woodpecker cut runs 60 s. Seven scripts of 160 to 165 words came to 59 to 69 s by this count
+SHORT_SECONDS_MOST = 45         # seconds on screen, now that the count matches the voice: the reference's shorts run 31 s, nine in ten under 43
 SHORT_HOOK_WORDS = 26           # a moment is short, but an "If you..." setup runs to about 25
 SHORT_SHAPES = ("true_story", "absurd_test", "why_it_happens", "thought_experiment", "fake_invention", "fix_in_steps", "ladder",
                 "you_invent", "mystery", "parody")
 QUESTION_OPENS = ("why_it_happens",)     # the only shape that may open on a bare question
+ASKS_FIRST = ("why_it_happens",)         # the shapes whose outline opens on the viewer's own question: the owner, Nov 15, 2026, of a fork
+                                         # short that opened on a statement: "it doesnt start with a question"
 TITLES = 3
 TITLE_MAX = 100                 # YouTube's limit
 DESCRIPTION_CHARS = (150, 900)  # the viewer-facing blurb above the chapters: a short paragraph, not a note or an essay
@@ -381,6 +386,10 @@ def short_hook(hook, shape) -> list[str]:
 def short_outline(data: dict) -> list[str]:
     """A character short's outline (prompts/character/outline.md)."""
     out = short_hook(data.get("hook"), data.get("shape"))
+    hook = (data.get("hook") or "").strip()
+    if data.get("shape") in ASKS_FIRST and hook and not hook.rstrip("\"'”’").endswith("?"):
+        out.append(f"a {data['shape']} short opens on the viewer's own question, asked to them as they'd ask it (\"Have you ever wondered "
+                   "why you can't put a fork in the microwave?\"), over the picture of it happening")
     if _blank(data.get("turn")):
         out.append("the turn has to be there: what comes after the answer, or \"none:\" and why the short is stronger without one")
     if _blank(data.get("fact")):
@@ -427,9 +436,42 @@ def short_script(scenes: list[dict], outline: dict) -> list[str]:
     return out
 
 
+_ONES = "zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen".split()
+_TENS = "x x twenty thirty forty fifty sixty seventy eighty ninety".split()
+
+
+def _number_words(n: int) -> str:
+    if n < 20:
+        return _ONES[n]
+    if n < 100:
+        return _TENS[n // 10] + ("-" + _ONES[n % 10] if n % 10 else "")
+    if n < 1000:
+        return _ONES[n // 100] + " hundred" + (" and " + _number_words(n % 100) if n % 100 else "")
+    for size, name in ((10 ** 9, "billion"), (10 ** 6, "million"), (1000, "thousand")):
+        if n >= size:
+            return _number_words(n // size) + " " + name + (" " + _number_words(n % size) if n % size else "")
+    return str(n)
+
+
+def short_spoken(text: str) -> str:
+    """A line as the voice says it: "40,000" is "forty thousand", fourteen letters where the digits are six."""
+    def said(m: re.Match) -> str:
+        raw = m.group(0).replace(",", "")
+        if "." in raw:
+            whole, part = raw.split(".")
+            return _number_words(int(whole)) + " point " + " ".join(_ONES[int(d)] for d in part)
+        return _number_words(int(raw)) if len(raw) < 13 else raw
+    return re.sub(r"\d[\d,]*(?:\.\d+)?", said, text)
+
+
 def short_seconds(scenes: list[dict]) -> float:
-    """About how long a short's lines take to say, at the pace of the read the owner approved, with the pause after each."""
-    return sum(len(s.get("narration") or "") for s in scenes) / SHORT_CHARS_A_SECOND + SHORT_PAUSE_S * len(scenes)
+    """About how long a short's lines take to say in the channel's voice: its letters as spoken, a stop wherever a sentence ends inside a
+    line, and the pause after each line."""
+    total = 0.0
+    for s in scenes:
+        said = short_spoken(s.get("narration") or "")
+        total += len(said) / SHORT_CHARS_A_SECOND + SHORT_STOP_S * len(re.findall(r"[.?!:;](?=\s)", said)) + SHORT_PAUSE_S
+    return total
 
 
 def thing_look(data: dict, clips: dict) -> list[str]:

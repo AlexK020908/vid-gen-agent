@@ -146,6 +146,28 @@ def test_kin_are_whole_words_plurals_or_the_start_of_a_word_best_first():
     assert [v["title"] for v in reference.kin(videos, ["zipper", "invent*"])] == ["The Invention Of Glue", "Inventors At Work", "How Zippers Work"]
 
 
+def test_the_whole_catalogue_is_sorted_into_kinds_by_title_and_a_short_can_be_two_kinds(tmp_path):
+    titles = ["How Stitches Work", "How To Escape A Gorilla Exhibit", "Why Bees Die After They Sting You", "What If You Grew Four Times Bigger",
+              "Could Ancient Armor Stop Bullets?", "He Robbed A Bank With A Banana", "Trapped In A Cave For Nine Days", "A Day At The Beach"]
+    videos = [_video(title, f"2024-01-{n + 1:02d}", 10 * (n + 1)) for n, title in enumerate(titles)] + [_video("newest", "2026-11-05", 1)]
+    found = {row["kind"]: [v["title"] for v in row["found"]] for row in reference.kinds(reference.shorts(videos))}
+    assert found["explainers: how it works"] == ["How Stitches Work"]                      # "how to" is advice, not an explainer
+    assert found["advice: how to, what to do if"] == ["How To Escape A Gorilla Exhibit"]
+    assert found["explainers: why"] == ["Why Bees Die After They Sting You"] and found["what ifs"] == ["What If You Grew Four Times Bigger"]
+    assert found["tests: can it, could you"] == ["Could Ancient Armor Stop Bullets?"]
+    assert found["a person's story"] == found["crime"] == ["He Robbed A Bank With A Banana"]       # one short, two kinds
+    assert found["war and old history"] == ["Could Ancient Armor Stop Bullets?"]
+    assert "Trapped In A Cave For Nine Days" in found["trapped and survival"] and "How To Escape A Gorilla Exhibit" in found["animals"]
+    assert all("A Day At The Beach" not in titles_of for titles_of in found.values())      # and some are none of them
+    data_dir = tmp_path / "data"
+    (data_dir / reference.REFERENCE).parent.mkdir(parents=True)
+    (data_dir / reference.REFERENCE).write_text(json.dumps({"videos": videos}), encoding="utf-8")
+    said = []
+    reference.catalogue(data_dir, top=2, say=said.append)
+    assert said[0].startswith("his 8 shorts by kind") and any("war and old history" in row for row in said) and "A lean, not a score" in said[-1]
+    assert not any("space" in row for row in said[1:-4])                                    # a kind with none of his shorts isn't listed
+
+
 def test_a_share_of_a_few_shorts_comes_with_a_wide_interval():
     p, low, high = reference.share(3, 8)
     assert p == pytest.approx(0.375) and low < 0.2 and high > 0.6
@@ -191,6 +213,12 @@ def test_the_briefs_hold_what_the_study_found_and_give_no_score():
     for field in EXPLAINERS.fields:
         assert f"`{field}`" in EXPLAINERS.text
     assert "solves the problem the first second opens with" in INVENTIONS.text
+    assert "Sharpening the hook's words: the ladder" in every and "An outcome left open, under a hard limit" in every     # phase 57
+    outline = (ROOT / "prompts" / "character" / "outline.md").read_text(encoding="utf-8")
+    assert "A true story ends on something the viewer can use" in outline and "Then sharpen its words" in outline
+    script, critic = ((ROOT / "prompts" / "character" / name).read_text(encoding="utf-8") for name in ("script.md", "critic.md"))
+    assert "It's about someone, never about forces" in outline and "names the real people its record names" in outline    # phase 58
+    assert "A true story is told about its people" in script and "Is a true story told about people?" in critic
 
 
 def test_a_real_case_has_the_rules_about_real_people():
